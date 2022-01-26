@@ -15,7 +15,6 @@ class BaseApiSchema(BaseModel):
 
 
 class BaseApiOut(GenericModel, Generic[T], BaseApiSchema):
-    '''api接口输出数据格式'''
     status: int = 0
     msg: str = 'success'
     data: Optional[T] = None

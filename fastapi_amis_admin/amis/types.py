@@ -1,11 +1,10 @@
-from typing import Dict, Any, Union, List, TypeVar
+from typing import Dict, Any, Union, List
 import ujson
 from pydantic import BaseModel, Extra
 
 Expression = str
 Template = Union[str, "Tpl"]
 SchemaNode = Union[Template, "AmisNode", List["AmisNode"], dict]
-T = TypeVar('T')
 OptionsNode = Union[List[dict], List[str]]
 
 
@@ -21,8 +20,6 @@ class BaseAmisModel(BaseModel):
     def amisDict(self):
         return self.dict(exclude_none=True, by_alias=True)
 
-    def __iter__(self):
-        return self._iter() # exclude_none=True
 
     def update_from_dict(self, kwargs: Dict[str, Any]):
         for k, v in kwargs.items():

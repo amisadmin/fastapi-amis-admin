@@ -1,22 +1,28 @@
-import time
-from functools import cached_property, lru_cache
-from typing import Type, Callable, Generator, Any, List, Union, Dict, Iterable, Optional, Tuple, Literal
+import datetime
+from functools import lru_cache
+from typing import Type, Callable, Generator, Any, List, Union, Dict, Iterable, Optional, Tuple, TypeVar, \
+    NewType
 
-from fastapi import Request, Depends, FastAPI, Query, HTTPException
+try:
+    from typing import Literal
+except ImportError:
+    from typing_extensions import Literal
+from fastapi import Request, Depends, FastAPI, Query, HTTPException, Body
 from pydantic import BaseModel
 from pydantic.fields import ModelField
 from sqlalchemy import delete, Column, Table, insert
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, AsyncEngine
 from sqlalchemy.orm import InstrumentedAttribute, RelationshipProperty
-from sqlmodel import SQLModel
+from sqlmodel import SQLModel, select
+from sqlmodel.engine.result import ScalarResult
 from sqlmodel.main import SQLModelMetaclass
 from starlette import status
 from starlette.responses import HTMLResponse, JSONResponse, Response, RedirectResponse
 from starlette.templating import Jinja2Templates
-
+import fastapi_amis_admin
 from fastapi_amis_admin.amis.components import Page, TableCRUD, Action, ActionType, Dialog, Form, FormItem, Picker, \
-    Remark, Service, Iframe, PageSchema, TableColumn, ColumnOperation, App, Grid, Avatar
-from fastapi_amis_admin.amis.constants import LevelEnum, DisplayModeEnum
+    Remark, Service, Iframe, PageSchema, TableColumn, ColumnOperation, App, Tpl
+from fastapi_amis_admin.amis.constants import LevelEnum, DisplayModeEnum, SizeEnum
 from fastapi_amis_admin.amis.types import BaseAmisApiOut, BaseAmisModel, AmisAPI, SchemaNode
 from fastapi_amis_admin.amis_admin.parser import AmisParser
 from fastapi_amis_admin.fastapi_crud._base import RouterMixin
@@ -27,12 +33,16 @@ from fastapi_amis_admin.fastapi_crud.utils import parser_item_id, \
     schema_create_by_schema, parser_str_set_list
 from fastapi_amis_admin.utils.db import SqlalchemyAsyncClient
 from .settings import Settings
+from ..utils.functools import cached_property
+
+_BaseAdminT = TypeVar('_BaseAdminT', bound="BaseAdmin")
+_BaseModel = NewType('_BaseModel', BaseModel)
 
 
 class LinkModelForm:
-    link_model: Table  # 中间模型,与model 存在外键关联
-    display_admin_cls: Type["ModelAdmin"]  # 关联模型admin
-    session_factory: Callable[..., Generator[AsyncSession, Any, None]] = None  # session生成器
+    link_model: Table
+    display_admin_cls: Type["ModelAdmin"]
+    session_factory: Callable[..., Generator[AsyncSession, Any, None]] = None
 
     def __init__(self,
                  pk_admin: "BaseModelAdmin",
@@ -46,7 +56,7 @@ class LinkModelForm:
         self.display_admin_cls = display_admin_cls or self.display_admin_cls
         if self.display_admin_cls not in self.pk_admin.app._admins_dict:
             raise f'{self.display_admin_cls} display_admin_cls is not register'
-        self.display_admin: ModelAdmin = self.pk_admin.app.create_admin_instance(self.display_admin_cls)  # type:ignore
+        self.display_admin: ModelAdmin = self.pk_admin.app.create_admin_instance(self.display_admin_cls)
         assert isinstance(self.display_admin, ModelAdmin)
         self.session_factory = session_factory or self.pk_admin.session_factory
         self.link_col = link_col
@@ -74,7 +84,7 @@ class LinkModelForm:
                 item_key = key  # auth_user.id
         if admin and link_key and item_key:
             admin.link_models.update(
-                {pk_admin.model.__tablename__: (table, link_key.parent, item_key.parent)})  # 注册内联模型
+                {pk_admin.model.__tablename__: (table, link_key.parent, item_key.parent)})
             return LinkModelForm(pk_admin=pk_admin,
                                  display_admin_cls=admin.__class__, link_model=table, link_col=link_key.parent,
                                  item_col=item_key.parent)
@@ -85,8 +95,8 @@ class LinkModelForm:
         async def route(
                 request: Request,
                 item_id: List[str] = Depends(parser_item_id),
-                link_id: Union[int, str] = Query(..., min_length=1, title='link_id', example='1,2,3',
-                                                 description='link model Primary key or list of link model primary keys'),
+                link_id: str = Query(..., min_length=1, title='link_id', example='1,2,3',
+                                     description='link model Primary key or list of link model primary keys'),
                 db: AsyncSession = Depends(self.session_factory)
         ):
             if not await self.pk_admin.has_update_permission(request, item_id, None):
@@ -105,8 +115,8 @@ class LinkModelForm:
         async def route(
                 request: Request,
                 item_id: List[str] = Depends(parser_item_id),
-                link_id: Union[int, str] = Query(..., min_length=1, title='link_id', example='1,2,3',
-                                                 description='link model Primary key or list of link model primary keys'),
+                link_id: str = Query(..., min_length=1, title='link_id', example='1,2,3',
+                                     description='link model Primary key or list of link model primary keys'),
                 db: AsyncSession = Depends(self.session_factory)
         ):
             if not await self.pk_admin.has_update_permission(request, item_id, None):
@@ -134,14 +144,12 @@ class LinkModelForm:
                         source={'method': 'post', 'data': '${body.api.data}',
                                 'url': '${body.api.url}&link_model=' + self.pk_admin.model.__tablename__ + '&link_item_id=${api.qsOptions.id}'})
         adaptor = None
-        if await self.pk_admin.has_update_permission(request, None, None):  # type:ignore
+        if await self.pk_admin.has_update_permission(request, None, None):
             button_create = ActionType.Ajax(actionType='ajax', label='添加关联', level=LevelEnum.danger,
                                             confirmText='确定要添加关联?',
                                             api=f"post:{self.pk_admin.app.router_path}{self.pk_admin.router.prefix}{self.path}" + '/${REPLACE(query.link_item_id, "!", "")}?link_id=${IF(ids, ids, id)}')  # query.link_item_id
             adaptor = 'if(("undefined"==typeof body_bulkActions_2)||!body_bulkActions_2){action=' + button_create.amisJson() + ';payload.data.body.bulkActions.push(action);payload.data.body.itemActions.push(action);body_bulkActions_2=payload.data.body.bulkActions;body_itemActions_2=payload.data.body.itemActions;}else{payload.data.body.bulkActions=body_bulkActions_2;payload.data.body.itemActions=body_itemActions_2;}return payload;'
-            button_create_dialog = ActionType.Dialog(type='button', icon='fa fa-plus pull-left', actionType='dialog',
-                                                     label='添加关联',
-                                                     level=LevelEnum.danger,
+            button_create_dialog = ActionType.Dialog(icon='fa fa-plus pull-left', label='添加关联', level=LevelEnum.danger,
                                                      dialog=Dialog(title='添加关联', size='full', body=Service(
                                                          schemaApi=AmisAPI(method='get', url=url,
                                                                            responseData={'&': '${body}',
@@ -193,12 +201,19 @@ class BaseModelAdmin(SQLModelCrud):
         self.app = app
         self.session_factory = self.session_factory or self.app.db.session_factory
         self.parser = SQLModelFieldParser(default_model=self.model)
-        self.fields = self.fields or self.parser.filter_insfield(self.list_display)
+        list_display_insfield = self.parser.filter_insfield(self.list_display)
+        self.list_filter = self.list_filter or list_display_insfield
+        self.fields = self.fields or [self.model]
+        self.fields.extend(list_display_insfield)
         super().__init__(self.model, self.session_factory)
 
     @cached_property
     def router_path(self) -> str:
         return self.app.router_path + self.router.prefix
+
+    def get_link_model_forms(self) -> List[LinkModelForm]:
+        return list(
+            filter(None, [LinkModelForm.bind_model_admin(self, insfield) for insfield in self.link_model_fields]))
 
     async def get_list_display(self, request: Request) -> List[Union[SQLModelListField, TableColumn]]:
         return self.list_display or list(self.schema_list.__fields__.values())
@@ -209,34 +224,6 @@ class BaseModelAdmin(SQLModelCrud):
     async def get_list_column(self, request: Request, modelfield: ModelField) -> TableColumn:
         return AmisParser(modelfield).as_table_column()
 
-    async def get_form_item_on_foreign_key(self, request: Request, modelfield: ModelField) -> Union[
-        Service, SchemaNode]:
-        column = self.parser.get_column(modelfield.alias)
-        foreign_keys = list(column.foreign_keys) or None
-        if column is None or foreign_keys is None:
-            return None
-        admin = self.app.get_model_admin(foreign_keys[0].column.table.name)
-        if not admin:
-            return None
-        url = self.app.router_path + admin.router.url_path_for('page')
-        label = modelfield.field_info.title or modelfield.name
-        remark = Remark(content=modelfield.field_info.description) if modelfield.field_info.description else None
-        picker = Picker(name=modelfield.alias, label=label, labelField='name', valueField='id',
-                        required=modelfield.required, modalMode='dialog'
-                        , size='full', labelRemark=remark, pickerSchema='${body}', source='${body.api}')
-        return Service(
-            schemaApi=AmisAPI(method='get', url=url, cache=20000, responseData=dict(controls=[picker])))
-
-    async def get_form_item(self, request: Request, modelfield: ModelField, action: CrudEnum) -> Union[
-        FormItem, SchemaNode]:
-        is_filter = action == CrudEnum.list
-        return await self.get_form_item_on_foreign_key(request, modelfield) or AmisParser(modelfield).as_form_item(
-            is_filter=is_filter)
-
-    def get_link_model_forms(self) -> List[LinkModelForm]:
-        return list(
-            filter(None, [LinkModelForm.bind_model_admin(self, insfield) for insfield in self.link_model_fields]))
-
     async def get_list_columns(self, request: Request) -> List[TableColumn]:
         columns = []
         for field in await self.get_list_display(request):
@@ -244,10 +231,10 @@ class BaseModelAdmin(SQLModelCrud):
                 columns.append(field)
             elif isinstance(field, SQLModelMetaclass):
                 ins_list = self.parser.get_sqlmodel_insfield(field)  # type:ignore
-                modelfield_list = [self.parser.get_modelfield(ins) for ins in ins_list]
+                modelfield_list = [self.parser.get_modelfield(ins, deepcopy=True) for ins in ins_list]
                 columns.extend([await self.get_list_column(request, modelfield) for modelfield in modelfield_list])
             else:
-                columns.append(await self.get_list_column(request, self.parser.get_modelfield(field)))
+                columns.append(await self.get_list_column(request, self.parser.get_modelfield(field, deepcopy=True)))
         for link_form in self.link_model_forms:
             form = await link_form.get_form_item(request)
             if form:
@@ -257,22 +244,16 @@ class BaseModelAdmin(SQLModelCrud):
                 ))
         return columns
 
-    async def get_list_filter_form(self, request: Request) -> Form:
-        body = await self._conv_modelfields_to_formitems(request, await self.get_list_filter(request),
-                                                         CrudEnum.list)
-        form = Form(type='', title='数据筛选', name=CrudEnum.list, body=body, mode=DisplayModeEnum.inline,
-                    actions=[
-                        Action(actionType='clear-and-submit', label='清空', level=LevelEnum.default),
-                        Action(actionType='reset-and-submit', label='重置', level=LevelEnum.default),
-                        Action(actionType='submit', label='搜索', level=LevelEnum.primary)], trimValues=True)
-        return form
-
     async def get_list_filter_api(self, request: Request) -> AmisAPI:
         data = {'&': '$$'}
         for field in self.search_fields:
             alias = self.parser.get_alias(field)
             if alias:
                 data.update({alias: '[~]$' + alias})
+        for field in await self.get_list_filter(request):
+            modelfield = self.parser.get_modelfield(field, deepcopy=True)
+            if modelfield and issubclass(modelfield.type_, (datetime.datetime, datetime.date, datetime.time)):
+                data.update({modelfield.alias: '[-]$' + modelfield.alias})
         api = AmisAPI(method='POST', url=f'{self.router_path}/list?' + 'page=${page}&perPage=${perPage}',
                       data=data)
         return api
@@ -301,9 +282,45 @@ class BaseModelAdmin(SQLModelCrud):
             table.footable = True
         return table
 
+    async def get_form_item_on_foreign_key(self, request: Request, modelfield: ModelField) -> Union[
+        Service, SchemaNode]:
+        column = self.parser.get_column(modelfield.alias)
+        if column is None:
+            return None
+        foreign_keys = list(column.foreign_keys) or None
+        if foreign_keys is None:
+            return None
+        admin = self.app.get_model_admin(foreign_keys[0].column.table.name)
+        if not admin:
+            return None
+        url = self.app.router_path + admin.router.url_path_for('page')
+        label = modelfield.field_info.title or modelfield.name
+        remark = Remark(content=modelfield.field_info.description) if modelfield.field_info.description else None
+        picker = Picker(name=modelfield.alias, label=label, labelField='name', valueField='id',
+                        required=modelfield.required, modalMode='dialog'
+                        , size='full', labelRemark=remark, pickerSchema='${body}', source='${body.api}')
+        return Service(
+            schemaApi=AmisAPI(method='get', url=url, cache=20000, responseData=dict(controls=[picker])))
+
+    async def get_form_item(self, request: Request, modelfield: ModelField, action: CrudEnum) -> Union[
+        FormItem, SchemaNode]:
+        is_filter = action == CrudEnum.list
+        return await self.get_form_item_on_foreign_key(request, modelfield) or AmisParser(modelfield).as_form_item(
+            is_filter=is_filter)
+
+    async def get_list_filter_form(self, request: Request) -> Form:
+        body = await self._conv_modelfields_to_formitems(request, await self.get_list_filter(request),
+                                                         CrudEnum.list)
+        form = Form(type='', title='数据筛选', name=CrudEnum.list, body=body, mode=DisplayModeEnum.inline,
+                    actions=[
+                        Action(actionType='clear-and-submit', label='清空', level=LevelEnum.default),
+                        Action(actionType='reset-and-submit', label='重置', level=LevelEnum.default),
+                        Action(actionType='submit', label='搜索', level=LevelEnum.primary)], trimValues=True)
+        return form
+
     async def get_create_form(self, request: Request, bulk: bool = False) -> Form:
         api = f'post:{self.router_path}/item'
-        fields = [field for field in self.schema_create.__fields__.values() if field.name != self.pk]
+        fields = [field for field in self.schema_create.__fields__.values() if field.name != self.pk_name]
         form = Form(api=api, name=CrudEnum.create,
                     body=await self._conv_modelfields_to_formitems(request, fields, CrudEnum.create), submitText=None)
         return form
@@ -320,43 +337,60 @@ class BaseModelAdmin(SQLModelCrud):
                     trimValues=True)
         return form
 
+    async def get_create_action(self, request: Request, bulk: bool = False) -> Optional[Action]:
+        if not await self.has_create_permission(request, None):
+            return None
+        action = ActionType.Dialog(icon='fa fa-plus pull-left', label='新增',
+                                   level=LevelEnum.primary,
+                                   dialog=Dialog(title='新增', size=SizeEnum.lg,
+                                                 body=await self.get_create_form(request, bulk=bulk)))
+        return action
+
+    async def get_update_action(self, request: Request, bulk: bool = False) -> Optional[Action]:
+        if not await self.has_update_permission(request, None, None):
+            return None
+        # 开启批量编辑
+        if not bulk:
+            action = ActionType.Dialog(icon='fa fa-pencil', tooltip='编辑',
+                                       dialog=Dialog(title='编辑', size=SizeEnum.lg,
+                                                     body=await self.get_update_form(request, bulk=bulk)))
+        elif self.bulk_edit_fields:
+            action = ActionType.Dialog(label='批量修改',
+                                       dialog=Dialog(title='批量修改', size=SizeEnum.lg,
+                                                     body=await self.get_update_form(request, bulk=True))
+                                       )
+        else:
+            action = None
+        return action
+
+    async def get_delete_action(self, request: Request, bulk: bool = False) -> Optional[Action]:
+        if not await self.has_delete_permission(request, None):
+            return None
+        if not bulk:
+            action = ActionType.Ajax(icon='fa fa-times text-danger', tooltip='删除',
+                                     confirmText='您确认要删除?',
+                                     api=f"delete:{self.router_path}/item/$id")
+        else:
+            action = ActionType.Ajax(label='批量删除',
+                                     confirmText='确定要批量删除?',
+                                     api=f"delete:{self.router_path}/item/" + '${ids|raw}')
+        return action
+
     async def get_actions_on_header_toolbar(self, request: Request) -> List[Action]:
-        actions = []
-        if await self.has_create_permission(request, None):
-            actions.append(
-                ActionType.Dialog(type='button', icon='fa fa-plus pull-left', actionType='dialog', label='新增',
-                                  level=LevelEnum.primary,
-                                  dialog=Dialog(title='新增', body=await self.get_create_form(request, bulk=False))))
-        return actions
+        actions = [await self.get_create_action(request, bulk=False)]
+        return list(filter(None, actions))
 
     async def get_actions_on_item(self, request: Request) -> List[Action]:
-        buttons = []
-        if await self.has_update_permission(request, None, None):  # type:ignore
-            buttons.append(ActionType.Dialog(icon='fa fa-pencil', actionType='dialog', tooltip='编辑',
-                                             dialog=Dialog(title='编辑', size='lg',
-                                                           body=await self.get_update_form(request, bulk=False))))
-        if await self.has_delete_permission(request, None):  # type:ignore
-            buttons.append(ActionType.Ajax(icon='fa fa-times text-danger', actionType='ajax', tooltip='删除',
-                                           confirmText='您确认要删除?',
-                                           api=f"delete:{self.router_path}/item/$id"))
-        return buttons
+        actions = [await self.get_update_action(request, bulk=False),
+                   await self.get_delete_action(request, bulk=False)
+                   ]
+        return list(filter(None, actions))
 
     async def get_actions_on_bulk(self, request: Request) -> List[Action]:
-        bulkActions = []
-        if await self.has_delete_permission(request, None):  # type:ignore
-            bulkActions.append(
-                ActionType.Ajax(actionType='ajax', label='批量删除',
-                                confirmText='确定要批量删除?',
-                                api=f"delete:{self.router_path}/item/" + '${ids|raw}')
-            )
-        # 开启批量编辑
-        if self.bulk_edit_fields and await self.has_update_permission(request, None, None):  # type:ignore
-            bulkActions.append(
-                ActionType.Dialog(actionType='dialog', label='批量修改',
-                                  dialog=Dialog(title='批量修改',
-                                                body=await self.get_update_form(request, bulk=True))
-                                  ))
-        return bulkActions
+        bulkActions = [await self.get_update_action(request, bulk=True),
+                       await self.get_delete_action(request, bulk=True)]
+
+        return list(filter(None, bulkActions))
 
     async def _conv_modelfields_to_formitems(self, request: Request,
                                              fields: Iterable[Union[SQLModelListField, ModelField, FormItem]],
@@ -366,7 +400,7 @@ class BaseModelAdmin(SQLModelCrud):
             if isinstance(field, FormItem):
                 items.append(field)
             else:
-                field = self.parser.get_modelfield(field)
+                field = self.parser.get_modelfield(field, deepcopy=True)
                 if field:
                     item = await self.get_form_item(request, field, action)
                     if item:
@@ -435,7 +469,7 @@ class IframeAdmin(PageSchemaAdmin):
     def get_page_schema(self) -> Optional[PageSchema]:
         super().get_page_schema()
         if self.page_schema:
-            self.page_schema.url = f'/{self.__class__.__name__}'
+            self.page_schema.url = f'/{self.__class__.__module__}/{self.__class__.__name__}'
             iframe = self.iframe or Iframe(src=self.src)
             self.page_schema.schema_ = Page(body=iframe)
         return self.page_schema
@@ -457,18 +491,18 @@ class RouterAdmin(BaseAdmin, RouterMixin):
 
 
 class PageAdmin(PageSchemaAdmin, RouterAdmin):
-    '''amis普通页面'''
+    '''Amis页面管理'''
     page: Page = None
     page_path: Optional[str] = None
-    page_parser_mode: Literal["json", "html", "jinja2"] = 'json'
-    template_name: str = ''
+    page_parser_mode: Literal["json", "html"] = 'json'
     page_route_kwargs: Dict[str, Any] = {}
-    router_prefix = ''
+    template_name: str = ''
+    router_prefix = '/page'
 
     def __init__(self, app: "AdminApp"):
         RouterAdmin.__init__(self, app)
         if self.page_path is None:
-            self.page_path = f'/{self.__class__.__module__}/{self.__class__.__name__}.json'
+            self.page_path = f'/{self.__class__.__module__}/{self.__class__.__name__.lower()}/amis.json'
         PageSchemaAdmin.__init__(self, app)
 
     async def page_permission_depend(self, request: Request) -> bool:
@@ -502,14 +536,16 @@ class PageAdmin(PageSchemaAdmin, RouterAdmin):
         if self.page_parser_mode == 'json':
             kwargs.update(dict(response_model=BaseAmisApiOut))
         else:
-            kwargs.update(dict(response_class=HTMLResponse, include_in_schema=False))
+            kwargs.update(dict(response_class=HTMLResponse))
         self.router.add_api_route(
             self.page_path,
             self.route_page,
             methods=["GET"],
             name='page', **kwargs,
-            dependencies=[Depends(self.page_permission_depend)]
+            dependencies=[Depends(self.page_permission_depend)],
+            include_in_schema=False,
         )
+        return self
 
     @property
     def route_page(self) -> Callable:
@@ -519,33 +555,79 @@ class PageAdmin(PageSchemaAdmin, RouterAdmin):
         return route
 
 
-class FormAdmin(PageAdmin):
+class TemplateAdmin(PageAdmin):
+    '''Jinja2渲染模板管理'''
+    page: Dict[str, Any] = {}
+    page_parser_mode = 'html'
+    templates: Jinja2Templates = None
+
+    def __init__(self, app: "AdminApp"):
+        assert self.templates, 'templates:Jinja2Templates is None'
+        assert self.template_name, 'template_name is None'
+        self.page_path = self.page_path or '/' + self.template_name
+        super().__init__(app)
+
+    def page_parser(self, request: Request, page: Dict[str, Any]) -> Response:
+        page.update({'request': request})
+        return self.templates.TemplateResponse(self.template_name, page)
+
+    async def get_page(self, request: Request) -> Dict[str, Any]:
+        return {}
+
+
+class BaseFormAdmin(PageAdmin):
+    schema: Type[BaseModel]
+    schema_init_out: Type[Any] = Any
+    schema_submit_out: Type[Any] = Any
     form: Form = None
     form_init: bool = None
-    schema: Type[BaseModel] = None
-    schema_init_out: Type[BaseModel] = None
-    schema_submit_out: Type[BaseModel] = None
+    form_path: str = ''
+    route_init: Callable = None
+    route_submit: Callable = None
+    router_prefix: str = '/form'
 
-    def __init__(self, site: "AdminApp"):
-        super().__init__(site)
-        assert self.schema, 'schema is None'
+    def __init__(self, app: "AdminApp"):
+        super().__init__(app)
+        assert self.route_submit, 'route_submit is None'
+        self.form_path = self.form_path or self.page_path.replace('/amis.json', '') + '/api'
 
     async def get_page(self, request: Request) -> Page:
-        page = await super(FormAdmin, self).get_page(request)
+        page = await super(BaseFormAdmin, self).get_page(request)
         page.body = await self.get_form(request)
         return page
 
+    async def get_form_item(self, request: Request, modelfield: ModelField) -> Union[FormItem, SchemaNode]:
+        return AmisParser(modelfield).as_form_item()
+
     async def get_form(self, request: Request) -> Form:
         form = self.form or Form()
-        form.api = f"post:{self.router_path}{self.page_path}"
-        form.title = ''  # self.page_schema.label
-        form.body = [AmisParser(modelfield).as_form_item() for modelfield in
-                     self.schema.__fields__.values()]
+        form.api = AmisAPI(method='POST', url=f"{self.router_path}{self.form_path}")
+        form.title = ''
+        form.body = []
+        if self.schema:
+            for modelfield in self.schema.__fields__.values():
+                formitem = await self.get_form_item(request, modelfield)
+                if formitem:
+                    form.body.append(formitem)
         return form
 
-    async def handle(self, request: Request,
-                     data: "self.schema", **kwargs) -> BaseApiOut["self.schema_submit_out"]:  # type:ignore
-        return BaseApiOut(data=data)
+    def register_router(self):
+        super().register_router()
+        self.router.add_api_route(self.form_path, self.route_submit, methods=["POST"],
+                                  response_model=BaseApiOut[self.schema_submit_out],
+                                  dependencies=[Depends(self.page_permission_depend)])
+        if self.form_init:
+            self.schema_init_out = self.schema_init_out or schema_create_by_schema(self.schema,
+                                                                                   self.__class__.__name__ + 'InitOut',
+                                                                                   set_none=True)
+            self.router.add_api_route(self.form_path, self.route_init, methods=["GET"],
+                                      response_model=BaseApiOut[self.schema_init_out],
+                                      dependencies=[Depends(self.page_permission_depend)])
+        return self
+
+
+class FormAdmin(BaseFormAdmin):
+    """表单管理"""
 
     @property
     def route_submit(self):
@@ -554,22 +636,10 @@ class FormAdmin(PageAdmin):
 
         return route
 
-    def register_router(self):
-        super().register_router()
-        # submit
-        self.router.add_api_route(self.page_path, self.route_submit, methods=["POST"],
-                                  response_model=BaseApiOut[self.schema_submit_out],
-                                  dependencies=[Depends(self.page_permission_depend)])
-        # init
-        if self.form_init:
-            self.schema_init_out = self.schema_init_out or schema_create_by_schema(self.schema, 'InitOut',
-                                                                                   set_none=True)
-            self.router.add_api_route(self.page_path + '/init', self.route_init, methods=["GET"],
-                                      response_model=BaseApiOut[self.schema_init_out],
-                                      dependencies=[Depends(self.page_permission_depend)])
+    async def handle(self, request: Request, data: BaseModel, **kwargs) -> BaseApiOut[Any]:
+        return BaseApiOut(data=data)
 
-    async def get_init_data(self, request: Request, **kwargs) \
-            -> BaseApiOut["self.schema_init_out"]:  # type:ignore
+    async def get_init_data(self, request: Request, **kwargs) -> BaseApiOut[Any]:
         return BaseApiOut(data=None)
 
     @property
@@ -581,35 +651,17 @@ class FormAdmin(PageAdmin):
 
 
 class ModelFormAdmin(FormAdmin, SQLModelSelector):
-    '''todo Read and update a model resource '''
+    """todo Read and update a model resource """
 
-    def __init__(self, site: "AdminApp"):
-        FormAdmin.__init__(self, site)
+    def __init__(self, app: "AdminApp"):
+        FormAdmin.__init__(self, app)
         SQLModelSelector.__init__(self)
 
 
-class TemplateAdmin(PageAdmin):
-    '''jinja2模板渲染页'''
-    page: Dict[str, Any] = {}
-    page_parser_mode = 'html'
-    templates: Jinja2Templates = Jinja2Templates(directory='templates')
-
-    def __init__(self, app: "AdminApp"):
-        self.page_path = self.page_path or '/' + self.template_name
-        super().__init__(app)
-
-    def page_parser(self, request: Request, page: Dict[str, Any]):
-        page['request'] = request
-        return self.templates.TemplateResponse(self.template_name, page)
-
-    async def get_page(self, request: Request) -> Dict[str, Any]:
-        return {}
-
-
 class ModelAdmin(BaseModelAdmin, PageAdmin):
+    """模型管理"""
     page_path: str = '/amis.json'
     bind_model: bool = True
-    group_schema = None
 
     def __init__(self, app: "AdminApp"):
         BaseModelAdmin.__init__(self, app)
@@ -621,11 +673,65 @@ class ModelAdmin(BaseModelAdmin, PageAdmin):
             form.register_router()
         self.register_crud()
         super(ModelAdmin, self).register_router()
+        return self
 
     async def get_page(self, request: Request) -> Page:
         page = await super(ModelAdmin, self).get_page(request)
         page.body = await self.get_list_table(request)
         return page
+
+
+class BaseModelAction:
+    admin: "ModelAdmin" = None
+    action: Action = None
+
+    def __init__(self, admin: "ModelAdmin"):
+        self.admin = admin
+        assert self.admin, 'admin is None'
+
+    async def fetch_item_scalars(self, session: AsyncSession, item_id: List[str]) -> ScalarResult:
+        result = await session.execute(select(self.admin.model).where(self.admin.pk.in_(item_id)))
+        return result.scalars()
+
+    def register_router(self):
+        raise NotImplementedError
+
+
+class ModelAction(BaseFormAdmin, BaseModelAction):
+    schema: Type[BaseModel] = None
+    action: ActionType.Dialog = None
+
+    def __init__(self, admin: "ModelAdmin"):
+        BaseModelAction.__init__(self, admin)
+        self.router = self.admin.router
+        BaseFormAdmin.__init__(self, self.admin.app)
+
+    async def get_action(self, request: Request, **kwargs) -> Action:
+        action = self.action or ActionType.Dialog(label='自定义表单动作', dialog=Dialog())
+        action.dialog.title = action.label
+        action.dialog.body = Service(schemaApi=AmisAPI(method='get',
+                                                       url=self.router_path + self.page_path + '?item_id=${IF(ids, ids, id)}',
+                                                       responseData={'&': '${body}',
+                                                                     'api.url': '${body.api.url}?item_id=${api.query.item_id}',
+                                                                     'submitText': ''}))
+        return action
+
+    async def handle(self, request: Request, item_id: List[str], data: Optional[BaseModel],
+                     session: AsyncSession, **kwargs) -> BaseApiOut[Any]:
+        return BaseApiOut(data=data)
+
+    @property
+    def route_submit(self):
+        default = ... if self.schema else None
+
+        async def route(request: Request, data: self.schema = Body(default=default),  # type:ignore
+                        item_id: str = Query(None, title='item_id', example='1,2,3',
+                                             description='Primary key or list of primary keys'),
+                        session: AsyncSession = Depends(self.admin.session_factory),
+                        ):
+            return await self.handle(request, parser_str_set_list(set_str=item_id), data, session)
+
+        return route
 
 
 class AdminApp(PageAdmin):
@@ -642,11 +748,11 @@ class AdminApp(PageAdmin):
         self._pages_dict: Dict[str, Tuple[PageSchema, List[Union[PageSchema, BaseAdmin]]]] = {}
         self._admins_dict: Dict[Type[BaseAdmin], Optional[BaseAdmin]] = {}
 
-    def create_admin_instance(self, admin_cls: Type[BaseAdmin]):
+    def create_admin_instance(self, admin_cls: Type[_BaseAdminT]) -> _BaseAdminT:
         admin = self._admins_dict.get(admin_cls)
         if admin is not None or not issubclass(admin_cls, BaseAdmin):
             return admin
-        admin = admin_cls(self)
+        admin = admin_cls(self)  # type: ignore
         self._admins_dict[admin_cls] = admin
         if isinstance(admin, PageSchemaAdmin):
             group_label = admin.group_schema and admin.group_schema.label
@@ -656,7 +762,7 @@ class AdminApp(PageAdmin):
                 self._pages_dict[group_label][1].append(admin)
         return admin
 
-    def create_admin_instance_all(self):
+    def create_admin_instance_all(self) -> None:
         [self.create_admin_instance(admin_cls) for admin_cls in self._admins_dict.keys()]
 
     def _register_admin_router_all(self):
@@ -665,21 +771,15 @@ class AdminApp(PageAdmin):
                 admin.register_router()
                 self.router.include_router(admin.router)
 
-    def on_register_router_pre(self):
-        pass
-
     def route_index(self):
         return RedirectResponse(url=self.router_path + self.page_path + '?_parser=html')
 
     def register_router(self):
-        '''注册Admin站点路由'''
-        t = time.time()
         super(AdminApp, self).register_router()
         self.router.add_api_route('/', self.route_index, name='index', include_in_schema=False)
-        self.on_register_router_pre()
         self.create_admin_instance_all()
         self._register_admin_router_all()
-        print('register_router time', time.time() - t)
+        return self
 
     @cached_property
     def site(self) -> "BaseAdminSite":
@@ -687,7 +787,7 @@ class AdminApp(PageAdmin):
             return self.app
         return self.app.site
 
-    @lru_cache
+    @lru_cache()
     def get_model_admin(self, table_name: str) -> Optional[ModelAdmin]:
         for admin_cls, admin in self._admins_dict.items():
             if issubclass(admin_cls,
@@ -696,6 +796,41 @@ class AdminApp(PageAdmin):
             elif isinstance(admin, AdminApp):
                 return admin.get_model_admin(table_name)
         return None
+
+    def register_admin(self, *admin_cls: Type[_BaseAdminT]) -> Type[_BaseAdminT]:
+        [self._admins_dict.update({cls: None}) for cls in admin_cls if cls]
+        return admin_cls[0]
+
+    def unregister_admin(self, *admin_cls: Type[BaseAdmin]):
+        [self._admins_dict.pop(cls) for cls in admin_cls if cls]
+
+    async def get_page(self, request: Request) -> App:
+        app = App(api=self.router_path + self.page_path)
+        app.brandName = 'AmisAdmin'
+        app.header = Tpl(className='w-full',
+                         tpl='<div class="flex justify-between"><div></div>'
+                             f'<div><a href="{fastapi_amis_admin.__url__}" target="_blank" '
+                             'title="版权信息,不可删除!"><i class="fa fa-github fa-2x"></i></a></div></div>')
+        app.footer = '<div class="p-2 text-center bg-light">Copyright © 2021 - 2022  ' \
+                     f'<a href="{fastapi_amis_admin.__url__}" target="_blank" ' \
+                     'class="link-secondary">fastapi-amis-admin</a>. All rights reserved. ' \
+                     f'<a target="_blank" href="{fastapi_amis_admin.__url__}" ' \
+                     f'class="link-secondary" rel="noopener">v{fastapi_amis_admin.__version__}</a></div> '
+        # app.asideBefore = '<div class="p-2 text-center">菜单前面区域</div>'
+        # app.asideAfter = f'<div class="p-2 text-center"><a href="{fastapi_amis_admin.__url__}"  target="_blank">fastapi-amis-admin</a></div>'
+        _parser = request.query_params.get('_parser') or self.page_parser_mode
+        if _parser == 'json':
+            app.pages = []
+            children = await self.get_page_schema_children(request)
+            if not children:
+                return app
+            if self is self.site:
+                app.pages.extend(children)
+            else:
+                page_schema = self.page_schema.copy(deep=True)
+                page_schema.children = children
+                app.pages.append(page_schema)
+        return app
 
     async def get_page_schema_children(self, request: Request) -> List[PageSchema]:
         children = []
@@ -726,59 +861,24 @@ class AdminApp(PageAdmin):
             children.sort(key=lambda p: p.sort or 0, reverse=True)
         return children
 
-    def register_admin(self, admin_cls: Type[BaseAdmin]):
-        self._admins_dict.update({admin_cls: None})
-        return admin_cls
-
-    def unregister_admin(self, admin_cls: Type[BaseAdmin]):
-        self._admins_dict.pop(admin_cls)
-
-    def setup_admin(self, *admin_cls: Type[BaseAdmin]):
-        [self.register_admin(cls) for cls in admin_cls if cls]
-        return self
-
-    async def get_page(self, request: Request) -> App:
-        app = App(api=self.router_path + self.page_path)
-        app.brandName = 'AmisAdmin'
-        # app.header = Tpl(className='w-full',tpl='<div class="flex justify-between"><div>顶部区域左侧</div><div>顶部区域右侧</div></div>')
-        app.header = Grid(align='left', columns=[Grid.Column(md=11), Grid.Column(md=1, body=[
-            Avatar(src='https://suda.cdn.bcebos.com/images/amis/ai-fake-face.jpg',
-                   size=30)])])
-        app.footer = '<div class="p-2 text-center bg-light">FastAPI-Amis-Admin</div>'
-        # app.asideBefore = '<div class="p-2 text-center">菜单前面区域</div>'
-        # app.asideAfter = '<div class="p-2 text-center">菜单后面区域</div>'
-        _parser = request.query_params.get('_parser') or self.page_parser_mode
-        if _parser == 'json':
-            app.pages = []
-            children = await self.get_page_schema_children(request)
-            if not children:
-                return app
-            if self is self.site:
-                app.pages.extend(children)
-            else:
-                page_schema = self.page_schema.copy(deep=True)
-                page_schema.children = children
-                app.pages.append(page_schema)
-        return app
-
 
 class BaseAdminSite(AdminApp):
 
-    def __init__(self, settings: Settings, root_path='/admin', fastapi: FastAPI = None,
-                 engine: AsyncEngine = None):
+    def __init__(self, settings: Settings, fastapi: FastAPI = None,engine: AsyncEngine = None):
+        self.settings = settings
         self.fastapi = fastapi or FastAPI(debug=settings.debug, reload=settings.debug)
         self.router = self.fastapi.router
-
-        self.root_path = root_path
-        self.settings = settings
-        self.engine = engine or create_async_engine(settings.database_url_async, echo=settings.debug, future=True,
-                                                    pool_recycle=1200)
+        self.engine = engine or create_async_engine(settings.database_url_async, echo=settings.debug, future=True)
         super().__init__(self)
 
     @cached_property
     def router_path(self) -> str:
-        return self.root_path + self.router.prefix
+        return self.settings.site_url + self.settings.root_path + self.router.prefix
 
-    def mount_app(self, fastapi: FastAPI, name=None):
-        self.register_router()  # 注册路由
-        fastapi.mount(self.router_path, self.fastapi, name=name)  # 挂载admin
+    def mount_app(self, fastapi: FastAPI, name: str = None) -> None:
+        self.register_router()
+        fastapi.mount(self.settings.root_path, self.fastapi, name=name)
+
+    async def create_db_and_tables(self) -> None:
+        async with self.db.engine.begin() as conn:
+            await conn.run_sync(SQLModel.metadata.create_all)

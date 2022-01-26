@@ -1,6 +1,9 @@
 """详细文档阅读地址: https://baidu.gitee.io/amis/zh-CN/components"""
-from typing import Union, List, Optional, Any, Literal
-
+from typing import Union, List, Optional, Any
+try:
+    from typing import Literal
+except ImportError:
+    from typing_extensions import Literal
 from pydantic import Field
 
 from .constants import LevelEnum, DisplayModeEnum, SizeEnum
@@ -83,7 +86,7 @@ class Page(AmisNode):
 
     def amis_html(self, template_path: str = ''):
         '''渲染html模板'''
-        content = amis_templates('page.html', template_path).replace('{{AmisSchemaJson}}', self.amisJson())
+        content = amis_templates('page.html', template_path).replace('[[AmisSchemaJson]]', self.amisJson())
         return content
 
 
@@ -211,12 +214,12 @@ class ActionType:
 
     class Dialog(Action):
         actionType: str = 'dialog'  # 点击后显示一个弹出框
-        dialog: Union[str, "Dialog", "Service"]  # 指定弹框内容，格式可参考Dialog
+        dialog: Union["Dialog", "Service", SchemaNode]  # 指定弹框内容，格式可参考Dialog
         nextCondition: bool = None  # 可以用来设置下一条数据的条件，默认为 true。
 
     class Drawer(Action):
         actionType: str = 'drawer'  # 点击后显示一个侧边栏
-        drawer: Union[str, "Drawer"]  # 指定弹框内容，格式可参考Drawer
+        drawer: Union["Drawer", "Service", SchemaNode]  # 指定弹框内容，格式可参考Drawer
 
     class Copy(Action):
         actionType: str = 'copy'  # 复制一段内容到粘贴板
@@ -268,7 +271,7 @@ class App(AmisNode):
 
     def amis_html(self, template_path: str = ''):
         '''渲染html模板'''
-        content = amis_templates('app.html', template_path).replace('{{AmisSchemaJson}}', self.amisJson())
+        content = amis_templates('app.html', template_path).replace('[[AmisSchemaJson]]', self.amisJson())
         return content
 
 
@@ -744,10 +747,20 @@ class Picker(FormItem):
     joinValues: bool = None  # True # 拼接值
     extractValue: bool = None  # False # 提取值
     autoFill: dict = None  # 自动填充
-    modalMode: str = None  # "dialog" # 设置 dialog 或者 drawer，用来配置弹出方式。
+    modalMode: Literal["dialog", "drawer"] = None  # "dialog" # 设置 dialog 或者 drawer，用来配置弹出方式。
     pickerSchema: Union[
         "CRUD", SchemaNode] = None  # "{mode: 'list', listItem: {title: '${label}'}}" # 即用 List 类型的渲染，来展示列表信息。更多配置参考 CRUD
     embed: bool = None  # False # 是否使用内嵌模式
+
+
+class Switch(FormItem):
+    '''开关'''
+    type: str = 'switch'
+    option: str = None  # 选项说明
+    onText: str = None  # 开启时的文本
+    offText: str = None  # 关闭时的文本
+    trueValue: Any = None  # "True"  # 标识真值
+    falseValue: Any = None  # "false"  # 标识假值
 
 
 class Static(FormItem):
@@ -797,8 +810,8 @@ class InputRichText(FormItem):
     '''富文本编辑器'''
     type: str = 'input-rich-text'
     saveAsUbb: bool = None  # 是否保存为 ubb 格式
-    receiver: API = ''  # 默认的图片保存 API
-    videoReceiver: API = ''  # 默认的视频保存 API
+    receiver: API = None  # ''  # 默认的图片保存 API
+    videoReceiver: API = None  # ''  # 默认的视频保存 API
     size: str = None  # 框的大小，可设置为 md 或者 lg
     options: dict = None  # 需要参考 tinymce 或 froala 的文档
     buttons: List[str] = None  # froala 专用，配置显示的按钮，tinymce 可以通过前面的 options 设置 toolbar 字符串
@@ -930,10 +943,10 @@ class InputDatetimeRange(InputTimeRange):
     '''日期时间范围'''
     type: str = 'input-datetime-range'
     ranges: Union[str, List[
-        str]] = "yesterday,7daysago,prevweek,thismonth,prevmonth,prevquarter"  # 日期范围快捷键，可选：today, yesterday, 1dayago, 7daysago, 30daysago, 90daysago, prevweek, thismonth, thisquarter, prevmonth, prevquarter
+        str]] = None  # "yesterday,7daysago,prevweek,thismonth,prevmonth,prevquarter"  # 日期范围快捷键，可选：today, yesterday, 1dayago, 7daysago, 30daysago, 90daysago, prevweek, thismonth, thisquarter, prevmonth, prevquarter
     minDate: str = None  # 限制最小日期时间，用法同 限制范围
     maxDate: str = None  # 限制最大日期时间，用法同 限制范围
-    utc: bool = False  # 保存 UTC 值
+    utc: bool = None  # False  # 保存 UTC 值
 
 
 class InputDateRange(InputDatetimeRange):
@@ -1156,6 +1169,7 @@ class CRUD(AmisNode):
 
 class TableColumn(AmisNode):
     '''列配置'''
+    type: str = None  # Literal['text', 'audio','image', 'link', 'tpl', 'mapping','carousel','date', 'progress','status','switch','list','json','operation']
     label: Template = None  # 表头文本内容
     name: str = None  # 通过名称关联数据
     tpl: Template = None  # 模板

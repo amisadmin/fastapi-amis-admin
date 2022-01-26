@@ -27,8 +27,7 @@ def schema_create_by_schema(schema_cls: Type[BaseModel], schema_name: str, inclu
                  name: schema_fields[name] for name in schema_fields
                  if name not in exclude
              }
-    name = schema_cls.__name__ + schema_name
-    return schema_create_by_modelfield(name, fields.values(), set_none=set_none)
+    return schema_create_by_modelfield(schema_name, fields.values(), set_none=set_none)
 
 
 def schema_create_by_modelfield(schema_name: str, modelfields: Iterable[ModelField],
@@ -58,9 +57,11 @@ def paginator_factory(perPage_max: Optional[int] = None) -> Type[Paginator]:
 def parser_str_set_list(set_str: Union[int, str]) -> List[str]:
     if isinstance(set_str, int):
         return [str(set_str)]
+    elif not isinstance(set_str, str):
+        return []
     return list(set(set_str.split(',')))
 
 
-def parser_item_id(item_id: Union[int, str] = Path(..., min_length=1, title='pk', example='1,2,3',
+def parser_item_id(item_id:str = Path(..., min_length=1, title='pk', example='1,2,3',
                                                    description='Primary key or list of primary keys')) -> List[str]:
     return parser_str_set_list(set_str=item_id)

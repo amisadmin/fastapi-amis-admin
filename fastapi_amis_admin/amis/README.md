@@ -26,7 +26,7 @@
 
 ## 依赖项目
 
-- [Pydantic](https://pydantic-docs.helpmanual.io/) 
+- [pydantic](https://pydantic-docs.helpmanual.io/) 
 
 - [amis](https://baidu.gitee.io/amis) 
 
@@ -34,4 +34,4 @@
 
 ## 许可协议
 
-该项目遵循 Apache 许可协议。
+该项目遵循 Apache2.0 许可协议。

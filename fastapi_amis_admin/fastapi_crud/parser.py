@@ -24,7 +24,7 @@ class SQLModelFieldParser:
         modelfield = None
         if isinstance(field, InstrumentedAttribute):
             modelfield = field.class_.__fields__[field.key]
-            if deepcopy == True:
+            if deepcopy:
                 modelfield = smart_deepcopy(modelfield)
                 if field.class_ is not self.default_model:
                     modelfield.name = self.get_name(field)
@@ -37,7 +37,7 @@ class SQLModelFieldParser:
             modelfield = field
         else:  # other
             return None
-        if deepcopy == True:
+        if deepcopy:
             modelfield = smart_deepcopy(modelfield)
         return modelfield
 
@@ -105,6 +105,6 @@ class SQLModelFieldParser:
                 result.append(insfield)
             elif isinstance(field, SQLModelMetaclass):
                 result.extend(self.get_sqlmodel_insfield(field))  # type:ignore
-            elif save_class and isinstance(field, save_class):  # 保存其他类型
+            elif save_class and isinstance(field, save_class):
                 result.append(field)
         return result

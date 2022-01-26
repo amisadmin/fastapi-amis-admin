@@ -52,10 +52,13 @@ class AmisParser():
         elif is_filter:
             if issubclass(self.modelfield.type_, datetime.datetime):
                 kwargs['type'] = 'input-datetime-range'
+                kwargs['format'] = 'YYYY-MM-DD HH:mm:ss'
             elif issubclass(self.modelfield.type_, datetime.date):
                 kwargs['type'] = 'input-date-range'
+                kwargs['format'] = 'YYYY-MM-DD'
             elif issubclass(self.modelfield.type_, datetime.time):
                 kwargs['type'] = 'input-time-range'
+                kwargs['format'] = 'HH:mm:ss'
             else:
                 kwargs['type'] = 'input-text'
         else:
@@ -65,26 +68,30 @@ class AmisParser():
                 formitem = InputNumber(validations=Validation(isFloat=True))
             elif issubclass(self.modelfield.type_, datetime.datetime):
                 kwargs['type'] = 'input-datetime'
+                kwargs['format'] = 'YYYY-MM-DD HH:mm:ss'
             elif issubclass(self.modelfield.type_, datetime.date):
                 kwargs['type'] = 'input-date'
+                kwargs['format'] = 'YYYY-MM-DD'
             elif issubclass(self.modelfield.type_, datetime.time):
                 kwargs['type'] = 'input-time'
+                kwargs['format'] = 'HH:mm:ss'
             elif issubclass(self.modelfield.type_, Json):
                 kwargs['type'] = 'json-editor'
             else:
                 kwargs['type'] = 'input-text'
 
         formitem = formitem or FormItem(**kwargs)
-        if self.modelfield.field_info.max_length:
-            formitem.maxLength = self.modelfield.field_info.max_length
-        if self.modelfield.field_info.min_length:
-            formitem.minLength = self.modelfield.field_info.min_length
+        if not is_filter:
+            if self.modelfield.field_info.max_length:
+                formitem.maxLength = self.modelfield.field_info.max_length
+            if self.modelfield.field_info.min_length:
+                formitem.minLength = self.modelfield.field_info.min_length
+            formitem.required = self.modelfield.required
+            if set_deafult and self.modelfield.default is not None:
+                formitem.value = self.modelfield.default
         formitem.name = self.modelfield.alias
         formitem.label = formitem.label or self.label
         formitem.labelRemark = formitem.labelRemark or self.remark
-        formitem.required = self.modelfield.required
-        if set_deafult and self.modelfield.default is not None:
-            formitem.value = self.modelfield.default
         return formitem
 
     def as_table_column(self) -> TableColumn:
