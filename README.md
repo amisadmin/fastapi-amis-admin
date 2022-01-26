@@ -83,6 +83,6 @@
 
 ## 界面预览
 
-![ModelAdmin](http://demo.amis.work/admin/upload/img/ModelAdmin.png)
+![ModelAdmin](https://raw.githubusercontent.com/amisadmin/fastapi_amis_admin_demo/master/upload/img/ModelAdmin.png)
 
-![Docs](http://demo.amis.work/admin/upload/img/Docs.png)
+![Docs](https://raw.githubusercontent.com/amisadmin/fastapi_amis_admin_demo/master/upload/img/Docs.png)
