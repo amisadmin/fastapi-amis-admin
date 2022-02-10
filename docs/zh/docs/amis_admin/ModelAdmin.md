@@ -219,7 +219,7 @@ async def get_actions_on_bulk(self, request: Request) -> List[Action]
 
 ### 继承基类
 
-- #### [PageAdmin](./PageAdmin)
+- #### [PageAdmin](../PageAdmin)
 
 - #### [BaseModelAdmin](#BaseModelAdmin)
 

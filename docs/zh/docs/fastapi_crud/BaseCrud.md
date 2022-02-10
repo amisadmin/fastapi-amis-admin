@@ -25,23 +25,23 @@
 
 #### schema_list
 
-- 批量读取,数据项返回协议, 默认: `self.schema_model`
+- 批量查询数据返回协议, 默认: `self.schema_model`
 
 #### schema_filter
 
-- 批量读取, 过滤数据提交协议, 默认: `self.schema_model`
+- 批量查询数据过滤提交协议, 默认: `self.schema_model`
 
 #### schema_create
 
-- 创建数据, 提交协议, 默认: `self.schema_model`
+- 创建数据提交协议, 默认: `self.schema_model`
 
 #### schema_read
 
-- 读取数据, 返回协议, 默认: `self.schema_model`
+- 读取数据返回协议, 默认: `self.schema_model`
 
 #### schema_update
 
-- 更新数据,提交协议, 默认: `self.schema_model`
+- 更新数据提交协议, 默认: `self.schema_model`
 
 #### pk_name
 
@@ -138,7 +138,7 @@ async def has_update_permission(self, request: Request, item_id: Optional[List[s
 
 #### has_delete_permission
 
-- 检查是否具有删除数据查询权限.
+- 检查是否具有删除数据权限.
 
 ```python
 async def has_delete_permission(self, request: Request, item_id: Optional[List[str]], **kwargs) -> bool:

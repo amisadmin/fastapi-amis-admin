@@ -23,11 +23,11 @@
 <p align="center">
   <a href="https://github.com/amisadmin/fastapi_amis_admin" target="_blank">源码</a>
   ·
-  <a href="http://docs.amis.work" target="_blank">文档</a>
-  ·
   <a href="http://demo.amis.work/admin" target="_blank">在线演示</a>
   ·
-  <a href="http://docs.amis.work/tutorials/quickstart/" target="_blank">开始使用</a>
+  <a href="http://docs.amis.work" target="_blank">文档</a>
+  ·
+  <a href="http://docs.gh.amis.work" target="_blank">文档打不开？</a>
 </p>
 
 ------

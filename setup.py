@@ -14,7 +14,7 @@ setuptools.setup(
     license="Apache",
     author="Atomi",
     author_email="1456417373@qq.com",
-    description="fastapi_amis_admin is a high-performance, efficient and easily extensible FastAPI admin framework. "
+    description="fastapi-amis-admin is a high-performance, efficient and easily extensible FastAPI admin framework. "
                 "Inspired by Django-admin, and has as many powerful functions as Django-admin.",
     long_description=get_long_description(),
     long_description_content_type="text/markdown",

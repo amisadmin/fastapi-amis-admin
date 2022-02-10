@@ -130,7 +130,7 @@ class ArticleAdmin(admin.ModelAdmin):
         self.test_form_action = TestFormAction(self).register_router()
 ```
 
-示例-3与示例-2非常显示, 但是它允许用户添加一个自定义表单,这个在很多情况下,非常有用.
+示例-3与示例-2非常相似, 但是它允许用户添加一个自定义表单,这个在很多情况下,非常有用.
 
 `schema`的定义与使用与`FormAdmin`非常相似.
 
