@@ -1,5 +1,6 @@
 name: Build Docs
 on:
+  workflow_dispatch:
   push:
     branches:
       - master
