@@ -18,8 +18,7 @@ from fastapi_amis_admin.amis_admin.site import AdminSite
 from fastapi_amis_admin.amis_admin import admin
 
 # 创建AdminSite实例
-site = AdminSite(settings=Settings(debug=True, 
-                                   database_url_async='sqlite+aiosqlite:///admisadmin.db'))
+site = AdminSite(settings=Settings(database_url_async='sqlite+aiosqlite:///admisadmin.db'))
 
 # 注册管理类
 @site.register_admin

@@ -85,9 +85,9 @@ nav:
       - Amis:
           - amis/types.md
       - Crud:
-          - fastapi_crud/RouterMixin.md
-          - fastapi_crud/BaseCrud.md
-          - fastapi_crud/SQLModelCrud.md
+          - crud/RouterMixin.md
+          - crud/BaseCrud.md
+          - crud/SQLModelCrud.md
       - Admin:
           - amis_admin/BaseAdmin.md
           - amis_admin/RouterAdmin.md

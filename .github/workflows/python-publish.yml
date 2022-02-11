@@ -12,7 +12,8 @@ on:
   push:
     branches:
       - master 
-
+    paths:
+      - 'fastapi_amis_admin/__init__.py'
 jobs:
   build-and-publish:
     runs-on: ubuntu-latest
@@ -38,7 +39,7 @@ jobs:
         repository_url: https://test.pypi.org/legacy/
         
     - name: Publish distribution to PyPI
-      if: startsWith(github.ref, 'refs/tags')
+#      if: startsWith(github.ref, 'refs/tags')
       uses: pypa/gh-action-pypi-publish@master
       with:
         password: ${{ secrets.PYPI_API_TOKEN }}

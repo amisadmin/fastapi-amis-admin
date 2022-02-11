@@ -39,7 +39,8 @@ class CurrentTimePageAdmin(admin.PageAdmin):
 
 ```python
 from fastapi_amis_admin.amis_admin import admin
-from fastapi_amis_admin.amis.components import PageSchema
+from fastapi_amis_admin.amis import PageSchema
+
 
 @site.register_admin
 class GitHubLinkAdmin(admin.LinkAdmin):

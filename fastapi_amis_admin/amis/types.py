@@ -20,7 +20,6 @@ class BaseAmisModel(BaseModel):
     def amisDict(self):
         return self.dict(exclude_none=True, by_alias=True)
 
-
     def update_from_dict(self, kwargs: Dict[str, Any]):
         for k, v in kwargs.items():
             setattr(self, k, v)
@@ -67,4 +66,4 @@ class AmisAPI(BaseAmisModel):
     trackExpression: str = None  # 配置跟踪变量表达式,当开启自动刷新的时候，默认是 api 的 url 来自动跟踪变量变化的。 如果你希望监控 url 外的变量，请配置 traceExpression。
 
 
-API = Union[str, AmisAPI,dict]
+API = Union[str, AmisAPI, dict]

@@ -13,7 +13,7 @@ from fastapi_amis_admin.amis.components import PageSchema, Page, Property
 from fastapi_amis_admin.amis_admin.admin import IframeAdmin, PageAdmin, AdminApp, RouterAdmin, \
     BaseAdminSite
 from fastapi_amis_admin.amis_admin.settings import Settings
-from fastapi_amis_admin.fastapi_crud.schema import BaseApiOut
+from fastapi_amis_admin.crud.schema import BaseApiOut
 import fastapi_amis_admin
 
 

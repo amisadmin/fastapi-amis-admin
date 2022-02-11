@@ -1,16 +1,14 @@
-## fastapi_crud介绍
+## 项目介绍
 
-fastapi_crud是一个基于FastAPI+SQLModel, 用于快速构建Create,Read,Update,Delete通用API接口的项目.
+`fastapi-sqlmodel-crud`是一个基于`FastAPI`+`SQLModel`, 用于快速构建Create,Read,Update,Delete通用API接口的项目.
 
 
 
 ## 安装
 
 ```bash
-pip install fastapi_amis_admin
+pip install fastapi-sqlmodel-crud 
 ```
-
-
 
 ## 简单示例
 
@@ -23,10 +21,7 @@ from sqlalchemy.ext.asyncio import AsyncEngine, create_async_engine
 from sqlalchemy.orm import sessionmaker
 from sqlmodel import SQLModel, Field
 from sqlmodel.ext.asyncio.session import AsyncSession
-
-app = FastAPI(debug=True)
-
-from fastapi_amis_admin.fastapi_crud import SQLModelCrud
+from fastapi_amis_admin.crud import SQLModelCrud
 
 
 #  1.创建SQLModel模型
@@ -45,18 +40,27 @@ session_maker: sessionmaker = sessionmaker(engine, class_=AsyncSession,
                                            expire_on_commit=False, autocommit=False, autoflush=False)
 
 
-async def session_factory(self) -> Generator[AsyncSession, Any, None]:
-    async with self.session_maker() as session:
+async def session_factory() -> Generator[AsyncSession, Any, None]:
+    async with session_maker() as session:
         yield session
 
 
 # 3. 注册crud路由
 article_crud = SQLModelCrud(model=Article, session_factory=session_factory).register_crud()
 
+app = FastAPI(debug=True)
+
 # 4. 包含路由器
 app.include_router(article_crud.router)
-```
 
+
+# 5. 创建模型数据库表(首次运行)
+@app.on_event("startup")
+async def startup():
+    async with engine.begin() as conn:
+        await conn.run_sync(SQLModel.metadata.create_all)
+
+```
 
 
 ## 开发文档
@@ -65,14 +69,12 @@ app.include_router(article_crud.router)
 
 
 
-
 ## 依赖项目
 
-- [pydantic](https://pydantic-docs.helpmanual.io/) 
+- [Fastapi](https://fastapi.tiangolo.com)
 
-- [amis](https://baidu.gitee.io/amis) 
+- [SQLModel](https://sqlmodel.tiangolo.com/)
 
-  
 
 ## 许可协议
 

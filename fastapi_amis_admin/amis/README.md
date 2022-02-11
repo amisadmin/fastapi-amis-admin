@@ -18,6 +18,30 @@
 
 
 
+## 安装
+
+```bash
+pip install amis 
+```
+
+
+
+## 简单示例
+
+**main.py**:
+
+```python
+from amis.components import Page
+
+page = Page(title='标题', body='Hello World!')
+# 输出为Json
+print(page.amisJson())
+# 输出页面html
+print(page.amis_html())
+```
+
+
+
 ## 开发文档
 
 参考: [Amis官方文档](https://baidu.gitee.io/amis/zh-CN/docs/index)
@@ -35,3 +59,6 @@
 ## 许可协议
 
 该项目遵循 Apache2.0 许可协议。
+
+
+

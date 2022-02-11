@@ -60,15 +60,16 @@ class NewAdminSite(AdminSite):
     def __init__(self, settings: Settings, fastapi: FastAPI = None, engine: AsyncEngine = None):
         super().__init__(settings, fastapi, engine)
         # 取消注册默认管理类
-        self.unregister_admin(DocsAdmin,ReDocsAdmin)
-        
+        self.unregister_admin(DocsAdmin, ReDocsAdmin)
+
     async def get_page(self, request: Request) -> App:
         app = await super().get_page(request)
         # 自定义站点名称,logo信息, 参考: https://baidu.gitee.io/amis/zh-CN/components/app
         app.brandName = 'MyAdminSite'
         app.logo = 'https://baidu.gitee.io/amis/static/logo_408c434.png'
         return app
-    
+
+
 # 通过自定义管理站点类创建后台管理系统实例
 site = NewAdminSite(settings=Settings(debug=True, database_url_async='sqlite+aiosqlite:///admisadmin.db'))
 ```

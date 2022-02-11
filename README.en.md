@@ -11,7 +11,7 @@
         <img src="https://img.shields.io/badge/license-Apache2.0-brightgreen" alt="Test">
     </a>
     <a href="https://pypi.org/project/fastapi_amis_admin" target="_blank">
-        <img src="https://img.shields.io/badge/pypi-v0.0.11-blue" alt="Package version">
+        <img src="https://img.shields.io/badge/pypi-v0.0.12-blue" alt="Package version">
     </a>
     <a href="https://pypi.org/project/fastapi_amis_admin" target="_blank">
         <img src="https://img.shields.io/badge/python-3.6%2B-blue" alt="Supported Python versions">
@@ -64,11 +64,156 @@
 
 ## 项目组成
 
-`fastapi-amis-admin`由三部分核心模块组成,其中`python_amis`, `fastapi_crud` 可作为独立模块单独使用,`amis_admin`基于前者共同构建.
+`fastapi-amis-admin`由三部分核心模块组成,其中`amis`, `fastapi-sqlmodel-crud` 可作为独立模块单独使用,`amis_admin`基于前者共同构建.
 
-- `python_amis`: 基于`baidu amis`的`pydantic`数据模型构建库,用于快速生成,解析`amis` `json` 数据.
-- `fastapi_crud`: 基于`FastAPI`+`SQLModel`, 用于快速构建Create,Read,Update,Delete通用API接口.
-- `amis_admin`: 启发自`Django-Admin`, 结合`python_amis+fastapi_crud`, 用于快速构建Web Admin管理后台.
+- `amis`: 基于`baidu amis`的`pydantic`数据模型构建库,用于快速生成/解析`amis` `json` 数据.
+- `fastapi-sqlmodel-crud`: 基于`FastAPI`+`SQLModel`, 用于快速构建Create,Read,Update,Delete通用API接口.
+- `amis_admin`: 启发自`Django-Admin`, 结合`amis`+`fastapi-sqlmodel-crud`, 用于快速构建Web Admin管理后台.
+
+
+
+## 安装
+
+```bash
+pip install fastapi_amis_admin
+```
+
+
+
+## 简单示例
+
+```python
+from fastapi import FastAPI
+from fastapi_amis_admin.amis_admin.settings import Settings
+from fastapi_amis_admin.amis_admin.site import AdminSite
+
+# 创建FastAPI应用
+app = FastAPI()
+
+# 创建AdminSite实例
+site = AdminSite(settings=Settings(database_url_async='sqlite+aiosqlite:///admisadmin.db'))
+
+# 挂载后台管理系统
+site.mount_app(app)
+
+if __name__ == '__main__':
+    import uvicorn
+
+    uvicorn.run(app, debug=True)
+```
+
+
+
+## 模型管理示例
+
+```python
+from fastapi import FastAPI
+from sqlmodel import SQLModel
+from fastapi_amis_admin.amis_admin.settings import Settings
+from fastapi_amis_admin.amis_admin.site import AdminSite
+from fastapi_amis_admin.amis_admin import admin
+from fastapi_amis_admin.models.fields import Field
+
+# 创建FastAPI应用
+app = FastAPI()
+
+# 创建AdminSite实例
+site = AdminSite(settings=Settings(database_url_async='sqlite+aiosqlite:///admisadmin.db'))
+
+
+# 先创建一个SQLModel模型,详细请参考: https://sqlmodel.tiangolo.com/
+class Category(SQLModel, table=True):
+    id: int = Field(default=None, primary_key=True, nullable=False)
+    name: str = Field(title='CategoryName')
+    description: str = Field(default='', title='Description')
+
+
+# 注册ModelAdmin
+@site.register_admin
+class CategoryAdmin(admin.ModelAdmin):
+    page_schema = '分类管理'
+    # 配置管理模型
+    model = Category
+
+
+# 挂载后台管理系统
+site.mount_app(app)
+
+
+# 创建初始化数据库表
+@app.on_event("startup")
+async def startup():
+    await site.create_db_and_tables()
+
+
+if __name__ == '__main__':
+    import uvicorn
+
+    uvicorn.run(app, debug=True)
+```
+
+
+
+## 表单管理示例
+
+```python
+from typing import Any
+from fastapi import FastAPI
+from pydantic import BaseModel
+from starlette.requests import Request
+from fastapi_amis_admin.amis.components import Form
+from fastapi_amis_admin.amis_admin import admin
+from fastapi_amis_admin.amis_admin.settings import Settings
+from fastapi_amis_admin.amis_admin.site import AdminSite
+from fastapi_amis_admin.crud.schema import BaseApiOut
+from fastapi_amis_admin.models.fields import Field
+
+# 创建FastAPI应用
+app = FastAPI()
+
+# 创建AdminSite实例
+site = AdminSite(settings=Settings(database_url_async='sqlite+aiosqlite:///admisadmin.db'))
+
+
+# 注册FormAdmin
+@site.register_admin
+class UserLoginFormAdmin(admin.FormAdmin):
+    page_schema = 'UserLoginForm'
+    # 配置表单信息, 可省略
+    form = Form(title='这是一个测试登录表单', submitText='登录')
+
+    # 创建表单数据模型
+    class schema(BaseModel):
+        username: str = Field(..., title='用户名', min_length=3, max_length=30)
+        password: str = Field(..., title='密码')
+
+    # 处理表单提交数据
+    async def handle(self, request: Request, data: BaseModel, **kwargs) -> BaseApiOut[Any]:
+        if data.username == 'amisadmin' and data.password == 'amisadmin':
+            return BaseApiOut(msg='登录成功!', data={'token': 'xxxxxx'})
+        return BaseApiOut(status=-1, msg='用户名或密码错误!')
+
+
+# 挂载后台管理系统
+site.mount_app(app)
+
+if __name__ == '__main__':
+    import uvicorn
+
+    uvicorn.run(app, debug=True)
+```
+
+
+
+## 界面预览
+
+- Open `http://127.0.0.1:8000/admin/` in your browser:
+
+![ModelAdmin](https://raw.githubusercontent.com/amisadmin/fastapi_amis_admin_demo/master/upload/img/ModelAdmin.png)
+
+- Open `http://127.0.0.1:8000/admin/docs` in your browser:
+
+![Docs](https://raw.githubusercontent.com/amisadmin/fastapi_amis_admin_demo/master/upload/img/Docs.png)
 
 ## 未来计划
 
@@ -77,12 +222,8 @@
 - [ ] 不断拓展与完善核心功能.
 - [ ] 增加用户认证与授权系统.
 
+
+
 ## 许可协议
 
 - `fastapi-amis-admin`基于`Apache2.0`开源免费使用，可以免费用于商业用途，但请在展示界面中明确显示关于FastAPI-Amis-Admin的版权信息.
-
-## 界面预览
-
-![ModelAdmin](https://raw.githubusercontent.com/amisadmin/fastapi_amis_admin_demo/master/upload/img/ModelAdmin.png)
-
-![Docs](https://raw.githubusercontent.com/amisadmin/fastapi_amis_admin_demo/master/upload/img/Docs.png)

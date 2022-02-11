@@ -19,7 +19,7 @@ from sqlmodel import SQLModel
 from sqlmodel.ext.asyncio.session import AsyncSession
 from sqlmodel.sql.expression import Select
 from starlette.requests import Request
-from ._base import BaseCrud
+from .base import BaseCrud
 from .parser import SQLModelFieldParser, SQLModelListField
 from .schema import BaseApiOut, ItemListSchema
 from .utils import schema_create_by_modelfield, parser_item_id, parser_str_set_list, schema_create_by_schema

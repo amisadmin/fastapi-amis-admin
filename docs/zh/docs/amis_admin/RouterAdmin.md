@@ -6,7 +6,7 @@
 
 - #### [BaseAdmin](../BaseAdmin)
 
-- #### [RouterMixin](../../fastapi_crud/RouterMixin)
+- #### [RouterMixin](../../crud/RouterMixin)
 
 ### 派生子类
 

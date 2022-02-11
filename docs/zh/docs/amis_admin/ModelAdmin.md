@@ -4,7 +4,7 @@
 
 ### 继承基类
 
-- #### [SQLModelCrud](../../fastapi_crud/SQLModelCrud)
+- #### [SQLModelCrud](../../crud/SQLModelCrud)
 
 
 

@@ -2,7 +2,9 @@ name: Build Docs
 on:
   push:
     branches:
-      - master 
+      - master
+    paths:
+      - 'docs/zh/**'
 jobs:
   deploy:
     runs-on: ubuntu-latest

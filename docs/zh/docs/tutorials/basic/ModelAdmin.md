@@ -128,7 +128,7 @@ class ArticleAdmin(admin.ModelAdmin):
 - [amisadmin/fastapi_amis_admin_demo (github.com)](https://github.com/amisadmin/fastapi_amis_admin_demo)
 - [ModelAdmin - FastAPI-Amis-Admin](/amis_admin/ModelAdmin/)
 
-- [SQLModelCrud - FastAPI-Amis-Admin](/fastapi_crud/SQLModelCrud/)
+- [SQLModelCrud - FastAPI-Amis-Admin](/fastapi_amis_admin/crud/SQLModelCrud/)
 - [Table 表格 (gitee.io)](https://baidu.gitee.io/amis/zh-CN/components/table)
 
 

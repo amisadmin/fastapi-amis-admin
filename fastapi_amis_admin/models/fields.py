@@ -6,7 +6,6 @@ from sqlalchemy import Column
 from sqlmodel.main import FieldInfo
 from fastapi_amis_admin.amis.components import FormItem, TableColumn
 
-
 def Field(
         default: Any = Undefined,
         *,
