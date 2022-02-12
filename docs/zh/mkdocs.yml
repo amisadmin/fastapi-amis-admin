@@ -1,0 +1,104 @@
+site_name: FastAPI-Amis-Admin
+repo_url: https://github.com/amisadmin/fastapi_amis_admin
+theme:
+  name: material
+  palette:
+    scheme: default
+  features:
+    - navigation.instant
+    - navigation.tracking
+    - navigation.tabs
+markdown_extensions:
+  - toc:
+      permalink: true
+  - markdown.extensions.codehilite:
+      guess_lang: false
+  - admonition
+  - codehilite
+  - extra
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_div_format
+
+  - pymdownx.tabbed:
+      alternate_style: true
+  - admonition
+  - codehilite:
+      guess_lang: false
+      linenums: false
+
+  - footnotes
+  - meta
+  - def_list
+  - pymdownx.arithmatex
+  - pymdownx.betterem:
+      smart_enable: all
+  - pymdownx.caret
+  - pymdownx.critic
+  - pymdownx.details
+  - pymdownx.emoji:
+      emoji_generator: !!python/name:pymdownx.emoji.to_png
+  - pymdownx.inlinehilite
+  - pymdownx.magiclink
+  - pymdownx.mark
+  - pymdownx.smartsymbols
+  - pymdownx.superfences
+  - pymdownx.tasklist
+  - pymdownx.tilde
+
+extra_javascript:
+  - https://unpkg.com/mermaid/dist/mermaid.min.js
+extra:
+  alternate:
+    - name: English
+      link: /en/
+      lang: en
+    - name: 简体中文
+      link: /
+      lang: zh
+
+nav:
+  - Tutorials:
+      - index.md
+      - tutorials/quickstart.md
+      - 基础教程:
+          - tutorials/basic/PageAdmin.md
+          - tutorials/basic/FormAdmin.md
+          - tutorials/basic/TemplateAdmin.md
+          - tutorials/basic/ModelAdmin.md
+          - tutorials/basic/ModelAction.md
+          - tutorials/basic/Settings.md
+          - tutorials/basic/_more.md
+      - 高级教程:
+          - tutorials/advanced/AdminApp.md
+          - tutorials/advanced/structure.md
+          - tutorials/advanced/_more.md
+      - 拓展教程:
+          - extended/about.md
+          - extended/SQLModel.md
+          - extended/alembic.md
+      - about.md
+      - release.md
+  - API Reference:
+      - Amis:
+          - amis/types.md
+      - Crud:
+          - crud/RouterMixin.md
+          - crud/BaseCrud.md
+          - crud/SQLModelCrud.md
+      - Admin:
+          - amis_admin/BaseAdmin.md
+          - amis_admin/RouterAdmin.md
+          - amis_admin/PageSchemaAdmin.md
+          - amis_admin/PageAdmin.md
+          - amis_admin/TemplateAdmin.md
+          - amis_admin/FormAdmin.md
+          - amis_admin/ModelAdmin.md
+          - amis_admin/ModelAction.md
+          - amis_admin/AdminApp.md
+          - amis_admin/AdminSite.md
+          - amis_admin/Settings.md
+      - Utils:
+          - utils/db.md

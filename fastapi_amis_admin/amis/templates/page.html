@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Fastapi Amis Admin</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge"/>
+    <link type="image/x-icon" rel="shortcut icon" href="https://baidu.gitee.io/amis/static/favicon_b3b0647.png"/>
+    <link rel="stylesheet" title="default" href="https://unpkg.com/amis@beta/sdk/sdk.css"/>
+    <link rel="stylesheet" href="https://unpkg.com/amis@beta/sdk/helper.css"/>
+    <script src="https://unpkg.com/amis@beta/sdk/sdk.js"></script>
+    <script src="https://unpkg.com/vue@2"></script>
+    <script src="https://unpkg.com/history@4.10.1/umd/history.js"></script>
+    <style>
+        html, body,
+        .app-wrapper {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+    </style>
+</head>
+<body>
+<div id="amisId" class="amiss"></div>
+<script type="text/javascript">
+    let amis = amisRequire('amis/embed')
+    let amisData = amis.embed('#amisId', [[AmisSchemaJson]]);
+</script>
+</body>
+</html>
