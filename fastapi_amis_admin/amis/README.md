@@ -35,7 +35,7 @@ from amis.components import Page
 
 page = Page(title='标题', body='Hello World!')
 # 输出为Json
-print(page.amisJson())
+print(page.amis_json())
 # 输出页面html
 print(page.amis_html())
 ```

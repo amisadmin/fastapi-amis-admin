@@ -86,7 +86,7 @@ class Page(AmisNode):
 
     def amis_html(self, template_path: str = ''):
         '''渲染html模板'''
-        content = amis_templates('page.html', template_path).replace('[[AmisSchemaJson]]', self.amisJson())
+        content = amis_templates('page.html', template_path).replace('[[AmisSchemaJson]]', self.amis_json())
         return content
 
 
@@ -271,7 +271,7 @@ class App(AmisNode):
 
     def amis_html(self, template_path: str = ''):
         '''渲染html模板'''
-        content = amis_templates('app.html', template_path).replace('[[AmisSchemaJson]]', self.amisJson())
+        content = amis_templates('app.html', template_path).replace('[[AmisSchemaJson]]', self.amis_json())
         return content
 
 

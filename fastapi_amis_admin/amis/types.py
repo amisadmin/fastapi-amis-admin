@@ -14,10 +14,10 @@ class BaseAmisModel(BaseModel):
         json_loads = ujson.loads
         json_dumps = ujson.dumps
 
-    def amisJson(self):
+    def amis_json(self):
         return self.json(exclude_none=True, by_alias=True)
 
-    def amisDict(self):
+    def amis_dict(self):
         return self.dict(exclude_none=True, by_alias=True)
 
     def update_from_dict(self, kwargs: Dict[str, Any]):

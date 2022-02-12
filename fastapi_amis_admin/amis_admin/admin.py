@@ -146,7 +146,7 @@ class LinkModelForm:
             button_create = ActionType.Ajax(actionType='ajax', label='添加关联', level=LevelEnum.danger,
                                             confirmText='确定要添加关联?',
                                             api=f"post:{self.pk_admin.app.router_path}{self.pk_admin.router.prefix}{self.path}" + '/${REPLACE(query.link_item_id, "!", "")}?link_id=${IF(ids, ids, id)}')  # query.link_item_id
-            adaptor = 'if(("undefined"==typeof body_bulkActions_2)||!body_bulkActions_2){action=' + button_create.amisJson() + ';payload.data.body.bulkActions.push(action);payload.data.body.itemActions.push(action);body_bulkActions_2=payload.data.body.bulkActions;body_itemActions_2=payload.data.body.itemActions;}else{payload.data.body.bulkActions=body_bulkActions_2;payload.data.body.itemActions=body_itemActions_2;}return payload;'
+            adaptor = 'if(("undefined"==typeof body_bulkActions_2)||!body_bulkActions_2){action=' + button_create.amis_json() + ';payload.data.body.bulkActions.push(action);payload.data.body.itemActions.push(action);body_bulkActions_2=payload.data.body.bulkActions;body_itemActions_2=payload.data.body.itemActions;}else{payload.data.body.bulkActions=body_bulkActions_2;payload.data.body.itemActions=body_itemActions_2;}return payload;'
             button_create_dialog = ActionType.Dialog(icon='fa fa-plus pull-left', label='添加关联', level=LevelEnum.danger,
                                                      dialog=Dialog(title='添加关联', size='full', body=Service(
                                                          schemaApi=AmisAPI(method='get', url=url,
@@ -159,7 +159,7 @@ class LinkModelForm:
             button_delete = ActionType.Ajax(actionType='ajax', label='移除关联', level=LevelEnum.danger,
                                             confirmText='确定要移除关联?',
                                             api=f"delete:{self.pk_admin.app.router_path}{self.pk_admin.router.prefix}{self.path}" + '/${query.link_item_id}?link_id=${IF(ids, ids, id)}')  # ${IF(ids, ids, id)} # ${ids|raw}${id}
-            adaptor = 'if(("undefined"==typeof body_bulkActions_1)||!body_bulkActions_1){action=' + button_delete.amisJson() + ';payload.data.body.headerToolbar.push(' + button_create_dialog.amisJson() + ');payload.data.body.bulkActions.push(action);payload.data.body.itemActions.push(action);body_headerToolbar_1=payload.data.body.headerToolbar;body_bulkActions_1=payload.data.body.bulkActions;body_itemActions_1=payload.data.body.itemActions;}else{payload.data.body.headerToolbar=body_headerToolbar_1;payload.data.body.bulkActions=body_bulkActions_1;payload.data.body.itemActions=body_itemActions_1;}return payload;'
+            adaptor = 'if(("undefined"==typeof body_bulkActions_1)||!body_bulkActions_1){action=' + button_delete.amis_json() + ';payload.data.body.headerToolbar.push(' + button_create_dialog.amis_json() + ');payload.data.body.bulkActions.push(action);payload.data.body.itemActions.push(action);body_headerToolbar_1=payload.data.body.headerToolbar;body_bulkActions_1=payload.data.body.bulkActions;body_itemActions_1=payload.data.body.itemActions;}else{payload.data.body.headerToolbar=body_headerToolbar_1;payload.data.body.bulkActions=body_bulkActions_1;payload.data.body.itemActions=body_itemActions_1;}return payload;'
         return Service(
             schemaApi=AmisAPI(method='get', url=url, cache=20000, responseData=dict(controls=[picker]),
                               qsOptions={'id': '$id'},
@@ -522,7 +522,7 @@ class PageAdmin(PageSchemaAdmin, RouterAdmin):
         mode = request.query_params.get('_parser') or self.page_parser_mode
         result = None
         if mode == 'json':
-            result = BaseAmisApiOut(data=page.amisDict())
+            result = BaseAmisApiOut(data=page.amis_dict())
             result = JSONResponse(result.dict())
         elif mode == 'html':
             result = page.amis_html(self.template_name)
