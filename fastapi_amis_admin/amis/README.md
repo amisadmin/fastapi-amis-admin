@@ -34,8 +34,10 @@ pip install amis
 from amis.components import Page
 
 page = Page(title='标题', body='Hello World!')
-# 输出为Json
+# 输出为json
 print(page.amis_json())
+# 输出为dict
+print(page.amis_dict())
 # 输出页面html
 print(page.amis_html())
 ```
