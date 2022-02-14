@@ -172,7 +172,8 @@ class SQLModelCrud(BaseCrud, SQLModelSelector):
             exclude = set([self.parser.get_modelfield(ins).name for ins in
                            self.parser.filter_insfield(self.readonly_fields)])
             exclude.add(self.pk_name)
-            self.schema_update = schema_create_by_schema(self.schema_model, 'Update', exclude=exclude, set_none=True)
+            self.schema_update = schema_create_by_schema(self.schema_model, self.__class__.__name__ + 'Update',
+                                                         exclude=exclude, set_none=True)
 
     async def on_create_pre(self, request: Request, obj: BaseModel, **kwargs) -> Dict[str, Any]:
         data_dict = obj.dict()  # exclude=set(self.pk)
