@@ -46,11 +46,11 @@ site = AdminSite(
 ### 示例-2
 
 ```python
-from fastapi import FastAPI
+from fastapi import FastAPI,Request
 from fastapi_amis_admin.amis_admin.settings import Settings
 from fastapi_amis_admin.amis_admin.site import AdminSite, ReDocsAdmin, DocsAdmin
 from sqlalchemy.ext.asyncio import AsyncEngine
-
+from fastapi_amis_admin.amis.components import App
 
 # 自定义后台管理站点
 class NewAdminSite(AdminSite):

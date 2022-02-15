@@ -11,7 +11,7 @@
         <img src="https://img.shields.io/badge/license-Apache2.0-brightgreen" alt="Test">
     </a>
     <a href="https://pypi.org/project/fastapi_amis_admin" target="_blank">
-        <img src="https://img.shields.io/badge/pypi-v0.0.12-blue" alt="Package version">
+        <img src="https://img.shields.io/pypi/v/fastapi-amis-admin?color=blue" alt="Package version">
     </a>
     <a href="https://pypi.org/project/fastapi_amis_admin" target="_blank">
         <img src="https://img.shields.io/badge/python-3.6%2B-blue" alt="Supported Python versions">
