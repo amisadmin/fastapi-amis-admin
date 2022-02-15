@@ -1,5 +1,5 @@
 from typing import Optional, List
-from sqlalchemy import Column, String, Integer, Text
+from sqlalchemy import Column, String, Text
 from sqlmodel import SQLModel, Field, Relationship
 
 

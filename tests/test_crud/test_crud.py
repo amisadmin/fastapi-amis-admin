@@ -9,6 +9,7 @@ class TestSQLModelCrud(TestCase):
 
     def test_register_crud(self):
         response = client.get('/openapi.json')
+
         # test paths 
         paths = response.json()['paths']
         assert '/category/list' in paths
@@ -17,7 +18,7 @@ class TestSQLModelCrud(TestCase):
         assert '/tag/list' in paths
         assert '/tag/item' in paths
         assert '/tag/item/{item_id}' in paths
-        
+
         # test schemas
         schemas = response.json()['components']['schemas']
         assert 'Category' in schemas
@@ -67,7 +68,7 @@ class TestSQLModelCrud(TestCase):
         assert len(categorys_new) == count, res.json()
         assert categorys_new[0]['description'] == "description2"
         # list
-        res = client.post(f'/category/list')
+        res = client.post('/category/list')
         categorys_new2 = res.json()['data']['items']
         assert len(categorys_new2) == count, res.json()
         # delete one
