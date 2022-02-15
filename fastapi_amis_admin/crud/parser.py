@@ -20,7 +20,7 @@ class SQLModelFieldParser:
         self.default_model = default_model
 
     def get_modelfield(self, field: Union[ModelField, SQLModelField], deepcopy: bool = False) -> Optional[ModelField]:
-        '''pydantic ModelField'''
+        """pydantic ModelField"""
         modelfield = None
         if isinstance(field, InstrumentedAttribute):
             modelfield = field.class_.__fields__[field.key]
@@ -42,7 +42,7 @@ class SQLModelFieldParser:
         return modelfield
 
     def get_column(self, field: SQLModelField) -> Optional[Column]:
-        '''sqlalchemy Column'''
+        """sqlalchemy Column"""
         if isinstance(field, InstrumentedAttribute):
             return field.class_.__table__.columns.get(field.key)
         elif isinstance(field, str):
@@ -65,15 +65,15 @@ class SQLModelFieldParser:
             model_name=field.class_.__tablename__, field_name=field.key)
 
     def get_row_keys(self, row: Row) -> List[str]:
-        '''sqlalchemy row keys'''
+        """sqlalchemy row keys"""
         return [self.get_alias(row._keymap[field][2][1]) for field in row._fields]
 
     def get_select_keys(self, stmt: Select) -> List[str]:
-        '''sqlalchemy select keys'''
+        """sqlalchemy select keys"""
         return [self.get_alias(column) for column in stmt.exported_columns]
 
     def conv_row_to_dict(self, rows: Union[Row, List[Row]]) -> Union[None, Dict[str, Any], List[Dict[str, Any]]]:
-        '''sqlalchemy row to dict'''
+        """sqlalchemy row to dict"""
         if not rows:
             return None
         elif isinstance(rows, list):

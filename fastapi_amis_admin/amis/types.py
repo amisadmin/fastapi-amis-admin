@@ -31,14 +31,14 @@ class BaseAmisModel(BaseModel):
 
 
 class BaseAmisApiOut(BaseAmisModel):
-    '''api接口输出数据格式'''
+    """api接口输出数据格式"""
     status: int = 0
     msg: str = ''
     data: dict = None
 
 
 class AmisNode(BaseAmisModel):
-    '''组件配置'''
+    """组件配置"""
     type: str = None  # 组件类型
     visible: bool = None  # 显示
     hidden: bool = None  # 隐藏

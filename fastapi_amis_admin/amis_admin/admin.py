@@ -489,7 +489,7 @@ class RouterAdmin(BaseAdmin, RouterMixin):
 
 
 class PageAdmin(PageSchemaAdmin, RouterAdmin):
-    '''Amis页面管理'''
+    """Amis页面管理"""
     page: Page = None
     page_path: Optional[str] = None
     page_parser_mode: Literal["json", "html"] = 'json'
@@ -554,7 +554,7 @@ class PageAdmin(PageSchemaAdmin, RouterAdmin):
 
 
 class TemplateAdmin(PageAdmin):
-    '''Jinja2渲染模板管理'''
+    """Jinja2渲染模板管理"""
     page: Dict[str, Any] = {}
     page_parser_mode = 'html'
     templates: Jinja2Templates = None

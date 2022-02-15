@@ -62,6 +62,6 @@ def parser_str_set_list(set_str: Union[int, str]) -> List[str]:
     return list(set(set_str.split(',')))
 
 
-def parser_item_id(item_id:str = Path(..., min_length=1, title='pk', example='1,2,3',
-                                                   description='Primary key or list of primary keys')) -> List[str]:
+def parser_item_id(item_id: str = Path(..., min_length=1, title='pk', example='1,2,3',
+                                       description='Primary key or list of primary keys')) -> List[str]:
     return parser_str_set_list(set_str=item_id)

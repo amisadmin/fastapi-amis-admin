@@ -22,7 +22,7 @@ class BaseApiOut(GenericModel, Generic[T], BaseApiSchema):
 
 
 class ItemListSchema(GenericModel, Generic[T], BaseApiSchema):
-    '''数据查询返回格式'''
+    """数据查询返回格式"""
     items: List[T]  # 数据列表
     total: int = None  # 数据总量
     hasNext: bool = None  # 是否有下一页

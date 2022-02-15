@@ -1,5 +1,6 @@
 """详细文档阅读地址: https://baidu.gitee.io/amis/zh-CN/components"""
 from typing import Union, List, Optional, Any
+
 try:
     from typing import Literal
 except ImportError:
@@ -12,20 +13,20 @@ from .utils import amis_templates
 
 
 class Html(AmisNode):
-    '''Html'''
+    """Html"""
     type: str = "html"  # 指定为 html 组件
     html: str  # html  当需要获取数据域中变量时，使用 Tpl 。
 
 
 class Icon(AmisNode):
-    '''图标'''
+    """图标"""
     type: str = "icon"  # 指定组件类型
     className: str = None  # 外层 CSS 类名
     icon: str = None  # icon 名，支持 fontawesome v4 或使用 url
 
 
 class Remark(AmisNode):
-    '''标记'''
+    """标记"""
     type: str = "remark"  # remark
     className: str = None  # 外层 CSS 类名
     content: str = None  # 提示文本
@@ -42,7 +43,7 @@ class Tpl(AmisNode):
 
 ##########################其他########################
 class Badge(AmisNode):
-    '''角标'''
+    """角标"""
     mode: str = "dot"  # 角标类型，可以是 dot/text/ribbon
     text: Union[str, int] = None  # 角标文案，支持字符串和数字，在mode='dot'下设置无效
     size: int = None  # 角标大小
@@ -59,7 +60,7 @@ class Badge(AmisNode):
 ##########################布局########################
 
 class Page(AmisNode):
-    '''页面'''
+    """页面"""
     type: str = "page"  # 指定为 Page 组件
     title: SchemaNode = None  # 页面标题
     subTitle: SchemaNode = None  # 页面副标题
@@ -85,20 +86,20 @@ class Page(AmisNode):
     regions: List[str] = None
 
     def amis_html(self, template_path: str = ''):
-        '''渲染html模板'''
+        """渲染html模板"""
         content = amis_templates('page.html', template_path).replace('[[AmisSchemaJson]]', self.amis_json())
         return content
 
 
 class Divider(AmisNode):
-    '''分割线'''
+    """分割线"""
     type: str = "divider"  # "Divider"
     className: str = None  # 外层 Dom 的类名
     lineStyle: str = None  # 分割线的样式，支持dashed和solid
 
 
 class Flex(AmisNode):
-    '''布局'''
+    """布局"""
     type: str = "flex"  # 指定为 Flex 渲染器
     className: str = None  # css 类名
     justify: str = None  # "start", "flex-start", "center", "end", "flex-end", "space-around", "space-between", "space-evenly"
@@ -108,10 +109,10 @@ class Flex(AmisNode):
 
 
 class Grid(AmisNode):
-    '''水平布局'''
+    """水平布局"""
 
     class Column(AmisNode):
-        '''列配置'''
+        """列配置"""
         xs: int = None  # "auto"   # 宽度占比： 1 - 12
         ClassName: str = None  # 列类名
         sm: int = None  # "auto"  # 宽度占比： 1 - 12
@@ -129,7 +130,7 @@ class Grid(AmisNode):
 
 
 class Panel(AmisNode):
-    '''面板'''
+    """面板"""
     type: str = "panel"  # 指定为 Panel 渲染器
     className: str = None  # "panel-default"  # 外层 Dom 的类名
     headerClassName: str = None  # "panel-heading"  # header 区域的类名
@@ -145,7 +146,7 @@ class Panel(AmisNode):
 
 
 class Tabs(AmisNode):
-    '''选项卡'''
+    """选项卡"""
 
     class Item(AmisNode):
         title: str = None  # Tab 标题
@@ -177,7 +178,7 @@ class Horizontal(AmisNode):
 
 ##########################功能########################
 class Action(AmisNode):
-    '''行为按钮'''
+    """行为按钮"""
     type: str = "button"  # 指定为 Page 渲染器。 button  action
     actionType: str  # 【必填】这是 action 最核心的配置，来指定该 action 的作用类型，支持：ajax、link、url、drawer、dialog、confirm、cancel、prev、next、copy、close。
     label: str = None  # 按钮文本。可用 ${xxx} 取值。
@@ -203,7 +204,7 @@ class Action(AmisNode):
 
 
 class ActionType:
-    '''行为按钮类型'''
+    """行为按钮类型"""
 
     class Ajax(Action):
         actionType: str = 'ajax'  # 点击后显示一个弹出框
@@ -227,19 +228,19 @@ class ActionType:
         copyFormat: str = None  # 可以通过 copyFormat 设置复制的格式，默认是文本 text/html
 
     class Url(Action):
-        '''直接跳转'''
+        """直接跳转"""
         actionType: str = 'url'  # 直接跳转
         url: str  # 按钮点击后，会打开指定页面。可用 ${xxx} 取值。
         blank: bool = None  # false 如果为 true 将在新 tab 页面打开。
 
     class Link(Action):
-        '''单页跳转'''
+        """单页跳转"""
         actionType: str = 'link'  # 单页跳转
         link: str  # 用来指定跳转地址，跟 url 不同的是，这是单页跳转方式，不会渲染浏览器，请指定 amis 平台内的页面。可用 ${xxx} 取值。
 
 
 class PageSchema(AmisNode):
-    '''页面配置'''
+    """页面配置"""
     label: str = None  # 菜单名称。
     icon: str = None  # 菜单图标，比如：fa fa-file.
     url: str = None  # 页面路由路径，当路由命中该路径时，启用当前页面。当路径不是 / 打头时，会连接父级路径。比如：父级的路径为 folder，而此时配置 pageA, 那么当页面地址为 /folder/pageA 时才会命中此页面。当路径是 / 开头如： /crud/list 时，则不会拼接父级路径。另外还支持 /crud/view/:id 这类带参数的路由，页面中可以通过 ${params.id} 取到此值。
@@ -256,7 +257,7 @@ class PageSchema(AmisNode):
 
 
 class App(AmisNode):
-    '''多页应用'''
+    """多页应用"""
     type: str = "app"
     api: API = None  # 页面配置接口，如果你想远程拉取页面配置请配置。返回配置路径 json>data>pages，具体格式请参考 pages 属性。
     brandName: str = None  # 应用名称
@@ -270,13 +271,13 @@ class App(AmisNode):
         PageSchema] = None  # Array<页面配置>具体的页面配置。 通常为数组，数组第一层为分组，一般只需要配置 label 集合，如果你不想分组，直接不配置，真正的页面请在第二层开始配置，即第一层的 children 中。
 
     def amis_html(self, template_path: str = ''):
-        '''渲染html模板'''
+        """渲染html模板"""
         content = amis_templates('app.html', template_path).replace('[[AmisSchemaJson]]', self.amis_json())
         return content
 
 
 class ButtonGroup(AmisNode):
-    '''按钮组'''
+    """按钮组"""
     type: str = 'button-group'
     buttons: List[Action]  # 行为按钮组
     className: str = None  # 外层 Dom 的类名
@@ -284,7 +285,7 @@ class ButtonGroup(AmisNode):
 
 
 class Service(AmisNode):
-    '''功能型容器'''
+    """功能型容器"""
     type: str = "service"  # 指定为 service 渲染器
     className: str = None  # 外层 Dom 的类名
     body: SchemaNode = None  # 内容容器
@@ -303,7 +304,7 @@ class Service(AmisNode):
 
 
 class Nav(AmisNode):
-    '''导航'''
+    """导航"""
 
     class Link(AmisNode):
         label: str = None  # 名称
@@ -331,7 +332,7 @@ class Nav(AmisNode):
 
 
 class AnchorNav(AmisNode):
-    '''锚点导航'''
+    """锚点导航"""
 
     class Link(AmisNode):
         label: str = None  # 名称
@@ -351,7 +352,7 @@ class AnchorNav(AmisNode):
 
 ##########################数据输入########################
 class ButtonToolbar(AmisNode):
-    '''按钮工具栏'''
+    """按钮工具栏"""
     type: str = 'button-toolbar'
     buttons: List[Action]  # 行为按钮组
 
@@ -381,7 +382,7 @@ class Validation(BaseAmisModel):
 
 
 class FormItem(AmisNode):
-    '''表单项通用'''
+    """表单项通用"""
     type: str = 'input-text'  # 指定表单项类型
     className: str = None  # 表单最外层类名
     inputClassName: str = None  # 表单控制器类名
@@ -405,7 +406,7 @@ class FormItem(AmisNode):
 
 
 class Form(AmisNode):
-    '''表单'''
+    """表单"""
 
     class Messages(AmisNode):
         fetchSuccess: str = None  # 获取成功时提示
@@ -460,7 +461,7 @@ class Form(AmisNode):
 
 
 class Button(FormItem):
-    '''按钮'''
+    """按钮"""
     className: str = None  # 指定添加 button 类名
     href: str = None  # 点击跳转的地址，指定此属性 button 的行为和 a 链接一致
     size: str = None  # 设置按钮大小 'xs' | 'sm' | 'md' | 'lg'
@@ -476,7 +477,7 @@ class Button(FormItem):
 
 
 class InputArray(FormItem):
-    '''数组输入框'''
+    """数组输入框"""
     type: str = 'input-array'
     items: FormItem = None  # 配置单项表单类型
     addable: bool = None  # 是否可新增。
@@ -489,12 +490,12 @@ class InputArray(FormItem):
 
 
 class Hidden(FormItem):
-    '''隐藏字段'''
+    """隐藏字段"""
     type: str = 'hidden'
 
 
 class Checkbox(FormItem):
-    '''勾选框'''
+    """勾选框"""
     type: str = 'checkbox'
     option: str = None  # 选项说明
     trueValue: Any = None  # 标识真值
@@ -502,7 +503,7 @@ class Checkbox(FormItem):
 
 
 class Checkboxes(FormItem):
-    '''复选框'''
+    """复选框"""
     type: str = 'checkboxes'
     options: OptionsNode = None  # 选项组
     source: API = None  # 动态选项组
@@ -527,7 +528,7 @@ class Checkboxes(FormItem):
 
 
 class InputCity(FormItem):
-    '''城市选择器'''
+    """城市选择器"""
     type: str = 'location-city'
     allowCity: bool = None  # True  # 允许选择城市
     allowDistrict: bool = None  # True  # 允许选择区域
@@ -536,7 +537,7 @@ class InputCity(FormItem):
 
 
 class InputColor(FormItem):
-    '''颜色选择器'''
+    """颜色选择器"""
     type: str = 'input-color'
     format: str = None  # "hex"  # 请选择 hex、hls、rgb或者rgba。
     presetColors: List[str] = None  # "选择器预设颜色值"  # 选择器底部的默认颜色，数组内为空则不显示默认颜色
@@ -546,7 +547,7 @@ class InputColor(FormItem):
 
 
 class Combo(FormItem):
-    '''组合'''
+    """组合"""
     type: str = 'combo'
     formClassName: str = None  # 单组表单项的类名
     addButtonClassName: str = None  # 新增按钮 CSS 类名
@@ -581,7 +582,7 @@ class Combo(FormItem):
 
 
 class ConditionBuilder(FormItem):
-    '''组合条件'''
+    """组合条件"""
 
     class Field(AmisNode):
         type: str = "text"  # 字段配置中配置成 "text"
@@ -592,33 +593,33 @@ class ConditionBuilder(FormItem):
         defaultOp: str = None  # 默认为 "equal"
 
     class Text(Field):
-        '''文本'''
+        """文本"""
 
     class Number(Field):
-        '''数字'''
+        """数字"""
         type: str = 'number'
         minimum: float = None  # 最小值
         maximum: float = None  # 最大值
         step: float = None  # 步长
 
     class Date(Field):
-        '''日期'''
+        """日期"""
         type: str = 'date'
         defaultValue: str = None  # 默认值
         format: str = None  # 默认 "YYYY-MM-DD" 值格式
         inputFormat: str = None  # 默认 "YYYY-MM-DD" 显示的日期格式。
 
     class Datetime(Date):
-        '''日期时间'''
+        """日期时间"""
         type: str = 'datetime'
         timeFormat: str = None  # 默认 "HH:mm" 时间格式，决定输入框有哪些。
 
     class Time(Date):
-        '''时间'''
+        """时间"""
         type: str = 'datetime'
 
     class Select(Field):
-        '''下拉选择'''
+        """下拉选择"""
         type: str = 'select'
         options: OptionsNode = None  # 选项列表，Array<{label: string, value: any}>
         source: API = None  # 动态选项，请配置 api。
@@ -633,7 +634,7 @@ class ConditionBuilder(FormItem):
 
 
 class Editor(FormItem):
-    '''代码编辑器'''
+    """代码编辑器"""
     type: str = 'editor'
     language: str = None  # "javascript"  # 编辑器高亮的语言，支持通过 ${xxx} 变量获取
     # bat、 c、 coffeescript、 cpp、 csharp、 css、 dockerfile、 fsharp、 go、 handlebars、 html、 ini、 java、 javascript、 json、 less、 lua、 markdown、 msdax、 objective-c、 php、 plaintext、 postiats、 powershell、 pug、 python、 r、 razor、 ruby、 sb、 scss、shell、 sol、 sql、 swift、 typescript、 vb、 xml、 yaml
@@ -643,7 +644,7 @@ class Editor(FormItem):
 
 
 class InputFile(FormItem):
-    '''文件上传'''
+    """文件上传"""
     type: str = 'input-file'
     receiver: API = None  # 上传文件接口
     accept: str = None  # "text/plain"  # 默认只支持纯文本，要支持其他类型，请配置此属性为文件后缀.xxx
@@ -673,7 +674,7 @@ class InputFile(FormItem):
 
 
 class InputImage(FormItem):
-    '''图片上传'''
+    """图片上传"""
 
     class CropInfo(BaseAmisModel):
         aspectRatio: float = None  # 裁剪比例。浮点型，默认 1 即 1:1，如果要设置 16:9 请设置 1.7777777777777777 即 16 / 9。。
@@ -712,7 +713,7 @@ class InputImage(FormItem):
 
 
 class LocationPicker(FormItem):
-    '''地理位置'''
+    """地理位置"""
     type: str = 'location-picker'
     vendor: str = 'baidu'  # 地图厂商，目前只实现了百度地图
     ak: str = ''  # 百度地图的 ak  # 注册地址: http://lbsyun.baidu.com/
@@ -722,7 +723,7 @@ class LocationPicker(FormItem):
 
 
 class InputNumber(FormItem):
-    '''数字输入框'''
+    """数字输入框"""
     type: str = 'input-number'
     min: Union[int, Template] = None  # 最小值
     max: Union[int, Template] = None  # 最大值
@@ -735,7 +736,7 @@ class InputNumber(FormItem):
 
 
 class Picker(FormItem):
-    '''列表选择器'''
+    """列表选择器"""
     type: str = 'picker'  # 列表选取，在功能上和 Select 类似，但它能显示更复杂的信息。
     size: Union[str, SizeEnum] = None  # 支持: xs、sm、md、lg、xl、 full
     options: OptionsNode = None  # 选项组
@@ -754,7 +755,7 @@ class Picker(FormItem):
 
 
 class Switch(FormItem):
-    '''开关'''
+    """开关"""
     type: str = 'switch'
     option: str = None  # 选项说明
     onText: str = None  # 开启时的文本
@@ -764,7 +765,7 @@ class Switch(FormItem):
 
 
 class Static(FormItem):
-    '''静态展示/标签'''
+    """静态展示/标签"""
     type: str = 'static'  # 支持通过配置type为static-xxx的形式，展示其他 非表单项 组件 static-json|static-datetime
 
     class Json(FormItem):
@@ -772,13 +773,13 @@ class Static(FormItem):
         value: Union[dict, str]
 
     class Datetime(FormItem):
-        '''显示日期'''
+        """显示日期"""
         type: str = 'static-datetime'
         value: Union[int, str]  # 支持10位时间戳: 1593327764
 
 
 class InputText(FormItem):
-    '''输入框'''
+    """输入框"""
     type: str = 'input-text'  # input-text | input-url | input-email | input-password | divider
     options: Union[List[str], List[dict]] = None  # 选项组
     source: Union[str, API] = None  # 动态选项组
@@ -802,12 +803,12 @@ class InputText(FormItem):
 
 
 class InputPassword(InputText):
-    '''密码输框'''
+    """密码输框"""
     type: str = 'input-password'
 
 
 class InputRichText(FormItem):
-    '''富文本编辑器'''
+    """富文本编辑器"""
     type: str = 'input-rich-text'
     saveAsUbb: bool = None  # 是否保存为 ubb 格式
     receiver: API = None  # ''  # 默认的图片保存 API
@@ -818,7 +819,7 @@ class InputRichText(FormItem):
 
 
 class Select(FormItem):
-    '''下拉框'''
+    """下拉框"""
     type: str = 'select'
     options: OptionsNode = None  # 选项组
     source: API = None  # 动态选项组
@@ -857,7 +858,7 @@ class Select(FormItem):
 
 
 class Textarea(FormItem):
-    '''多行文本输入框'''
+    """多行文本输入框"""
     type: str = 'textarea'
     minRows: int = None  # 最小行数
     maxRows: int = None  # 最大行数
@@ -869,7 +870,7 @@ class Textarea(FormItem):
 
 
 class InputMonth(FormItem):
-    '''月份'''
+    """月份"""
     type: str = 'input-month'
     value: str = None  # 默认值
     format: str = None  # "X"  # 月份选择器值格式，更多格式类型请参考 moment
@@ -879,7 +880,7 @@ class InputMonth(FormItem):
 
 
 class InputTime(FormItem):
-    '''时间'''
+    """时间"""
     type: str = 'input-time'
     value: str = None  # 默认值
     timeFormat: str = None  # "HH:mm"  # 时间选择器值格式，更多格式类型请参考 moment
@@ -891,7 +892,7 @@ class InputTime(FormItem):
 
 
 class InputDatetime(FormItem):
-    '''日期'''
+    """日期"""
     type: str = 'input-datetime'
     value: str = None  # 默认值
     format: str = None  # "X"  # 日期时间选择器值格式，更多格式类型请参考 文档
@@ -907,7 +908,7 @@ class InputDatetime(FormItem):
 
 
 class InputDate(FormItem):
-    '''日期'''
+    """日期"""
     type: str = 'input-date'
     value: str = None  # 默认值
     format: str = None  # "X"  # 日期选择器值格式，更多格式类型请参考 文档
@@ -929,7 +930,7 @@ class InputDate(FormItem):
 
 
 class InputTimeRange(FormItem):
-    '''时间范围'''
+    """时间范围"""
     type: str = 'input-time-range'
     timeFormat: str = None  # "HH:mm"  # 时间范围选择器值格式
     format: str = None  # "HH:mm"  # 时间范围选择器值格式
@@ -940,7 +941,7 @@ class InputTimeRange(FormItem):
 
 
 class InputDatetimeRange(InputTimeRange):
-    '''日期时间范围'''
+    """日期时间范围"""
     type: str = 'input-datetime-range'
     ranges: Union[str, List[
         str]] = None  # "yesterday,7daysago,prevweek,thismonth,prevmonth,prevquarter"  # 日期范围快捷键，可选：today, yesterday, 1dayago, 7daysago, 30daysago, 90daysago, prevweek, thismonth, thisquarter, prevmonth, prevquarter
@@ -950,19 +951,19 @@ class InputDatetimeRange(InputTimeRange):
 
 
 class InputDateRange(InputDatetimeRange):
-    '''日期范围'''
+    """日期范围"""
     type: str = 'input-date-range'
     minDuration: str = None  # 限制最小跨度，如： 2days
     maxDuration: str = None  # 限制最大跨度，如：1year
 
 
 class InputMonthRange(InputDateRange):
-    '''月份范围'''
+    """月份范围"""
     type: str = 'input-month-range'
 
 
 class Transfer(FormItem):
-    '''穿梭器'''
+    """穿梭器"""
     type: Literal['transfer', 'transfer-picker', 'tabs-transfer', 'tabs-transfer-picker'] = 'transfer'
     options: OptionsNode = None  # 选项组
     source: API = None  # 动态选项组
@@ -986,22 +987,22 @@ class Transfer(FormItem):
 
 
 class TransferPicker(Transfer):
-    '''穿梭选择器'''
+    """穿梭选择器"""
     type: str = 'transfer-picker'
 
 
 class TabsTransfer(Transfer):
-    '''组合穿梭器'''
+    """组合穿梭器"""
     type: str = 'tabs-transfer'
 
 
 class TabsTransferPicker(Transfer):
-    '''组合穿梭选择器'''
+    """组合穿梭选择器"""
     type: str = 'tabs-transfer-picker'
 
 
 class InputTree(FormItem):
-    '''树形选择框'''
+    """树形选择框"""
     type: str = 'input-tree'
     options: OptionsNode = None  # 选项组
     source: API = None  # 动态选项组
@@ -1041,13 +1042,13 @@ class InputTree(FormItem):
 
 
 class TreeSelect(InputTree):
-    '''树形选择器'''
+    """树形选择器"""
     type: str = 'tree-select'
     hideNodePathLabel: bool = None  # 是否隐藏选择框中已选择节点的路径 label 信息
 
 
 class Image(AmisNode):
-    '''图片'''
+    """图片"""
     type: str = 'image'  # 如果在 Table、Card 和 List 中，为"image"；在 Form 中用作静态展示，为"static-image"
     className: str = None  # 外层 CSS 类名
     imageClassName: str = None  # 图片 CSS 类名
@@ -1070,7 +1071,7 @@ class Image(AmisNode):
 
 
 class Images(AmisNode):
-    '''图片集'''
+    """图片集"""
     type: str = "images"  # 如果在 Table、Card 和 List 中，为"images"；在 Form 中用作静态展示，为"static-images"
     className: str = None  # 外层 CSS 类名
     defaultImage: str = None  # 默认展示图片
@@ -1085,7 +1086,7 @@ class Images(AmisNode):
 
 
 class Carousel(AmisNode):
-    '''轮播图'''
+    """轮播图"""
 
     class Item(AmisNode):
         image: str = None  # 图片链接
@@ -1114,7 +1115,7 @@ class Carousel(AmisNode):
 
 ##########################数据展示########################
 class CRUD(AmisNode):
-    '''增删改查'''
+    """增删改查"""
 
     class Messages(AmisNode):
         fetchFailed: str = None  # 获取失败时提示
@@ -1168,7 +1169,7 @@ class CRUD(AmisNode):
 
 
 class TableColumn(AmisNode):
-    '''列配置'''
+    """列配置"""
     type: str = None  # Literal['text', 'audio','image', 'link', 'tpl', 'mapping','carousel','date', 'progress','status','switch','list','json','operation']
     label: Template = None  # 表头文本内容
     name: str = None  # 通过名称关联数据
@@ -1185,7 +1186,7 @@ class TableColumn(AmisNode):
 
 
 class ColumnOperation(TableColumn):
-    '''操作列'''
+    """操作列"""
     type: str = 'operation'
     label: Template = "操作"
     toggled: bool = True
@@ -1193,17 +1194,17 @@ class ColumnOperation(TableColumn):
 
 
 class ColumnImage(Image, TableColumn):
-    '''图片列'''
+    """图片列"""
     pass
 
 
 class ColumnImages(Images, TableColumn):
-    '''图片集列'''
+    """图片集列"""
     pass
 
 
 class Table(AmisNode):
-    '''表格'''
+    """表格"""
 
     type: str = "table"  # 指定为 table 渲染器
     title: str = None  # 标题
@@ -1233,7 +1234,7 @@ class Table(AmisNode):
 
 
 class Chart(AmisNode):
-    '''图表: https://echarts.apache.org/zh/option.html#title'''
+    """图表: https://echarts.apache.org/zh/option.html#title"""
     type: str = "chart"  # 指定为 chart 渲染器
     className: str = None  # 外层 Dom 的类名
     body: SchemaNode = None  # 内容容器
@@ -1250,7 +1251,7 @@ class Chart(AmisNode):
 
 
 class Code(AmisNode):
-    '''代码高亮'''
+    """代码高亮"""
     type: str = "code"
     className: str = None  # 外层 CSS 类名
     value: str = None  # 显示的颜色值
@@ -1262,7 +1263,7 @@ class Code(AmisNode):
 
 
 class Json(AmisNode):
-    '''JSON 展示组件'''
+    """JSON 展示组件"""
     type: str = "json"  # 如果在 Table、Card 和 List 中，为"json"；在 Form 中用作静态展示，为"static-json"
     className: str = None  # 外层 CSS 类名
     value: Union[dict, str] = None  # json 值，如果是 string 会自动 parse
@@ -1275,7 +1276,7 @@ class Json(AmisNode):
 
 
 class Link(AmisNode):
-    '''链接'''
+    """链接"""
     type: str = "link"  # 如果在 Table、Card 和 List 中，为"link"；在 Form 中用作静态展示，为"static-link"
     body: str = None  # 标签内文本
     href: str = None  # 链接地址
@@ -1288,7 +1289,7 @@ class Link(AmisNode):
 
 
 class Log(AmisNode):
-    '''实时日志'''
+    """实时日志"""
     type: str = "log"
     source: API = None  # 支持变量,可以初始设置为空，这样初始不会加载，而等这个变量有值的时候再加载
     height: int = None  # 500  # 展示区域高度
@@ -1299,7 +1300,7 @@ class Log(AmisNode):
 
 
 class Mapping(AmisNode):
-    '''映射'''
+    """映射"""
     type: str = "mapping"  # 如果在 Table、Card 和 List 中，为"mapping"；在 Form 中用作静态展示，为"static-mapping"
     className: str = None  # 外层 CSS 类名
     placeholder: str = None  # 占位文本
@@ -1308,7 +1309,7 @@ class Mapping(AmisNode):
 
 
 class Property(AmisNode):
-    '''属性表'''
+    """属性表"""
 
     class Item(AmisNode):
         label: Template = None  # 属性名
@@ -1331,7 +1332,7 @@ class Property(AmisNode):
 
 
 class QRCode(AmisNode):
-    '''二维码'''
+    """二维码"""
     type: str = "qr-code"  # 指定为 QRCode 渲染器
     value: Template  # 扫描二维码后显示的文本，如果要显示某个页面请输入完整 url（"http://..."或"https://..."开头），支持使用 模板
     className: str = None  # 外层 Dom 的类名
@@ -1343,7 +1344,7 @@ class QRCode(AmisNode):
 
 
 class Video(AmisNode):
-    '''视频'''
+    """视频"""
     type: str = "video"  # 指定为 video 渲染器
     className: str = None  # 外层 Dom 的类名
     src: str = None  # 视频地址
@@ -1357,7 +1358,7 @@ class Video(AmisNode):
 
 ##########################反馈########################
 class Alert(AmisNode):
-    '''提示'''
+    """提示"""
     type: str = "alert"  # 指定为 alert 渲染器
     className: str = None  # 外层 Dom 的类名
     level: str = None  # "info"  # 级别，可以是：info、success、warning 或者 danger
@@ -1370,7 +1371,7 @@ class Alert(AmisNode):
 
 
 class Dialog(AmisNode):
-    '''对话框'''
+    """对话框"""
     type: str = "dialog"  # 指定为 Dialog 渲染器
     title: SchemaNode = None  # 弹出层标题
     body: SchemaNode = None  # 往 Dialog 内容区加内容
@@ -1385,7 +1386,7 @@ class Dialog(AmisNode):
 
 
 class Drawer(AmisNode):
-    '''抽屉'''
+    """抽屉"""
     type: str = "drawer"  # "drawer" 指定为 Drawer 渲染器
     title: SchemaNode = None  # 弹出层标题
     body: SchemaNode = None  # 往 Drawer 内容区加内容
@@ -1401,7 +1402,7 @@ class Drawer(AmisNode):
 
 
 class Iframe(AmisNode):
-    '''Iframe'''
+    """Iframe"""
     type: str = "iframe"  # 指定为 iFrame 渲染器
     className: str = None  # iFrame 的类名
     frameBorder: list = None  # frameBorder
@@ -1412,18 +1413,18 @@ class Iframe(AmisNode):
 
 
 class Spinner(AmisNode):
-    '''加载中'''
+    """加载中"""
     type: str = "spinner"
 
 
 ##########################常用组件########################
 
 class TableCRUD(CRUD, Table):
-    '''表格CRUD'''
+    """表格CRUD"""
 
 
 class Avatar(AmisNode):
-    '''头像'''
+    """头像"""
     type: str = "avatar"
     className: str = None  # 外层 dom 的类名
     fit: str = None  # "cover"  # 图片缩放类型
@@ -1436,7 +1437,7 @@ class Avatar(AmisNode):
 
 
 class Audio(AmisNode):
-    '''音频'''
+    """音频"""
     type: str = "audio"  # 指定为 audio 渲染器
     className: str = None  # 外层 Dom 的类名
     inline: bool = None  # True  # 是否是内联模式
@@ -1448,7 +1449,7 @@ class Audio(AmisNode):
 
 
 class Tasks(AmisNode):
-    '''任务操作集合'''
+    """任务操作集合"""
 
     class Item(AmisNode):
         label: str = None  # 任务名称
@@ -1478,7 +1479,7 @@ class Tasks(AmisNode):
 
 
 class Wizard(AmisNode):
-    '''向导'''
+    """向导"""
 
     class Step(AmisNode):
         title: str = None  # 步骤标题

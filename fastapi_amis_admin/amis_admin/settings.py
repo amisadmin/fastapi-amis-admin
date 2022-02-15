@@ -2,7 +2,7 @@ from pydantic import BaseSettings, Field
 
 
 class Settings(BaseSettings):
-    '''项目配置'''
+    """项目配置"""
     debug: bool = False
     version: str = '0.0.0'
     site_url: str = ''
