@@ -144,3 +144,4 @@ note/
 /docs/zh/site.rar
 /docs/zh/site/
 pypi/
+/tests/test_crud/test_crud.db

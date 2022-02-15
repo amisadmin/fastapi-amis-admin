@@ -9,10 +9,25 @@ class TestSQLModelCrud(TestCase):
 
     def test_register_crud(self):
         response = client.get('/openapi.json')
+        # test paths 
         paths = response.json()['paths']
-        assert '/category/list' in paths, paths
-        assert '/category/item' in paths, paths
-        assert '/category/item/{item_id}' in paths, paths
+        assert '/category/list' in paths
+        assert '/category/item' in paths
+        assert '/category/item/{item_id}' in paths
+        assert '/tag/list' in paths
+        assert '/tag/item' in paths
+        assert '/tag/item/{item_id}' in paths
+        
+        # test schemas
+        schemas = response.json()['components']['schemas']
+        assert 'Category' in schemas
+        assert 'CategoryFilter' in schemas
+        assert 'CategoryList' in schemas
+        assert 'CategoryUpdate' in schemas
+        assert 'ItemListSchema_CategoryList_' in schemas
+        assert 'TagFilter' in schemas
+        assert 'TagList' in schemas
+        assert 'TagUpdate' in schemas
 
     def test_crud_one(self):
         # create one

@@ -154,7 +154,7 @@ class SQLModelCrud(BaseCrud, SQLModelSelector):
         if not self.schema_list:
             modelfields = list(filter(None, [self.parser.get_modelfield(insfield, deepcopy=True) for insfield in
                                              self._list_fields_ins.values()]))
-            self.schema_list = schema_create_by_modelfield(schema_name=self.__class__.__name__ + 'List',
+            self.schema_list = schema_create_by_modelfield(schema_name=self.schema_name_prefix + 'List',
                                                            modelfields=modelfields, set_none=True)
         if not self.schema_filter:
             modelfields = list(filter(None, [self.parser.get_modelfield(insfield, deepcopy=True) for insfield in
@@ -166,14 +166,20 @@ class SQLModelCrud(BaseCrud, SQLModelSelector):
                     modelfield.type_ = str
                     modelfield.outer_type_ = str
                     modelfield.validators = []
-            self.schema_filter = schema_create_by_modelfield(schema_name=self.__class__.__name__ + 'Filter',
+            self.schema_filter = schema_create_by_modelfield(schema_name=self.schema_name_prefix + 'Filter',
                                                              modelfields=modelfields, set_none=True)
         if not self.schema_update and self.readonly_fields:
             exclude = set([self.parser.get_modelfield(ins).name for ins in
                            self.parser.filter_insfield(self.readonly_fields)])
             exclude.add(self.pk_name)
-            self.schema_update = schema_create_by_schema(self.schema_model, self.__class__.__name__ + 'Update',
+            self.schema_update = schema_create_by_schema(self.schema_model, self.schema_name_prefix + 'Update',
                                                          exclude=exclude, set_none=True)
+
+    @property
+    def schema_name_prefix(self):
+        if self.__class__ is SQLModelCrud:
+            return self.model.__name__
+        return super().schema_name_prefix
 
     async def on_create_pre(self, request: Request, obj: BaseModel, **kwargs) -> Dict[str, Any]:
         data_dict = obj.dict()  # exclude=set(self.pk)

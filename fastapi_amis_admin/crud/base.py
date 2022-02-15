@@ -52,6 +52,10 @@ class BaseCrud(RouterMixin):
     def router_prefix(self):
         return '/' + self.schema_model.__name__.lower()
 
+    @property
+    def schema_name_prefix(self):
+        return self.__class__.__name__
+
     def register_crud(self,
                       schema_list: Type[BaseModel] = None,
                       schema_filter: Type[BaseModel] = None,
@@ -67,11 +71,11 @@ class BaseCrud(RouterMixin):
                       ) -> "BaseCrud":
         self.schema_list = schema_list or self.schema_list or self.schema_model
         self.schema_filter = schema_filter or self.schema_filter or schema_create_by_schema(
-            self.schema_list, self.__class__.__name__ + 'Filter', set_none=True)
+            self.schema_list, self.schema_name_prefix + 'Filter', set_none=True)
         self.schema_create = schema_create or self.schema_create or self.schema_model
         self.schema_read = schema_read or self.schema_read or self.schema_model
         self.schema_update = schema_update or self.schema_update or \
-                             schema_create_by_schema(self.schema_model, self.__class__.__name__ + 'Update',
+                             schema_create_by_schema(self.schema_model, self.schema_name_prefix + 'Update',
                                                      exclude={self.pk_name}, set_none=True)
         self.list_per_page_max = list_max_per_page or self.list_per_page_max
         self.paginator = paginator_factory(perPage_max=self.list_per_page_max)

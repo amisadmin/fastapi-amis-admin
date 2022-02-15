@@ -1,14 +1,18 @@
 from fastapi import FastAPI
 from sqlmodel import SQLModel
 import asyncio
-from tests.test_crud.models import Category
+from tests.test_crud.models import Category, Tag
 from tests.test_crud.db import session_factory, engine
 from fastapi_amis_admin.crud import SQLModelCrud
 
-crud = SQLModelCrud(Category, session_factory).register_crud()
-
 app = FastAPI()
-app.include_router(crud.router)
+category_crud = SQLModelCrud(Category, session_factory).register_crud()
+
+app.include_router(category_crud.router)
+
+tag_crud = SQLModelCrud(Tag, session_factory).register_crud()
+
+app.include_router(tag_crud.router)
 
 
 @app.on_event("startup")
