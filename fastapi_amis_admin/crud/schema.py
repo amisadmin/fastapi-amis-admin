@@ -4,7 +4,7 @@ import ujson
 from pydantic import BaseModel, Extra
 from pydantic.generics import GenericModel
 
-T = TypeVar('T')
+_T = TypeVar('_T')
 
 
 class BaseApiSchema(BaseModel):
@@ -14,16 +14,16 @@ class BaseApiSchema(BaseModel):
         json_dumps = ujson.dumps
 
 
-class BaseApiOut(GenericModel, Generic[T], BaseApiSchema):
+class BaseApiOut(GenericModel, Generic[_T], BaseApiSchema):
     status: int = 0
     msg: str = 'success'
-    data: Optional[T] = None
+    data: Optional[_T] = None
     code: int = None
 
 
-class ItemListSchema(GenericModel, Generic[T], BaseApiSchema):
+class ItemListSchema(GenericModel, Generic[_T], BaseApiSchema):
     """数据查询返回格式"""
-    items: List[T]  # 数据列表
+    items: List[_T]  # 数据列表
     total: int = None  # 数据总量
     hasNext: bool = None  # 是否有下一页
     query: Dict[str, Any] = None
