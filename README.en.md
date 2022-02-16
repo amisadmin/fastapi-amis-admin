@@ -14,7 +14,7 @@
         <img src="https://img.shields.io/pypi/v/fastapi-amis-admin?color=blue" alt="Package version">
     </a>
     <a href="https://pypi.org/project/fastapi_amis_admin" target="_blank">
-        <img src="https://img.shields.io/badge/python-3.6%2B-blue" alt="Supported Python versions">
+        <img src="https://img.shields.io/badge/python-3.7%2B-blue" alt="Supported Python versions">
     </a>
     <a href="https://jq.qq.com/?_wv=1027&k=U4Dv6x8W" target="_blank">
         <img src="https://img.shields.io/badge/qq群-229036692-orange" alt="229036692">
@@ -32,7 +32,7 @@
 
 ------
 
-`fastapi-amis-admin`是一个基于`fastapi`+`amis`开发的高性能并且高效率 `web-admin` 框架，使用 Python 3.6+ 并基于标准的 Python 类型提示。
+`fastapi-amis-admin`是一个基于`fastapi`+`amis`开发的高性能并且高效率 `web-admin` 框架，使用 Python 3.7+ 并基于标准的 Python 类型提示。
 `fastapi-amis-admin`开发的初衷是为了完善`fastapi`应用生态, 为`fastapi` web应用程序快速生成一个可视化管理后台. 
 `fastapi-amis-admin`遵循`Apache2.0`协议免费开源, 但是为了更好的长期运营与维护此项目, `fastapi-amis-admin`非常希望能够得到大家的赞助与支持.
 

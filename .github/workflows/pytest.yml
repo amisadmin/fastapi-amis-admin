@@ -2,23 +2,23 @@ name: Pytest
 
 on:
   workflow_dispatch:
-#  push:
-#    branches: [ master ]
-#    paths:
-#      - 'fastapi_amis_admin/**'
-#      - 'tests/**'
-#  pull_request:
-#    branches: [ master ]
-#    paths:
-#      - 'fastapi_amis_admin/**'
-#      - 'tests/**'
+  push:
+    branches: [ master ]
+    paths:
+      - 'fastapi_amis_admin/**'
+      - 'tests/**'
+  pull_request:
+    branches: [ master ]
+    paths:
+      - 'fastapi_amis_admin/**'
+      - 'tests/**'
 
 jobs:
   test:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [ "3.6", "3.7", "3.8", "3.9", "3.10" ]
+        python-version: [ "3.7", "3.8", "3.9", "3.10" ]
       fail-fast: false
 
     steps:
