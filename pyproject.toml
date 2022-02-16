@@ -1,0 +1,64 @@
+[build-system]
+requires = ["flit_core >=3.2,<4"]
+build-backend = "flit_core.buildapi"
+
+[project]
+name = "fastapi_amis_admin"
+authors = [
+    { name = "Atomi", email = "1456417373@qq.com" },
+]
+maintainers = [
+    { name = "Atomi", email = "1456417373@qq.com" },
+]
+description = "fastapi-amis-admin is a high-performance, efficient and easily extensible FastAPI admin framework. Inspired by Django-admin, and has as many powerful functions as Django-admin. "
+readme = "README.md"
+requires-python = ">=3.6.1"
+dynamic = ["version"]
+keywords = [
+    "fastapi",
+    "fastapi-admin",
+    "fastapi-amis-admin",
+    "django-admin",
+    "sqlmodel",
+    "sqlalchemy",
+]
+classifiers = [
+    "Framework :: FastAPI",
+    "Environment :: Web Environment",
+    "Topic :: System :: Systems Administration",
+    "License :: OSI Approved :: Apache Software License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.6",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+]
+dependencies = [
+    "fastapi>=0.68.0",
+    "sqlmodel>=0.0.4",
+    "ujson>=4.0.1",
+    "python-multipart>=0.0.5",
+]
+
+
+
+[project.urls]
+Documentation = "http://docs.amis.work/"
+Source = "https://github.com/amisadmin/fastapi_amis_admin"
+
+[project.optional-dependencies]
+test = [
+    "pytest >=6.2.4,<7.0.0",
+    "aiosqlite",
+]
+dev = [
+    "jinja2 >=2.11.2,<4.0.0",
+    "aiosqlite",
+    "uvicorn[standard] >=0.12.0,<0.16.0",
+]
+all = [
+    "jinja2 >=2.11.2,<4.0.0",
+    "uvicorn[standard] >=0.12.0,<0.16.0",
+]

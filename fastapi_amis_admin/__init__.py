@@ -1,2 +1,2 @@
-__version__ = "0.0.13"
+__version__ = "0.0.15"
 __url__ = "https://github.com/amisadmin/fastapi_amis_admin"
