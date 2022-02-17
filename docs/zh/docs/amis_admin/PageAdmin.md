@@ -24,7 +24,7 @@
 #### page_response_mode
 
 页面响应类型, 默认: `json`
-- `json`: 响应格式解析为json. 即 `page.amisDict()`
+- `json`: 响应格式解析为json. 即 `page.amis_dict()`
 - `html`: 响应格式解析为amis html. 即 `page.amis_html()`
 
 #### page_route_kwargs

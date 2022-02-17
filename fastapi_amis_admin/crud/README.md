@@ -65,7 +65,7 @@ async def startup():
 
 ## 开发文档
 
-- https://github.com/amisadmin/fastapi_amis_admin
+- https://docs.gh.amis.work/crud/SQLModelCrud/
 
 
 

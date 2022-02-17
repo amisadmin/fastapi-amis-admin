@@ -1,4 +1,5 @@
 # 项目介绍
+
 <h2 align="center">
   FastAPI-Amis-Admin
 </h2>
@@ -11,10 +12,13 @@
         <img src="https://img.shields.io/badge/license-Apache2.0-brightgreen" alt="Test">
     </a>
     <a href="https://pypi.org/project/fastapi_amis_admin" target="_blank">
-        <img src="https://img.shields.io/pypi/v/fastapi-amis-admin?color=blue" alt="Package version">
+        <img src="https://img.shields.io/badge/python-3.7%2B-blue" alt="Supported Python versions">
     </a>
     <a href="https://pypi.org/project/fastapi_amis_admin" target="_blank">
-        <img src="https://img.shields.io/badge/python-3.7%2B-blue" alt="Supported Python versions">
+        <img src="https://img.shields.io/pypi/v/fastapi-amis-admin?color=blue" alt="Package version">
+    </a>
+    <a href="https://pepy.tech/project/fastapi-amis-admin" target="_blank">
+        <img src="https://pepy.tech/badge/fastapi-amis-admin/month" alt="Downloads">
     </a>
     <a href="https://jq.qq.com/?_wv=1027&k=U4Dv6x8W" target="_blank">
         <img src="https://img.shields.io/badge/qq群-229036692-orange" alt="229036692">
@@ -33,10 +37,8 @@
 ------
 
 `fastapi-amis-admin`是一个基于`fastapi`+`amis`开发的高性能并且高效率 `web-admin` 框架，使用 Python 3.7+ 并基于标准的 Python 类型提示。
-`fastapi-amis-admin`开发的初衷是为了完善`fastapi`应用生态, 为`fastapi` web应用程序快速生成一个可视化管理后台. 
+`fastapi-amis-admin`开发的初衷是为了完善`fastapi`应用生态, 为`fastapi` web应用程序快速生成一个可视化管理后台.
 `fastapi-amis-admin`遵循`Apache2.0`协议免费开源, 但是为了更好的长期运营与维护此项目, `fastapi-amis-admin`非常希望能够得到大家的赞助与支持.
-
-
 
 ## 关键特性
 
@@ -44,7 +46,7 @@
 
 - **效率更快**：完善的编码类型提示, 代码可重用性更高.
 
-- **支持异步和同步混合编写**: `ORM`基于`SQLModel`+`Sqlalchemy`, 可自由定制数据库类型, 支持同步及异步模式, 可拓展性强. 
+- **支持异步和同步混合编写**: `ORM`基于`SQLModel`+`Sqlalchemy`, 可自由定制数据库类型, 支持同步及异步模式, 可拓展性强.
 
 - **前后端分离**: 前端由`Amis`渲染, 后端接口由`fastapi-amis-admin`自动生成, 接口可重复利用.
 
@@ -52,15 +54,13 @@
 
 - **自动生成API文档**: 由`FastAPI`自动生成接口文档,方便开发者调试,以及接口分享.
 
-
-
 ## 核心依赖
 
 - [Fastapi](https://fastapi.tiangolo.com) 负责 web 部分
-- [SQLModel](https://sqlmodel.tiangolo.com/) 负责ORM模型映射(完美结合[SQLAlchemy](https://www.sqlalchemy.org/)+[Pydantic](https://pydantic-docs.helpmanual.io/), 拥有`SQLAlchemy`和`Pydantic`的所有功能)
+- [SQLModel](https://sqlmodel.tiangolo.com/) 负责ORM模型映射(
+  完美结合[SQLAlchemy](https://www.sqlalchemy.org/)+[Pydantic](https://pydantic-docs.helpmanual.io/), 拥有`SQLAlchemy`
+  和`Pydantic`的所有功能)
 - [Amis](https://baidu.gitee.io/amis) 负责Admin后台页面展示
-
-
 
 ## 项目组成
 
@@ -70,15 +70,11 @@
 - `fastapi-sqlmodel-crud`: 基于`FastAPI`+`SQLModel`, 用于快速构建Create,Read,Update,Delete通用API接口.
 - `amis_admin`: 启发自`Django-Admin`, 结合`amis`+`fastapi-sqlmodel-crud`, 用于快速构建Web Admin管理后台.
 
-
-
 ## 安装
 
 ```bash
 pip install fastapi_amis_admin
 ```
-
-
 
 ## 简单示例
 
@@ -101,8 +97,6 @@ if __name__ == '__main__':
 
     uvicorn.run(app, debug=True)
 ```
-
-
 
 ## 模型管理示例
 
@@ -151,8 +145,6 @@ if __name__ == '__main__':
 
     uvicorn.run(app, debug=True)
 ```
-
-
 
 ## 表单管理示例
 
@@ -203,8 +195,6 @@ if __name__ == '__main__':
     uvicorn.run(app, debug=True)
 ```
 
-
-
 ## 界面预览
 
 - Open `http://127.0.0.1:8000/admin/` in your browser:
@@ -221,8 +211,6 @@ if __name__ == '__main__':
 - [ ] 完善用户教程文档.
 - [ ] 不断拓展与完善核心功能.
 - [ ] 增加用户认证与授权系统.
-
-
 
 ## 许可协议
 

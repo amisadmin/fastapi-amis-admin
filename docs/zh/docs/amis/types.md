@@ -9,11 +9,11 @@
 ### 方法:
 
 
-#### amisJson
+#### amis_json
 
 - 返回模型`json`数据,使用字段别名并且排除`None`.
 
-#### amisDict
+#### amis_dict
 
 - 返回模型`dict`数据,使用字段别名并且排除`None`.
 
