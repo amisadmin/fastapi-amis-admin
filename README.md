@@ -8,17 +8,17 @@
     <em>启发自Django-Admin,并且拥有不逊色于Django-Admin的强大功能.</em>
 </p>
 <p align="center">
-    <a href="https://github.com/amisadmin/fastapi_amis_admin/blob/master/LICENSE" target="_blank">
-        <img src="https://img.shields.io/badge/license-Apache2.0-brightgreen" alt="Test">
-    </a>
-    <a href="https://pypi.org/project/fastapi_amis_admin" target="_blank">
-        <img src="https://img.shields.io/badge/python-3.7%2B-blue" alt="Supported Python versions">
+    <a href="https://github.com/amisadmin/fastapi_amis_admin/actions/workflows/pytest.yml" target="_blank">
+        <img src="https://github.com/amisadmin/fastapi_amis_admin/actions/workflows/pytest.yml/badge.svg" alt="Pytest">
     </a>
     <a href="https://pypi.org/project/fastapi_amis_admin" target="_blank">
         <img src="https://img.shields.io/pypi/v/fastapi-amis-admin?color=blue" alt="Package version">
     </a>
     <a href="https://pepy.tech/project/fastapi-amis-admin" target="_blank">
         <img src="https://pepy.tech/badge/fastapi-amis-admin/month" alt="Downloads">
+    </a>
+    <a href="https://gitter.im/amisadmin/fastapi-amis-admin">
+        <img src="https://badges.gitter.im/amisadmin/fastapi-amis-admin.svg" alt="Chat on Gitter"/>
     </a>
     <a href="https://jq.qq.com/?_wv=1027&k=U4Dv6x8W" target="_blank">
         <img src="https://img.shields.io/badge/qq群-229036692-orange" alt="229036692">
@@ -34,15 +34,17 @@
   <a href="http://docs.gh.amis.work" target="_blank">文档打不开？</a>
 </p>
 
+
+
 ------
 
-`fastapi-amis-admin`是一个基于`fastapi`+`amis`开发的高性能并且高效率 `web-admin` 框架，使用 Python 3.7+ 并基于标准的 Python 类型提示。
+`fastapi-amis-admin`是一个基于`fastapi`+`amis`开发的高性能并且高效率 `web-admin` 框架，使用 Python 3.7+ 并基于标准的 Python 类型提示.
 `fastapi-amis-admin`开发的初衷是为了完善`fastapi`应用生态, 为`fastapi` web应用程序快速生成一个可视化管理后台.
 `fastapi-amis-admin`遵循`Apache2.0`协议免费开源, 但是为了更好的长期运营与维护此项目, `fastapi-amis-admin`非常希望能够得到大家的赞助与支持.
 
 ## 关键特性
 
-- **性能极高**：基于[FastAPI](https://fastapi.tiangolo.com/zh/), 可享受FastAPI的全部优势。
+- **性能极高**：基于[FastAPI](https://fastapi.tiangolo.com/zh/), 可享受`FastAPI`的全部优势.
 
 - **效率更快**：完善的编码类型提示, 代码可重用性更高.
 
@@ -68,7 +70,7 @@
 
 - `amis`: 基于`baidu amis`的`pydantic`数据模型构建库,用于快速生成/解析`amis` `json` 数据.
 - `fastapi-sqlmodel-crud`: 基于`FastAPI`+`SQLModel`, 用于快速构建Create,Read,Update,Delete通用API接口.
-- `amis_admin`: 启发自`Django-Admin`, 结合`amis`+`fastapi-sqlmodel-crud`, 用于快速构建Web Admin管理后台.
+- `amis_admin`: 启发自`Django-Admin`, 结合`amis`+`fastapi-sqlmodel-crud`, 用于快速构建`Web Admin`管理后台.
 
 ## 安装
 
