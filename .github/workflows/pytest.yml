@@ -39,6 +39,7 @@ jobs:
       - name: Install Dependencies
         if: steps.cache.outputs.cache-hit != 'true'
         run: flit install --symlink
+
       - name: Test
         run: pytest
 #      - name: Upload coverage

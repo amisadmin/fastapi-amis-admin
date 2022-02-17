@@ -20,12 +20,14 @@ jobs:
         with:
           path: ${{ env.pythonLocation }}
           key: ${{ runner.os }}-python-${{ env.pythonLocation }}-${{ hashFiles('pyproject.toml') }}-publish
+
       - name: Install Flit
         if: steps.cache.outputs.cache-hit != 'true'
         run: pip install flit
       - name: Install Dependencies
         if: steps.cache.outputs.cache-hit != 'true'
         run: flit install --symlink
+
       - name: Publish to PyPI
         #      if: startsWith(github.ref, 'refs/tags')
         run: flit publish
