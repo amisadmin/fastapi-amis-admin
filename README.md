@@ -1,4 +1,7 @@
 # 项目介绍
+
+[![Join the chat at https://gitter.im/amisadmin/fastapi-amis-admin](https://badges.gitter.im/amisadmin/fastapi-amis-admin.svg)](https://gitter.im/amisadmin/fastapi-amis-admin?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 <h2 align="center">
   FastAPI-Amis-Admin
 </h2>
