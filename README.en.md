@@ -1,11 +1,13 @@
-# 项目介绍
+[简体中文](https://github.com/amisadmin/fastapi_amis_admin)| [English](https://github.com/amisadmin/fastapi_amis_admin/blob/master/README.en.md)
+
+# Introduction
 
 <h2 align="center">
   FastAPI-Amis-Admin
 </h2>
 <p align="center">
-    <em>fastapi-amis-admin是一个拥有高性能,高效率,易拓展的fastapi管理后台框架</em><br/>
-    <em>启发自Django-Admin,并且拥有不逊色于Django-Admin的强大功能.</em>
+    <em>fastapi-amis-admin is a high-performance, efficient and easily extensible FastAPI admin framework.</em><br/>
+    <em>Inspired by Django-admin, and has as many powerful functions as Django-admin.</em>
 </p>
 <p align="center">
     <a href="https://github.com/amisadmin/fastapi_amis_admin/actions/workflows/pytest.yml" target="_blank">
@@ -20,78 +22,78 @@
     <a href="https://gitter.im/amisadmin/fastapi-amis-admin">
         <img src="https://badges.gitter.im/amisadmin/fastapi-amis-admin.svg" alt="Chat on Gitter"/>
     </a>
-    <a href="https://jq.qq.com/?_wv=1027&k=U4Dv6x8W" target="_blank">
-        <img src="https://img.shields.io/badge/qq群-229036692-orange" alt="229036692">
-    </a>
 </p>
 <p align="center">
-  <a href="https://github.com/amisadmin/fastapi_amis_admin" target="_blank">源码</a>
+  <a href="https://github.com/amisadmin/fastapi_amis_admin" target="_blank">source code</a>
   ·
-  <a href="http://demo.amis.work/admin" target="_blank">在线演示</a>
+  <a href="http://demo.amis.work/admin" target="_blank">online demo</a>
   ·
-  <a href="http://docs.amis.work" target="_blank">文档</a>
+  <a href="http://docs.gh.amis.work" target="_blank">documentation</a>
   ·
-  <a href="http://docs.gh.amis.work" target="_blank">文档打不开？</a>
+  <a href="http://docs.amis.work" target="_blank">can't open the document?</a>
 </p>
-
 
 
 ------
 
-`fastapi-amis-admin`是一个基于`fastapi`+`amis`开发的高性能并且高效率 `web-admin` 框架，使用 Python 3.7+ 并基于标准的 Python 类型提示.
-`fastapi-amis-admin`开发的初衷是为了完善`fastapi`应用生态, 为`fastapi` web应用程序快速生成一个可视化管理后台.
-`fastapi-amis-admin`遵循`Apache2.0`协议免费开源, 但是为了更好的长期运营与维护此项目, `fastapi-amis-admin`非常希望能够得到大家的赞助与支持.
+`fastapi-amis-admini` is a high-performance and efficient framework based on `fastapi` & `amis` with `Python 3.7+`, and
+based on standard Python type hints. The original intention of the development is to improve the application ecology and
+to quickly generate a visual dashboard for the web application . According to the `Apache2.0` protocol, it is free and
+open source . But in order to better operate and maintain this project in the long run, I very much hope to get
+everyone's sponsorship and support.
 
-## 关键特性
+## Features
 
-- **性能极高**：基于[FastAPI](https://fastapi.tiangolo.com/zh/), 可享受`FastAPI`的全部优势.
+- **High performance**: Based on [FastAPI](https://fastapi.tiangolo.com/zh/). Enjoy all the benefits.
+- **High efficiency**: Perfect code type hints. Higher code reusability.
+- **Support asynchronous and synchronous hybrid writing**: `ORM`  is based on`SQLModel` & `Sqlalchemy`. Freely customize
+  database type. Support synchronous and asynchronous mode. Strong scalability.
+- **Front-end separation**: The front-end is rendered by `Amis`, the back-end interface is automatically generated
+  by `fastapi-amis-admin`. The interface is reusable.
+- **Strong scalability**: The background page supports `Amis` pages and ordinary `html` pages. Easily customize the
+  interface freely.
+- **Automatic api documentation**: Automatically generate Interface documentation by `FastAPI`. Easily debug and share
+  interfaces.
 
-- **效率更快**：完善的编码类型提示, 代码可重用性更高.
+## Dependencies
 
-- **支持异步和同步混合编写**: `ORM`基于`SQLModel`+`Sqlalchemy`, 可自由定制数据库类型, 支持同步及异步模式, 可拓展性强.
+- [Fastapi](https://fastapi.tiangolo.com/): Finish the web part.
+- [SQLModel](https://sqlmodel.tiangolo.com/): Finish `ORM` model mapping. Perfectly
+  combine  [SQLAlchemy](https://www.sqlalchemy.org/) with [Pydantic](https://pydantic-docs.helpmanual.io/), and have all
+  their features .
+- [Amis](https://baidu.gitee.io/amis): Finish admin page presentation.
 
-- **前后端分离**: 前端由`Amis`渲染, 后端接口由`fastapi-amis-admin`自动生成, 接口可重复利用.
+## Composition
 
-- **可拓展性强**:  后台页面支持`Amis`页面及普通`html`页面,开发者可以很方便的自由定制界面.
+`fastapi-amis-admin` consists of three core modules, of which, `amis`, `fastapi-sqlmodel-crud` can be used as separate
+modules, `amis_admin` is developed by the former.
 
-- **自动生成API文档**: 由`FastAPI`自动生成接口文档,方便开发者调试,以及接口分享.
+- `amis`: Based on the `pydantic` data model building library of `baidu amis`. To generate/parse data rapidly.
+- `fastapi-sqlmodel-crud`: Based on `FastAPI` &`SQLModel`. To quickly build Create, Read, Update, Delete common API
+  interface .
+- `amis_admin`: Inspired by `Django-Admin`. Combine `amis` with `fastapi-sqlmodel-crud`. To quickly build Web Admin
+  dashboard .
 
-## 核心依赖
-
-- [Fastapi](https://fastapi.tiangolo.com) 负责 web 部分
-- [SQLModel](https://sqlmodel.tiangolo.com/) 负责ORM模型映射(
-  完美结合[SQLAlchemy](https://www.sqlalchemy.org/)+[Pydantic](https://pydantic-docs.helpmanual.io/), 拥有`SQLAlchemy`
-  和`Pydantic`的所有功能)
-- [Amis](https://baidu.gitee.io/amis) 负责Admin后台页面展示
-
-## 项目组成
-
-`fastapi-amis-admin`由三部分核心模块组成,其中`amis`, `fastapi-sqlmodel-crud` 可作为独立模块单独使用,`amis_admin`基于前者共同构建.
-
-- `amis`: 基于`baidu amis`的`pydantic`数据模型构建库,用于快速生成/解析`amis` `json` 数据.
-- `fastapi-sqlmodel-crud`: 基于`FastAPI`+`SQLModel`, 用于快速构建Create,Read,Update,Delete通用API接口.
-- `amis_admin`: 启发自`Django-Admin`, 结合`amis`+`fastapi-sqlmodel-crud`, 用于快速构建`Web Admin`管理后台.
-
-## 安装
+## Installation
 
 ```bash
 pip install fastapi_amis_admin
 ```
 
-## 简单示例
+## Simple Example
 
 ```python
 from fastapi import FastAPI
 from fastapi_amis_admin.amis_admin.settings import Settings
 from fastapi_amis_admin.amis_admin.site import AdminSite
 
-# 创建FastAPI应用
+# create FastAPI application
 app = FastAPI()
 
-# 创建AdminSite实例
+# create AdminSite instance
 site = AdminSite(settings=Settings(database_url_async='sqlite+aiosqlite:///admisadmin.db'))
 
-# 挂载后台管理系统
+# mount AdminSite instance
 site.mount_app(app)
 
 if __name__ == '__main__':
@@ -100,7 +102,7 @@ if __name__ == '__main__':
     uvicorn.run(app, debug=True)
 ```
 
-## 模型管理示例
+## ModelAdmin Example
 
 ```python
 from fastapi import FastAPI
@@ -110,33 +112,33 @@ from fastapi_amis_admin.amis_admin.site import AdminSite
 from fastapi_amis_admin.amis_admin import admin
 from fastapi_amis_admin.models.fields import Field
 
-# 创建FastAPI应用
+# create FastAPI application
 app = FastAPI()
 
-# 创建AdminSite实例
+# create AdminSite instance
 site = AdminSite(settings=Settings(database_url_async='sqlite+aiosqlite:///admisadmin.db'))
 
 
-# 先创建一个SQLModel模型,详细请参考: https://sqlmodel.tiangolo.com/
+# Create an SQLModel, see document for details: https://sqlmodel.tiangolo.com/
 class Category(SQLModel, table=True):
     id: int = Field(default=None, primary_key=True, nullable=False)
     name: str = Field(title='CategoryName')
     description: str = Field(default='', title='Description')
 
 
-# 注册ModelAdmin
+# register ModelAdmin
 @site.register_admin
 class CategoryAdmin(admin.ModelAdmin):
-    page_schema = '分类管理'
-    # 配置管理模型
+    page_schema = 'Category'
+    # set model
     model = Category
 
 
-# 挂载后台管理系统
+# mount AdminSite instance
 site.mount_app(app)
 
 
-# 创建初始化数据库表
+# create initial database table
 @app.on_event("startup")
 async def startup():
     await site.create_db_and_tables()
@@ -148,7 +150,7 @@ if __name__ == '__main__':
     uvicorn.run(app, debug=True)
 ```
 
-## 表单管理示例
+## FormAdmin Example
 
 ```python
 from typing import Any
@@ -162,33 +164,33 @@ from fastapi_amis_admin.amis_admin.site import AdminSite
 from fastapi_amis_admin.crud.schema import BaseApiOut
 from fastapi_amis_admin.models.fields import Field
 
-# 创建FastAPI应用
+# create FastAPI application
 app = FastAPI()
 
-# 创建AdminSite实例
+# create AdminSite instance
 site = AdminSite(settings=Settings(database_url_async='sqlite+aiosqlite:///admisadmin.db'))
 
 
-# 注册FormAdmin
+# register FormAdmin
 @site.register_admin
 class UserLoginFormAdmin(admin.FormAdmin):
     page_schema = 'UserLoginForm'
-    # 配置表单信息, 可省略
-    form = Form(title='这是一个测试登录表单', submitText='登录')
+    # set form information, optional
+    form = Form(title='This is a test login form', submitText='login')
 
-    # 创建表单数据模型
+    # create form schema
     class schema(BaseModel):
-        username: str = Field(..., title='用户名', min_length=3, max_length=30)
-        password: str = Field(..., title='密码')
+        username: str = Field(..., title='username', min_length=3, max_length=30)
+        password: str = Field(..., title='password')
 
-    # 处理表单提交数据
+    # handle form submission data
     async def handle(self, request: Request, data: BaseModel, **kwargs) -> BaseApiOut[Any]:
         if data.username == 'amisadmin' and data.password == 'amisadmin':
-            return BaseApiOut(msg='登录成功!', data={'token': 'xxxxxx'})
-        return BaseApiOut(status=-1, msg='用户名或密码错误!')
+            return BaseApiOut(msg='Login successfully!', data={'token': 'xxxxxx'})
+        return BaseApiOut(status=-1, msg='Incorrect username or password!')
 
 
-# 挂载后台管理系统
+# mount AdminSite instance
 site.mount_app(app)
 
 if __name__ == '__main__':
@@ -197,7 +199,7 @@ if __name__ == '__main__':
     uvicorn.run(app, debug=True)
 ```
 
-## 界面预览
+## Preview
 
 - Open `http://127.0.0.1:8000/admin/` in your browser:
 
@@ -207,13 +209,15 @@ if __name__ == '__main__':
 
 ![Docs](https://raw.githubusercontent.com/amisadmin/fastapi_amis_admin_demo/master/upload/img/Docs.png)
 
-## 未来计划
+## Future
 
-- [ ] bug修复,细节完善.
-- [ ] 完善用户教程文档.
-- [ ] 不断拓展与完善核心功能.
-- [ ] 增加用户认证与授权系统.
+- [ ] Fix bug and improve details.
+- [ ] Improve the user tutorial documentation.
+- [ ] Expand and improve core functions continuously .
+- [ ] Add user authentication and authorization system.
 
-## 许可协议
+## License
 
-- `fastapi-amis-admin`基于`Apache2.0`开源免费使用，可以免费用于商业用途，但请在展示界面中明确显示关于FastAPI-Amis-Admin的版权信息.
+- According to the `Apache2.0` protocol, `fastapi-amis-admin` is free and open source. It can be used for commercial for
+  free, but please clearly display copyright information about `FastAPI-Amis-Admin` on the display interface.
+

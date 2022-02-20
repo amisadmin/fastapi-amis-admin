@@ -1,3 +1,5 @@
+[简体中文](https://github.com/amisadmin/fastapi_amis_admin) | [English](https://github.com/amisadmin/fastapi_amis_admin/blob/master/README.en.md)
+
 # 项目介绍
 
 <h2 align="center">
@@ -52,7 +54,7 @@
 
 - **前后端分离**: 前端由`Amis`渲染, 后端接口由`fastapi-amis-admin`自动生成, 接口可重复利用.
 
-- **可拓展性强**:  后台页面支持`Amis`页面及普通`html`页面,开发者可以很方便的自由定制界面.
+- **可拓展性强**: 后台页面支持`Amis`页面及普通`html`页面,开发者可以很方便的自由定制界面.
 
 - **自动生成API文档**: 由`FastAPI`自动生成接口文档,方便开发者调试,以及接口分享.
 
