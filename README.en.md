@@ -1,4 +1,4 @@
-[简体中文](https://github.com/amisadmin/fastapi_amis_admin)| [English](https://github.com/amisadmin/fastapi_amis_admin/blob/master/README.en.md)
+[简体中文](https://github.com/amisadmin/fastapi_amis_admin) | [English](https://github.com/amisadmin/fastapi_amis_admin/blob/master/README.en.md)
 
 # Introduction
 

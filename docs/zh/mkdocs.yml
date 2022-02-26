@@ -1,5 +1,6 @@
 site_name: FastAPI-Amis-Admin
 repo_url: https://github.com/amisadmin/fastapi_amis_admin
+edit_uri: edit/master/docs/zh/docs/
 theme:
   name: material
   palette:
@@ -77,6 +78,7 @@ nav:
           - tutorials/basic/Settings.md
           - tutorials/basic/_more.md
       - 高级教程:
+          - tutorials/advanced/permission.md
           - tutorials/advanced/AdminApp.md
           - tutorials/advanced/structure.md
           - tutorials/advanced/_more.md
