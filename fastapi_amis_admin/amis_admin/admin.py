@@ -513,7 +513,7 @@ class PageAdmin(PageSchemaAdmin, RouterAdmin):
         super().get_page_schema()
         if self.page_schema:
             self.page_schema.url = f'{self.router.prefix}{self.page_path}'
-            self.page_schema.schemaApi = f'get:{self.router_path}{self.page_path}'
+            self.page_schema.schemaApi = f'{self.router_path}{self.page_path}'
             if self.page_parser_mode == 'html':
                 self.page_schema.schema_ = Page(body=Iframe(src=self.page_schema.schemaApi))
         return self.page_schema
