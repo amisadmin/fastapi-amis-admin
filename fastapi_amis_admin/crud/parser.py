@@ -4,6 +4,7 @@ from pydantic.utils import smart_deepcopy
 from sqlalchemy import Column
 from sqlalchemy.engine import Row
 from sqlalchemy.orm import InstrumentedAttribute
+from sqlalchemy.sql.elements import Label
 from sqlmodel import SQLModel
 from sqlmodel.main import SQLModelMetaclass
 from sqlmodel.sql.expression import Select
@@ -49,13 +50,15 @@ class SQLModelFieldParser:
             return self.default_model.__table__.columns.get(field)
         return None
 
-    def get_alias(self, field: Union[Column, SQLModelField]) -> str:
+    def get_alias(self, field: Union[Column, SQLModelField, Label]) -> str:
         if isinstance(field, Column):
             return field.name if field.table.name == self.default_model.__tablename__ else self._alias_format.format(
                 table_name=field.table.name, field_key=field.name)
         elif isinstance(field, InstrumentedAttribute):
             return field.key if field.class_.__tablename__ == self.default_model.__tablename__ else self._alias_format.format(
                 table_name=field.class_.__tablename__, field_key=field.key)
+        elif isinstance(field, Label):
+            return field.key
         elif isinstance(field, str) and field in self.default_model.__fields__:
             return field
         return ''
