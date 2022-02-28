@@ -1,5 +1,6 @@
 site_url: https://docs.amis.work/
 site_name: FastAPI-Amis-Admin
+site_description: fastapi-amis-admin是一个拥有高性能,高效率,易拓展的fastapi管理后台框架.启发自Django-Admin,并且拥有不逊色于Django-Admin的强大功能.
 repo_url: https://github.com/amisadmin/fastapi_amis_admin
 edit_uri: edit/master/docs/zh/docs/
 theme:
