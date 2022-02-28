@@ -25,7 +25,6 @@ class ItemListSchema(GenericModel, Generic[_T], BaseApiSchema):
     """数据查询返回格式"""
     items: List[_T]  # 数据列表
     total: int = None  # 数据总量
-    hasNext: bool = None  # 是否有下一页
     query: Dict[str, Any] = None
     filter: Dict[str, Any] = None
 

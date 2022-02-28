@@ -187,7 +187,7 @@ class LinkModelForm:
 class BaseModelAdmin(SQLModelCrud):
     list_display: List[Union[SQLModelListField, TableColumn]] = []  # 需要显示的字段
     list_filter: List[Union[SQLModelListField, FormItem]] = []  # 需要查询的字段
-    list_per_page: int = 15  # 每页数据量
+    list_per_page: int = 10  # 每页数据量
     link_model_fields: List[InstrumentedAttribute] = []  # 内联字段
     link_model_forms: List[LinkModelForm] = []
     bulk_edit_fields: List[Union[SQLModelListField, FormItem]] = []  # 批量编辑字段
