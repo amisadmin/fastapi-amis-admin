@@ -54,8 +54,7 @@ class AmisParser():
                 kwargs['type'] = 'input-datetime-range'
                 kwargs['format'] = 'YYYY-MM-DD HH:mm:ss'
                 # 给筛选的 DateTimeRange 添加 today 标签
-                kwargs['ranges'] = "today,yesterday,7daysago,prevweek,thismonth,prevmonth,prevquarter"  # 日期范围快捷键，可选：today, yesterday, 1dayago, 7daysago, 30daysago, 90daysago, prevweek, thismonth, thisquarter, prevmonth, prevquarter
-                
+                kwargs['ranges'] = "today,yesterday,7daysago,prevweek,thismonth,prevmonth,prevquarter"
             elif issubclass(self.modelfield.type_, datetime.date):
                 kwargs['type'] = 'input-date-range'
                 kwargs['format'] = 'YYYY-MM-DD'
@@ -132,4 +131,5 @@ class AmisParser():
         column.name = self.modelfield.alias
         column.label = column.label or self.label
         column.remark = column.remark or self.remark
+        column.sortable = True
         return column

@@ -252,7 +252,7 @@ class BaseModelAdmin(SQLModelCrud):
             modelfield = self.parser.get_modelfield(field, deepcopy=True)
             if modelfield and issubclass(modelfield.type_, (datetime.datetime, datetime.date, datetime.time)):
                 data.update({modelfield.alias: '[-]$' + modelfield.alias})
-        api = AmisAPI(method='POST', url=f'{self.router_path}/list?' + 'page=${page}&perPage=${perPage}',
+        api = AmisAPI(method='POST', url=f'{self.router_path}/list?' + 'page=${page}&perPage=${perPage}&orderBy=${orderBy}&orderDir=${orderDir}',
                       data=data)
         return api
 
