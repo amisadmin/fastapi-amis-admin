@@ -1,8 +1,8 @@
 # 项目调试
 
-## ide调试
+## IDE调试
 
-默认会开启全部ide调试，可以通过下面几种方式关闭：
+默认会开启全部IDE调试，可以通过下面几种方式关闭：
 
 1.通过`Settings`对象中的`debug`属性进行全局调试配置
 
@@ -64,3 +64,14 @@ site = AdminSite(settings=Settings(debug=False),
 
 1. 运行日志，主要是 api 及数据转换的日志
 2. 查看组件数据链，Debug 工具展开后，点击任意组件就能看到这个组件的数据链
+
+
+
+## Amis可视化编辑器
+
+- 项目地址: [https://github.com/aisuda/amis-editor-demo](https://github.com/aisuda/amis-editor-demo)
+
+
+- 在线体验：http://aisuda.github.io/amis-editor-demo
+
+
