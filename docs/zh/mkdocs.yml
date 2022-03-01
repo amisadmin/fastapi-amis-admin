@@ -82,6 +82,7 @@ nav:
           - tutorials/advanced/permission.md
           - tutorials/advanced/AdminApp.md
           - tutorials/advanced/structure.md
+          - tutorials/advanced/debug.md
           - tutorials/advanced/_more.md
       - 拓展教程:
           - extended/about.md
