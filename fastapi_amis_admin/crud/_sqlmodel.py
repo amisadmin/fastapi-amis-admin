@@ -93,7 +93,10 @@ class SQLModelSelector:
                                                                     description='Link Model Primary key or list of primary keys')) -> \
             Optional[Any]:
         if link_model and link_item_id:
-            table, pk_col, link_col = self.link_models.get(link_model)
+            result = self.link_models.get(link_model)
+            if not result:
+                return None
+            table, pk_col, link_col = result
             if table is not None:
                 op = 'in_'
                 if isinstance(link_item_id, str) and link_item_id.startswith('!'):
