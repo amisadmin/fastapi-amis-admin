@@ -822,6 +822,7 @@ class AdminApp(PageAdmin):
             children = await self.get_page_schema_children(request)
             if not children:
                 return app
+            children = [{"children": children}]
             if self is self.site:
                 app.pages.extend(children)
             else:
