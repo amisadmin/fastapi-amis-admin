@@ -27,7 +27,7 @@ from fastapi_amis_admin.amis_admin.parser import AmisParser
 from fastapi_amis_admin.crud.base import RouterMixin
 from fastapi_amis_admin.crud._sqlmodel import SQLModelCrud, SQLModelSelector
 from fastapi_amis_admin.crud.parser import SQLModelFieldParser, SQLModelField, SQLModelListField
-from fastapi_amis_admin.crud.schema import CrudEnum, BaseApiOut
+from fastapi_amis_admin.crud.schema import CrudEnum, BaseApiOut, Paginator
 from fastapi_amis_admin.crud.utils import parser_item_id, schema_create_by_schema, parser_str_set_list
 from fastapi_amis_admin.utils.db import SqlalchemyAsyncClient
 from fastapi_amis_admin.amis_admin.settings import Settings
@@ -428,10 +428,14 @@ class PageSchemaAdmin(BaseAdmin):
         self.group_schema = self.get_group_schema()
 
     async def has_page_permission(self, request: Request) -> bool:
-        return True
+        return self.app is self or await self.app.has_page_permission(request)
 
     def error_no_page_permission(self, request: Request):
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='No page permissions')
+        page_parser_mode = request.query_params.get('_parser') or self.page_parser_mode
+
+        raise HTTPException(status_code=status.HTTP_307_TEMPORARY_REDIRECT, detail='No page permissions',
+                            headers={
+                                'location': f'{self.app.site.router_path}/auth/form/login?_parser={page_parser_mode}&redirect={request.url}'})
 
     def get_page_schema(self) -> Optional[PageSchema]:
         if self.page_schema:
@@ -683,6 +687,28 @@ class ModelAdmin(BaseModelAdmin, PageAdmin):
         page = await super(ModelAdmin, self).get_page(request)
         page.body = await self.get_list_table(request)
         return page
+
+    async def has_list_permission(self, request: Request,
+                                  paginator: Paginator,
+                                  filter: BaseModel = None,  # type self.schema_filter
+                                  **kwargs) -> bool:
+        return await self.has_page_permission(request)
+
+    async def has_create_permission(self, request: Request,
+                                    data: BaseModel,  # type self.schema_create
+                                    **kwargs) -> bool:
+        return await self.has_page_permission(request)
+
+    async def has_read_permission(self, request: Request, item_id: List[str], **kwargs) -> bool:
+        return await self.has_page_permission(request)
+
+    async def has_update_permission(self, request: Request, item_id: List[str],
+                                    data: BaseModel,  # type self.schema_update
+                                    **kwargs) -> bool:
+        return await self.has_page_permission(request)
+
+    async def has_delete_permission(self, request: Request, item_id: List[str], **kwargs) -> bool:
+        return await self.has_page_permission(request)
 
 
 class BaseModelAction:
