@@ -89,7 +89,7 @@ nav:
           - extended/SQLModel.md
           - extended/alembic.md
       - about.md
-      - release.md
+
   - API Reference:
       - Amis:
           - amis/types.md
