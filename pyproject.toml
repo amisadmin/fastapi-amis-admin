@@ -10,7 +10,7 @@ authors = [
 maintainers = [
     { name = "Atomi", email = "1456417373@qq.com" },
 ]
-description = "fastapi-amis-admin is a high-performance, efficient and easily extensible FastAPI admin framework. Inspired by Django-admin, and has as many powerful functions as Django-admin. "
+description = "FastAPI-Amis-Admin is a high-performance, efficient and easily extensible FastAPI admin framework. Inspired by Django-admin, and has as many powerful functions as Django-admin. "
 readme = "README.md"
 requires-python = ">=3.7"
 dynamic = ["version"]
@@ -39,6 +39,7 @@ dependencies = [
     "sqlmodel>=0.0.4",
     "ujson>=4.0.1",
     "python-multipart>=0.0.5",
+    "aiofiles",
 ]
 
 

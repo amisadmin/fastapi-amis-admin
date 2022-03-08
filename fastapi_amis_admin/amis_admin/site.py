@@ -2,7 +2,7 @@ import os.path
 import platform
 import time
 import uuid
-
+import aiofiles
 from fastapi import UploadFile, File, FastAPI
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncEngine
@@ -85,8 +85,8 @@ class FileAdmin(RouterAdmin):
                 res = await file.read()
                 if self.file_max_size and len(res) > self.file_max_size:
                     return BaseApiOut(status=-2, msg='The file size exceeds the limit')
-                with open(file_path, "wb") as f:
-                    f.write(res)
+                async with aiofiles.open(file_path, "wb") as f:
+                    await f.write(res)
                 return BaseApiOut(data=self.UploadOutSchema(filename=filename,
                                                             url=self.static_path + '/' + filename))
             except Exception as e:
