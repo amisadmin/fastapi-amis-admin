@@ -161,3 +161,6 @@ class BaseCrud(RouterMixin):
 
     def error_data_handle(self, request: Request):
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "error data handle")
+    
+    def error_execute_sql(self, request: Request, error: Exception):
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Error Execute SQL：{error}")
