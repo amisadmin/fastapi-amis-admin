@@ -127,8 +127,11 @@ class LinkModelForm:
             for item in item_id:
                 for link in link_id:
                     values.append({self.link_col.key: link, self.item_col.key: item})
-            stmt = insert(self.link_model).values(values).prefix_with('OR IGNORE')
-            result = await db.execute(stmt)
+            stmt = insert(self.link_model).values(values)
+            try:
+                result = await db.execute(stmt)
+            except Exception as error:
+                return self.pk_admin.error_execute_sql(request=request, error=error)
             if result.rowcount:  # type: ignore
                 await db.commit()
             return BaseApiOut(data=result.rowcount)  # type: ignore
