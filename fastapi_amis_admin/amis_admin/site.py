@@ -36,8 +36,8 @@ class ReDocsAdmin(IframeAdmin):
 
 
 class HomeAdmin(PageAdmin):
-    group_schema = PageSchema(label='Home', sort=100)
-    page_schema = PageSchema(label='Home', icon='fa fa-home', url='/home', isDefaultPage=True)
+    group_schema = None
+    page_schema = PageSchema(label='Home', icon='fa fa-home', url='/home', isDefaultPage=True,sort=100)
     page_path = '/home/amis.json'
 
     async def get_page(self, request: Request) -> Page:

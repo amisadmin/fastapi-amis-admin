@@ -27,7 +27,7 @@ from fastapi_amis_admin.amis_admin.parser import AmisParser
 from fastapi_amis_admin.crud.base import RouterMixin
 from fastapi_amis_admin.crud._sqlmodel import SQLModelCrud, SQLModelSelector
 from fastapi_amis_admin.crud.parser import SQLModelFieldParser, SQLModelField, SQLModelListField
-from fastapi_amis_admin.crud.schema import CrudEnum, BaseApiOut
+from fastapi_amis_admin.crud.schema import CrudEnum, BaseApiOut, Paginator
 from fastapi_amis_admin.crud.utils import parser_item_id, schema_create_by_schema, parser_str_set_list
 from fastapi_amis_admin.utils.db import SqlalchemyAsyncClient
 from fastapi_amis_admin.amis_admin.settings import Settings
@@ -81,8 +81,11 @@ class LinkModelForm:
             else:
                 item_key = key  # auth_user.id
         if admin and link_key and item_key:
-            admin.link_models.update(
-                {pk_admin.model.__tablename__: (table, link_key.parent, item_key.parent)})
+            if not admin.link_models:
+                admin.link_models = {pk_admin.model.__tablename__: (table, link_key.parent, item_key.parent)}
+            else:
+                admin.link_models.update(
+                    {pk_admin.model.__tablename__: (table, link_key.parent, item_key.parent)})
             return LinkModelForm(pk_admin=pk_admin,
                                  display_admin_cls=admin.__class__, link_model=table, link_col=link_key.parent,
                                  item_col=item_key.parent)
@@ -149,10 +152,11 @@ class LinkModelForm:
             button_create = ActionType.Ajax(actionType='ajax', label='添加关联', level=LevelEnum.danger,
                                             confirmText='确定要添加关联?',
                                             api=f"post:{self.pk_admin.app.router_path}{self.pk_admin.router.prefix}{self.path}" + '/${REPLACE(query.link_item_id, "!", "")}?link_id=${IF(ids, ids, id)}')  # query.link_item_id
-            adaptor = 'if(("undefined"==typeof body_bulkActions_2)||!body_bulkActions_2){action=' + button_create.amis_json() + ';payload.data.body.bulkActions.push(action);payload.data.body.itemActions.push(action);body_bulkActions_2=payload.data.body.bulkActions;body_itemActions_2=payload.data.body.itemActions;}else{payload.data.body.bulkActions=body_bulkActions_2;payload.data.body.itemActions=body_itemActions_2;}return payload;'
+            adaptor = 'if(!payload.hasOwnProperty("_payload")){payload._payload=JSON.stringify(payload);}payload=JSON.parse(payload._payload);button_create=' + button_create.amis_json() + ';payload.data.body.bulkActions.push(button_create);payload.data.body.itemActions.push(button_create);return payload;'.replace(
+                'action_id', 'create' + self.path.replace('/', '_'))
             button_create_dialog = ActionType.Dialog(icon='fa fa-plus pull-left', label='添加关联', level=LevelEnum.danger,
                                                      dialog=Dialog(title='添加关联', size='full', body=Service(
-                                                         schemaApi=AmisAPI(method='get', url=url,
+                                                         schemaApi=AmisAPI(method='get', url=url, cache=20000,
                                                                            responseData={'&': '${body}',
                                                                                          'api.url': '${body.api.url}&link_model=' + self.pk_admin.model.__tablename__ + '&link_item_id=!${api.qsOptions.id}'},
                                                                            qsOptions={'id': '$id'}, adaptor=adaptor)
@@ -161,8 +165,9 @@ class LinkModelForm:
 
             button_delete = ActionType.Ajax(actionType='ajax', label='移除关联', level=LevelEnum.danger,
                                             confirmText='确定要移除关联?',
-                                            api=f"delete:{self.pk_admin.app.router_path}{self.pk_admin.router.prefix}{self.path}" + '/${query.link_item_id}?link_id=${IF(ids, ids, id)}')  # ${IF(ids, ids, id)} # ${ids|raw}${id}
-            adaptor = 'if(("undefined"==typeof body_bulkActions_1)||!body_bulkActions_1){action=' + button_delete.amis_json() + ';payload.data.body.headerToolbar.push(' + button_create_dialog.amis_json() + ');payload.data.body.bulkActions.push(action);payload.data.body.itemActions.push(action);body_headerToolbar_1=payload.data.body.headerToolbar;body_bulkActions_1=payload.data.body.bulkActions;body_itemActions_1=payload.data.body.itemActions;}else{payload.data.body.headerToolbar=body_headerToolbar_1;payload.data.body.bulkActions=body_bulkActions_1;payload.data.body.itemActions=body_itemActions_1;}return payload;'
+                                            api=f"delete:{self.pk_admin.app.router_path}{self.pk_admin.router.prefix}{self.path}" + '/${query.link_item_id}?link_id=${IF(ids, ids, id)}')
+            adaptor = 'if(!payload.hasOwnProperty("_payload")){payload._payload=JSON.stringify(payload);}payload=JSON.parse(payload._payload);button_delete=' + button_delete.amis_json() + ';payload.data.body.headerToolbar.push(' + button_create_dialog.amis_json() + ');payload.data.body.bulkActions.push(button_delete);payload.data.body.itemActions.push(button_delete);return payload;'.replace(
+                'action_id', 'delete' + self.path.replace('/', '_'))
         return Service(
             schemaApi=AmisAPI(method='get', url=url, cache=20000, responseData=dict(controls=[picker]),
                               qsOptions={'id': '$id'},
@@ -255,7 +260,8 @@ class BaseModelAdmin(SQLModelCrud):
             modelfield = self.parser.get_modelfield(field, deepcopy=True)
             if modelfield and issubclass(modelfield.type_, (datetime.datetime, datetime.date, datetime.time)):
                 data.update({modelfield.alias: '[-]$' + modelfield.alias})
-        api = AmisAPI(method='POST', url=f'{self.router_path}/list?' + 'page=${page}&perPage=${perPage}&orderBy=${orderBy}&orderDir=${orderDir}',
+        api = AmisAPI(method='POST',
+                      url=f'{self.router_path}/list?' + 'page=${page}&perPage=${perPage}&orderBy=${orderBy}&orderDir=${orderDir}',
                       data=data)
         return api
 
@@ -283,8 +289,8 @@ class BaseModelAdmin(SQLModelCrud):
             table.footable = True
         return table
 
-    async def get_form_item_on_foreign_key(self, request: Request, modelfield: ModelField) -> Union[
-        Service, SchemaNode]:
+    async def get_form_item_on_foreign_key(self, request: Request,
+                                           modelfield: ModelField) -> Union[Service, SchemaNode]:
         column = self.parser.get_column(modelfield.alias)
         if column is None:
             return None
@@ -303,8 +309,8 @@ class BaseModelAdmin(SQLModelCrud):
         return Service(
             schemaApi=AmisAPI(method='get', url=url, cache=20000, responseData=dict(controls=[picker])))
 
-    async def get_form_item(self, request: Request, modelfield: ModelField, action: CrudEnum) -> Union[
-        FormItem, SchemaNode]:
+    async def get_form_item(self, request: Request, modelfield: ModelField,
+                            action: CrudEnum) -> Union[FormItem, SchemaNode]:
         is_filter = action == CrudEnum.list
         return await self.get_form_item_on_foreign_key(request, modelfield) or AmisParser(modelfield).as_form_item(
             is_filter=is_filter)
@@ -327,7 +333,7 @@ class BaseModelAdmin(SQLModelCrud):
         return form
 
     async def get_update_form(self, request: Request, bulk: bool = False) -> Form:
-        if bulk == False:
+        if not bulk:
             api = f'put:{self.router_path}/item/$id'
             fields = self.schema_update.__fields__.values()
         else:
@@ -425,10 +431,14 @@ class PageSchemaAdmin(BaseAdmin):
         self.group_schema = self.get_group_schema()
 
     async def has_page_permission(self, request: Request) -> bool:
-        return True
+        return self.app is self or await self.app.has_page_permission(request)
 
     def error_no_page_permission(self, request: Request):
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='No page permissions')
+        page_parser_mode = request.query_params.get('_parser') or self.page_parser_mode
+
+        raise HTTPException(status_code=status.HTTP_307_TEMPORARY_REDIRECT, detail='No page permissions',
+                            headers={
+                                'location': f'{self.app.site.router_path}/auth/form/login?_parser={page_parser_mode}&redirect={request.url}'})
 
     def get_page_schema(self) -> Optional[PageSchema]:
         if self.page_schema:
@@ -681,6 +691,28 @@ class ModelAdmin(BaseModelAdmin, PageAdmin):
         page.body = await self.get_list_table(request)
         return page
 
+    async def has_list_permission(self, request: Request,
+                                  paginator: Paginator,
+                                  filter: BaseModel = None,  # type self.schema_filter
+                                  **kwargs) -> bool:
+        return await self.has_page_permission(request)
+
+    async def has_create_permission(self, request: Request,
+                                    data: BaseModel,  # type self.schema_create
+                                    **kwargs) -> bool:
+        return await self.has_page_permission(request)
+
+    async def has_read_permission(self, request: Request, item_id: List[str], **kwargs) -> bool:
+        return await self.has_page_permission(request)
+
+    async def has_update_permission(self, request: Request, item_id: List[str],
+                                    data: BaseModel,  # type self.schema_update
+                                    **kwargs) -> bool:
+        return await self.has_page_permission(request)
+
+    async def has_delete_permission(self, request: Request, item_id: List[str], **kwargs) -> bool:
+        return await self.has_page_permission(request)
+
 
 class BaseModelAction:
     admin: "ModelAdmin" = None
@@ -748,6 +780,13 @@ class AdminApp(PageAdmin):
         self.db = SqlalchemyAsyncClient(self.engine)
         self._pages_dict: Dict[str, Tuple[PageSchema, List[Union[PageSchema, BaseAdmin]]]] = {}
         self._admins_dict: Dict[Type[BaseAdmin], Optional[BaseAdmin]] = {}
+
+    def get_page_schema(self) -> Optional[PageSchema]:
+        super().get_page_schema()
+        if self.page_schema:
+            self.page_schema.url = None
+            self.page_schema.schemaApi = None
+        return self.page_schema
 
     def create_admin_instance(self, admin_cls: Type[_BaseAdminT]) -> _BaseAdminT:
         admin = self._admins_dict.get(admin_cls)
@@ -821,17 +860,8 @@ class AdminApp(PageAdmin):
         # app.asideAfter = f'<div class="p-2 text-center"><a href="{fastapi_amis_admin.__url__}"  target="_blank">fastapi-amis-admin</a></div>'
         _parser = request.query_params.get('_parser') or self.page_parser_mode
         if _parser == 'json':
-            app.pages = []
             children = await self.get_page_schema_children(request)
-            if not children:
-                return app
-            children = [{"children": children}]
-            if self is self.site:
-                app.pages.extend(children)
-            else:
-                page_schema = self.page_schema.copy(deep=True)
-                page_schema.children = children
-                app.pages.append(page_schema)
+            app.pages = [{'children': children}] if children else []
         return app
 
     async def get_page_schema_children(self, request: Request) -> List[PageSchema]:
