@@ -253,7 +253,8 @@ class BaseModelAdmin(SQLModelCrud):
     async def get_list_filter_api(self, request: Request) -> AmisAPI:
         data = {'&': '$$'}
         for field in self.search_fields:
-            if alias := self.parser.get_alias(field):
+            alias = self.parser.get_alias(field)
+            if alias:
                 data[alias] = f'[~]${alias}'
         for field in await self.get_list_filter(request):
             modelfield = self.parser.get_modelfield(field, deepcopy=True)
@@ -453,10 +454,12 @@ class BaseModelAdmin(SQLModelCrud):
         for field in fields:
             if isinstance(field, FormItem):
                 items.append(field)
-            elif field := self.parser.get_modelfield(field, deepcopy=True):
-                item = await self.get_form_item(request, field, action)
-                if item:
-                    items.append(item)
+            else:
+                field = self.parser.get_modelfield(field, deepcopy=True)
+                if field:
+                    item = await self.get_form_item(request, field, action)
+                    if item:
+                        items.append(item)
         return items
 
 
