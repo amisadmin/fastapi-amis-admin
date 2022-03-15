@@ -1,16 +1,13 @@
 """详细文档阅读地址: https://baidu.gitee.io/amis/zh-CN/components"""
 from typing import Union, List, Optional, Any
-
+from pydantic import Field
+from .constants import LevelEnum, DisplayModeEnum, SizeEnum
+from .types import API, Expression, AmisNode, SchemaNode, Template, BaseAmisModel, OptionsNode
+from .utils import amis_templates
 try:
     from typing import Literal
 except ImportError:
     from typing_extensions import Literal
-from pydantic import Field
-
-from .constants import LevelEnum, DisplayModeEnum, SizeEnum
-from .types import API, Expression, AmisNode, SchemaNode, Template, BaseAmisModel, OptionsNode
-from .utils import amis_templates
-
 
 class Html(AmisNode):
     """Html"""
@@ -87,8 +84,9 @@ class Page(AmisNode):
 
     def amis_html(self, template_path: str = ''):
         """渲染html模板"""
-        content = amis_templates('page.html', template_path).replace('[[AmisSchemaJson]]', self.amis_json())
-        return content
+        return amis_templates('page.html', template_path).replace(
+            '[[AmisSchemaJson]]', self.amis_json()
+        )
 
 
 class Divider(AmisNode):
@@ -272,8 +270,9 @@ class App(AmisNode):
 
     def amis_html(self, template_path: str = ''):
         """渲染html模板"""
-        content = amis_templates('app.html', template_path).replace('[[AmisSchemaJson]]', self.amis_json())
-        return content
+        return amis_templates('app.html', template_path).replace(
+            '[[AmisSchemaJson]]', self.amis_json()
+        )
 
 
 class ButtonGroup(AmisNode):

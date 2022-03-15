@@ -1,11 +1,6 @@
 import datetime
 from functools import lru_cache
 from typing import Type, Callable, Generator, Any, List, Union, Dict, Iterable, Optional, Tuple, TypeVar, NewType
-
-try:
-    from typing import Literal
-except ImportError:
-    from typing_extensions import Literal
 from fastapi import Request, Depends, FastAPI, Query, HTTPException, Body
 from pydantic import BaseModel
 from pydantic.fields import ModelField
@@ -33,6 +28,10 @@ from fastapi_amis_admin.utils.db import SqlalchemyAsyncClient
 from fastapi_amis_admin.amis_admin.settings import Settings
 from fastapi_amis_admin.utils.functools import cached_property
 
+try:
+    from typing import Literal
+except ImportError:
+    from typing_extensions import Literal
 _BaseAdminT = TypeVar('_BaseAdminT', bound="BaseAdmin")
 _BaseModel = NewType('_BaseModel', BaseModel)
 
@@ -61,7 +60,7 @@ class LinkModelForm:
         self.item_col = item_col
         assert self.item_col is not None, 'item_col is None'
         assert self.link_col is not None, 'link_col is None'
-        self.path = '/' + self.display_admin_cls.model.__name__.lower()
+        self.path = f'/{self.display_admin_cls.model.__name__.lower()}'
 
     @classmethod
     def bind_model_admin(cls, pk_admin: "BaseModelAdmin", insfield: InstrumentedAttribute) -> Optional[
@@ -125,15 +124,14 @@ class LinkModelForm:
             link_id = parser_str_set_list(link_id)
             values = []
             for item in item_id:
-                for link in link_id:
-                    values.append({self.link_col.key: link, self.item_col.key: item})
+                values.extend({self.link_col.key: link, self.item_col.key: item} for link in link_id)
             stmt = insert(self.link_model).values(values)
             try:
                 result = await db.execute(stmt)
+                if result.rowcount:  # type: ignore
+                    await db.commit()
             except Exception as error:
                 return self.pk_admin.error_execute_sql(request=request, error=error)
-            if result.rowcount:  # type: ignore
-                await db.commit()
             return BaseApiOut(data=result.rowcount)  # type: ignore
 
         return route
@@ -180,15 +178,17 @@ class LinkModelForm:
             self.route_delete,
             methods=["DELETE"],
             response_model=BaseApiOut[int],
-            name=self.link_model.name + '_Delete'
+            name=f'{self.link_model.name}_Delete',
         )
+
         self.pk_admin.router.add_api_route(
             self.path + '/{item_id}',
             self.route_create,
             methods=["POST"],
             response_model=BaseApiOut[int],
-            name=self.link_model.name + '_Create'
+            name=f'{self.link_model.name}_Create',
         )
+
         return self
 
 
@@ -253,17 +253,18 @@ class BaseModelAdmin(SQLModelCrud):
     async def get_list_filter_api(self, request: Request) -> AmisAPI:
         data = {'&': '$$'}
         for field in self.search_fields:
-            alias = self.parser.get_alias(field)
-            if alias:
-                data.update({alias: '[~]$' + alias})
+            if alias := self.parser.get_alias(field):
+                data[alias] = f'[~]${alias}'
         for field in await self.get_list_filter(request):
             modelfield = self.parser.get_modelfield(field, deepcopy=True)
             if modelfield and issubclass(modelfield.type_, (datetime.datetime, datetime.date, datetime.time)):
-                data.update({modelfield.alias: '[-]$' + modelfield.alias})
-        api = AmisAPI(method='POST',
-                      url=f'{self.router_path}/list?' + 'page=${page}&perPage=${perPage}&orderBy=${orderBy}&orderDir=${orderDir}',
-                      data=data)
-        return api
+                data[modelfield.alias] = f'[-]${modelfield.alias}'
+        return AmisAPI(
+            method='POST',
+            url=f'{self.router_path}/list?'
+                + 'page=${page}&perPage=${perPage}&orderBy=${orderBy}&orderDir=${orderDir}',
+            data=data,
+        )
 
     async def get_list_table(self, request: Request) -> TableCRUD:
         headerToolbar = ["filter-toggler", "reload", "bulkActions", {"type": "columns-toggler", "align": "right"},
@@ -318,19 +319,39 @@ class BaseModelAdmin(SQLModelCrud):
     async def get_list_filter_form(self, request: Request) -> Form:
         body = await self._conv_modelfields_to_formitems(request, await self.get_list_filter(request),
                                                          CrudEnum.list)
-        form = Form(type='', title='数据筛选', name=CrudEnum.list, body=body, mode=DisplayModeEnum.inline,
-                    actions=[
-                        Action(actionType='clear-and-submit', label='清空', level=LevelEnum.default),
-                        Action(actionType='reset-and-submit', label='重置', level=LevelEnum.default),
-                        Action(actionType='submit', label='搜索', level=LevelEnum.primary)], trimValues=True)
-        return form
+        return Form(
+            type='',
+            title='数据筛选',
+            name=CrudEnum.list,
+            body=body,
+            mode=DisplayModeEnum.inline,
+            actions=[
+                Action(
+                    actionType='clear-and-submit',
+                    label='清空',
+                    level=LevelEnum.default,
+                ),
+                Action(
+                    actionType='reset-and-submit',
+                    label='重置',
+                    level=LevelEnum.default,
+                ),
+                Action(actionType='submit', label='搜索', level=LevelEnum.primary),
+            ],
+            trimValues=True,
+        )
 
     async def get_create_form(self, request: Request, bulk: bool = False) -> Form:
         api = f'post:{self.router_path}/item'
         fields = [field for field in self.schema_create.__fields__.values() if field.name != self.pk_name]
-        form = Form(api=api, name=CrudEnum.create,
-                    body=await self._conv_modelfields_to_formitems(request, fields, CrudEnum.create), submitText=None)
-        return form
+        return Form(
+            api=api,
+            name=CrudEnum.create,
+            body=await self._conv_modelfields_to_formitems(
+                request, fields, CrudEnum.create
+            ),
+            submitText=None,
+        )
 
     async def get_update_form(self, request: Request, bulk: bool = False) -> Form:
         if not bulk:
@@ -339,49 +360,75 @@ class BaseModelAdmin(SQLModelCrud):
         else:
             api = f'put:{self.router_path}/item/' + '${ids|raw}'
             fields = self.bulk_edit_fields
-        form = Form(api=api, name=CrudEnum.update,
-                    body=await self._conv_modelfields_to_formitems(request, fields, CrudEnum.update), submitText=None,
-                    trimValues=True)
-        return form
+        return Form(
+            api=api,
+            name=CrudEnum.update,
+            body=await self._conv_modelfields_to_formitems(
+                request, fields, CrudEnum.update
+            ),
+            submitText=None,
+            trimValues=True,
+        )
 
     async def get_create_action(self, request: Request, bulk: bool = False) -> Optional[Action]:
         if not await self.has_create_permission(request, None):
             return None
-        action = ActionType.Dialog(icon='fa fa-plus pull-left', label='新增',
-                                   level=LevelEnum.primary,
-                                   dialog=Dialog(title='新增', size=SizeEnum.lg,
-                                                 body=await self.get_create_form(request, bulk=bulk)))
-        return action
+        return ActionType.Dialog(
+            icon='fa fa-plus pull-left',
+            label='新增',
+            level=LevelEnum.primary,
+            dialog=Dialog(
+                title='新增',
+                size=SizeEnum.lg,
+                body=await self.get_create_form(request, bulk=bulk),
+            ),
+        )
 
     async def get_update_action(self, request: Request, bulk: bool = False) -> Optional[Action]:
         if not await self.has_update_permission(request, None, None):
             return None
         # 开启批量编辑
         if not bulk:
-            action = ActionType.Dialog(icon='fa fa-pencil', tooltip='编辑',
-                                       dialog=Dialog(title='编辑', size=SizeEnum.lg,
-                                                     body=await self.get_update_form(request, bulk=bulk)))
+            return ActionType.Dialog(
+                icon='fa fa-pencil',
+                tooltip='编辑',
+                dialog=Dialog(
+                    title='编辑',
+                    size=SizeEnum.lg,
+                    body=await self.get_update_form(request, bulk=bulk),
+                ),
+            )
+
         elif self.bulk_edit_fields:
-            action = ActionType.Dialog(label='批量修改',
-                                       dialog=Dialog(title='批量修改', size=SizeEnum.lg,
-                                                     body=await self.get_update_form(request, bulk=True))
-                                       )
+            return ActionType.Dialog(
+                label='批量修改',
+                dialog=Dialog(
+                    title='批量修改',
+                    size=SizeEnum.lg,
+                    body=await self.get_update_form(request, bulk=True),
+                ),
+            )
+
         else:
-            action = None
-        return action
+            return None
 
     async def get_delete_action(self, request: Request, bulk: bool = False) -> Optional[Action]:
         if not await self.has_delete_permission(request, None):
             return None
-        if not bulk:
-            action = ActionType.Ajax(icon='fa fa-times text-danger', tooltip='删除',
-                                     confirmText='您确认要删除?',
-                                     api=f"delete:{self.router_path}/item/$id")
-        else:
-            action = ActionType.Ajax(label='批量删除',
-                                     confirmText='确定要批量删除?',
-                                     api=f"delete:{self.router_path}/item/" + '${ids|raw}')
-        return action
+        return (
+            ActionType.Ajax(
+                icon='fa fa-times text-danger',
+                tooltip='删除',
+                confirmText='您确认要删除?',
+                api=f"delete:{self.router_path}/item/$id",
+            )
+            if not bulk
+            else ActionType.Ajax(
+                label='批量删除',
+                confirmText='确定要批量删除?',
+                api=f"delete:{self.router_path}/item/" + '${ids|raw}',
+            )
+        )
 
     async def get_actions_on_header_toolbar(self, request: Request) -> List[Action]:
         actions = [await self.get_create_action(request, bulk=False)]
@@ -406,12 +453,10 @@ class BaseModelAdmin(SQLModelCrud):
         for field in fields:
             if isinstance(field, FormItem):
                 items.append(field)
-            else:
-                field = self.parser.get_modelfield(field, deepcopy=True)
-                if field:
-                    item = await self.get_form_item(request, field, action)
-                    if item:
-                        items.append(item)
+            elif field := self.parser.get_modelfield(field, deepcopy=True):
+                item = await self.get_form_item(request, field, action)
+                if item:
+                    items.append(item)
         return items
 
 
@@ -432,13 +477,6 @@ class PageSchemaAdmin(BaseAdmin):
 
     async def has_page_permission(self, request: Request) -> bool:
         return self.app is self or await self.app.has_page_permission(request)
-
-    def error_no_page_permission(self, request: Request):
-        page_parser_mode = request.query_params.get('_parser') or self.page_parser_mode
-
-        raise HTTPException(status_code=status.HTTP_307_TEMPORARY_REDIRECT, detail='No page permissions',
-                            headers={
-                                'location': f'{self.app.site.router_path}/auth/form/login?_parser={page_parser_mode}&redirect={request.url}'})
 
     def get_page_schema(self) -> Optional[PageSchema]:
         if self.page_schema:
@@ -519,6 +557,12 @@ class PageAdmin(PageSchemaAdmin, RouterAdmin):
     async def page_permission_depend(self, request: Request) -> bool:
         return await self.has_page_permission(request) or self.error_no_page_permission(request)
 
+    def error_no_page_permission(self, request: Request):
+        page_parser_mode = request.query_params.get('_parser') or self.page_parser_mode
+        raise HTTPException(status_code=status.HTTP_307_TEMPORARY_REDIRECT, detail='No page permissions',
+                            headers={
+                                'location': f'{self.app.site.router_path}/auth/form/login?_parser={page_parser_mode}&redirect={request.url}'})
+
     async def get_page(self, request: Request) -> Page:
         return self.page or Page()
 
@@ -575,11 +619,11 @@ class TemplateAdmin(PageAdmin):
     def __init__(self, app: "AdminApp"):
         assert self.templates, 'templates:Jinja2Templates is None'
         assert self.template_name, 'template_name is None'
-        self.page_path = self.page_path or '/' + self.template_name
+        self.page_path = self.page_path or f'/{self.template_name}'
         super().__init__(app)
 
     def page_parser(self, request: Request, page: Dict[str, Any]) -> Response:
-        page.update({'request': request})
+        page['request'] = request
         return self.templates.TemplateResponse(self.template_name, page)
 
     async def get_page(self, request: Request) -> Dict[str, Any]:
@@ -823,9 +867,7 @@ class AdminApp(PageAdmin):
 
     @cached_property
     def site(self) -> "BaseAdminSite":
-        if isinstance(self.app, BaseAdminSite):
-            return self.app
-        return self.app.site
+        return self.app if isinstance(self.app, BaseAdminSite) else self.app.site
 
     @lru_cache()
     def get_model_admin(self, table_name: str) -> Optional[ModelAdmin]:

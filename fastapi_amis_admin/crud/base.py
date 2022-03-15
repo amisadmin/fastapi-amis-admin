@@ -1,11 +1,9 @@
 from typing import Any, Callable, List, Type, Union, Optional
-
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 from starlette import status
 from starlette.exceptions import HTTPException
 from starlette.requests import Request
-
 from .schema import BaseApiOut, ItemListSchema, CrudEnum, Paginator
 from .utils import schema_create_by_schema, paginator_factory
 
@@ -21,10 +19,10 @@ class RouterMixin:
     def get_router(self) -> APIRouter:
         if self.router is None:
             if self.router_prefix is None:
-                self.router_prefix = '/' + self.__class__.__name__.lower()
+                self.router_prefix = f'/{self.__class__.__name__.lower()}'
             self.router = APIRouter(prefix=self.router_prefix, tags=[self.router_prefix[1:]])
         if self.router_permission_depend is not None:
-            self.router.dependencies.insert(0,Depends(self.router_permission_depend))
+            self.router.dependencies.insert(0, Depends(self.router_permission_depend))
         return self.router
 
     def error_no_router_permission(self, request: Request):
@@ -50,7 +48,7 @@ class BaseCrud(RouterMixin):
 
     @property
     def router_prefix(self):
-        return '/' + self.schema_model.__name__.lower()
+        return f'/{self.schema_model.__name__.lower()}'
 
     @property
     def schema_name_prefix(self):
@@ -70,8 +68,13 @@ class BaseCrud(RouterMixin):
                       depends_delete: List[Depends] = None
                       ) -> "BaseCrud":
         self.schema_list = schema_list or self.schema_list or self.schema_model
-        self.schema_filter = schema_filter or self.schema_filter or schema_create_by_schema(
-            self.schema_list, self.schema_name_prefix + 'Filter', set_none=True)
+        self.schema_filter = (
+            schema_filter
+            or self.schema_filter
+            or schema_create_by_schema(
+                self.schema_list, f'{self.schema_name_prefix}Filter', set_none=True
+            )
+        )
         self.schema_create = schema_create or self.schema_create or self.schema_model
         self.schema_read = schema_read or self.schema_read or self.schema_model
         self.schema_update = schema_update or self.schema_update or \
@@ -156,11 +159,8 @@ class BaseCrud(RouterMixin):
     async def has_delete_permission(self, request: Request, item_id: Optional[List[str]], **kwargs) -> bool:
         return True
 
-    def error_key_exists(self, request: Request):
-        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="Key already exists")
-
     def error_data_handle(self, request: Request):
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "error data handle")
-    
+
     def error_execute_sql(self, request: Request, error: Exception):
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Error Execute SQL：{error}")

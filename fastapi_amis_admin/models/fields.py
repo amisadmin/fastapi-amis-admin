@@ -1,5 +1,4 @@
 from typing import Dict, Any, AbstractSet, Mapping, Union, Optional, Sequence
-
 from pydantic.fields import Undefined, UndefinedType
 from pydantic.typing import NoArgAnyCallable
 from sqlalchemy import Column

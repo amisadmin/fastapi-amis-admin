@@ -114,8 +114,7 @@ class SQLModelSelector:
     @staticmethod
     def _parser_query_value(value: Any, operator: str = '__eq__') -> Tuple[Optional[str], Union[tuple, None]]:
         if isinstance(value, str):
-            match = sql_operator_pattern.match(value)
-            if match:
+            if match := sql_operator_pattern.match(value):
                 op_key = match.group(1)
                 operator = sql_operator_map.get(op_key)
                 value = value[len(op_key) + 2:]
@@ -135,8 +134,7 @@ class SQLModelSelector:
     def calc_filter_clause(self, data: Dict[str, Any]) -> List[BinaryExpression]:
         lst = []
         for k, v in data.items():
-            insfield = self._list_fields_ins.get(k)
-            if insfield:
+            if insfield := self._list_fields_ins.get(k):
                 operator, val = self._parser_query_value(v)
                 if operator:
                     lst.append(getattr(insfield, operator)(*val))
@@ -172,8 +170,8 @@ class SQLModelCrud(BaseCrud, SQLModelSelector):
             self.schema_filter = schema_create_by_modelfield(schema_name=self.schema_name_prefix + 'Filter',
                                                              modelfields=modelfields, set_none=True)
         if not self.schema_update and self.readonly_fields:
-            exclude = set([self.parser.get_modelfield(ins).name for ins in
-                           self.parser.filter_insfield(self.readonly_fields)])
+            exclude = {self.parser.get_modelfield(ins).name for ins in
+                       self.parser.filter_insfield(self.readonly_fields)}
             exclude.add(self.pk_name)
             self.schema_update = schema_create_by_schema(self.schema_model, self.schema_name_prefix + 'Update',
                                                          exclude=exclude, set_none=True)
@@ -219,8 +217,7 @@ class SQLModelCrud(BaseCrud, SQLModelSelector):
             if paginator.show_total:
                 result = await session.execute(select(func.count('*')).select_from(stmt.subquery()))
                 data.total = result.scalar()
-            orderBy = self._calc_ordering(paginator.orderBy, paginator.orderDir)
-            if orderBy:
+            if orderBy := self._calc_ordering(paginator.orderBy, paginator.orderDir):
                 stmt = stmt.order_by(*orderBy)
             result = await session.execute(stmt.limit(perPage).offset((page - 1) * perPage))
             data.items = result.all()
@@ -252,15 +249,14 @@ class SQLModelCrud(BaseCrud, SQLModelSelector):
                 result = await session.execute(stmt)
                 if result.rowcount:  # type: ignore
                     await session.commit()
-                    if is_bulk:
-                        return BaseApiOut(data=result.rowcount)  # type: ignore
-                    else:
-                        data = values[0]
-                        data[self.pk_name] = result.lastrowid  # type: ignore
-                        data = self.model.parse_obj(data)
-                        return BaseApiOut(data=data)
-            except Exception:
-                return self.error_key_exists(request)
+            except Exception as error:
+                return self.error_execute_sql(request=request, error=error)
+            if is_bulk:
+                return BaseApiOut(data=result.rowcount)  # type: ignore
+            data = values[0]
+            data[self.pk_name] = result.lastrowid  # type: ignore
+            data = self.model.parse_obj(data)
+            return BaseApiOut(data=data)
 
         return route
 

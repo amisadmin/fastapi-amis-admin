@@ -21,6 +21,7 @@ class AmisParser():
             content=self.modelfield.field_info.description) if self.modelfield.field_info.description else None
 
     def as_form_item(self, set_deafult: bool = False, is_filter: bool = False) -> FormItem:
+        # sourcery no-metrics
         kwargs = {}
         formitem = self.modelfield.field_info.extra.get(['amis_form_item', 'amis_filter_item'][is_filter])
         if formitem is not None:
@@ -39,14 +40,14 @@ class AmisParser():
         elif self.modelfield.type_ == str:
             kwargs['type'] = 'input-text'
         elif issubclass(self.modelfield.type_, Choices):
-            kwargs['type'] = 'select'
-            kwargs['options'] = []
+            kwargs.update({
+                'type': 'select',
+                'options': [{'label': l, 'value': v} for v, l in self.modelfield.type_.choices],
+                'extractValue': True,
+                'joinValues': False,
+            })
             if not self.modelfield.required:
                 kwargs['clearable'] = True
-            kwargs['options'] += [{'label': l, 'value': v} for v, l in
-                                  self.modelfield.type_.choices]
-            kwargs['extractValue'] = True
-            kwargs['joinValues'] = False
         elif issubclass(self.modelfield.type_, bool):
             kwargs['type'] = 'switch'
         elif is_filter:
@@ -63,24 +64,23 @@ class AmisParser():
                 kwargs['format'] = 'HH:mm:ss'
             else:
                 kwargs['type'] = 'input-text'
+        elif issubclass(self.modelfield.type_, int):
+            formitem = InputNumber(precision=0, validations=Validation(isInt=True))
+        elif issubclass(self.modelfield.type_, float):
+            formitem = InputNumber(validations=Validation(isFloat=True))
+        elif issubclass(self.modelfield.type_, datetime.datetime):
+            kwargs['type'] = 'input-datetime'
+            kwargs['format'] = 'YYYY-MM-DDTHH:mm:ss'
+        elif issubclass(self.modelfield.type_, datetime.date):
+            kwargs['type'] = 'input-date'
+            kwargs['format'] = 'YYYY-MM-DD'
+        elif issubclass(self.modelfield.type_, datetime.time):
+            kwargs['type'] = 'input-time'
+            kwargs['format'] = 'HH:mm:ss'
+        elif issubclass(self.modelfield.type_, Json):
+            kwargs['type'] = 'json-editor'
         else:
-            if issubclass(self.modelfield.type_, int):
-                formitem = InputNumber(precision=0, validations=Validation(isInt=True))
-            elif issubclass(self.modelfield.type_, float):
-                formitem = InputNumber(validations=Validation(isFloat=True))
-            elif issubclass(self.modelfield.type_, datetime.datetime):
-                kwargs['type'] = 'input-datetime'
-                kwargs['format'] = 'YYYY-MM-DDTHH:mm:ss'
-            elif issubclass(self.modelfield.type_, datetime.date):
-                kwargs['type'] = 'input-date'
-                kwargs['format'] = 'YYYY-MM-DD'
-            elif issubclass(self.modelfield.type_, datetime.time):
-                kwargs['type'] = 'input-time'
-                kwargs['format'] = 'HH:mm:ss'
-            elif issubclass(self.modelfield.type_, Json):
-                kwargs['type'] = 'json-editor'
-            else:
-                kwargs['type'] = 'input-text'
+            kwargs['type'] = 'input-text'
 
         formitem = formitem or FormItem(**kwargs)
         if not is_filter:
@@ -124,9 +124,7 @@ class AmisParser():
             kwargs['type'] = 'time'
         elif issubclass(self.modelfield.type_, Choices):
             kwargs['type'] = 'mapping'
-            kwargs['map'] = {v: l for v, l in self.modelfield.type_.choices}
-        else:
-            pass
+            kwargs['map'] = dict(self.modelfield.type_.choices)
         column = column or TableColumn(**kwargs)
         column.name = self.modelfield.alias
         column.label = column.label or self.label

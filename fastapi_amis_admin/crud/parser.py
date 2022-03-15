@@ -81,10 +81,10 @@ class SQLModelFieldParser:
             return None
         elif isinstance(rows, list):
             keys = self.get_row_keys(rows[0])
-            data = [{key: val for key, val in zip(keys, row)} for row in rows]
+            data = [dict(zip(keys, row)) for row in rows]
         else:
             keys = self.get_row_keys(rows)
-            data = {key: val for key, val in zip(keys, rows)}
+            data = dict(zip(keys, rows))
         return data
 
     def get_sqlmodel_insfield(self, model: Type[SQLModel]) -> List[InstrumentedAttribute]:
