@@ -171,6 +171,7 @@ class SQLModelCrud(BaseCrud, SQLModelSelector):
                     modelfield.validators = []
             self.schema_filter = schema_create_by_modelfield(schema_name=self.schema_name_prefix + 'Filter',
                                                              modelfields=modelfields, set_none=True)
+        self.schema_read = self.schema_read or self.schema_list
         if not self.schema_update and self.readonly_fields:
             exclude = {self.parser.get_modelfield(ins).name for ins in
                        self.parser.filter_insfield(self.readonly_fields)}
