@@ -11,6 +11,7 @@ theme:
     - navigation.instant
     - navigation.tracking
     - navigation.tabs
+    - content.code.annotate
 markdown_extensions:
   - toc:
       permalink: true
@@ -31,7 +32,6 @@ markdown_extensions:
   - codehilite:
       guess_lang: false
       linenums: false
-
   - footnotes
   - meta
   - def_list
@@ -48,6 +48,7 @@ markdown_extensions:
   - pymdownx.mark
   - pymdownx.smartsymbols
   - pymdownx.superfences
+  - pymdownx.snippets
   - pymdownx.tasklist
   - pymdownx.tilde
 
