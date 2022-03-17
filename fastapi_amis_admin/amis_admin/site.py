@@ -18,7 +18,7 @@ import fastapi_amis_admin
 
 
 class DocsAdmin(IframeAdmin):
-    group_schema = PageSchema(label='APIDocs', sort=-100)
+    group_schema = PageSchema(label='APIDocs', icon='fa fa-book', sort=-100)
     page_schema = PageSchema(label='AdminDocs', icon='fa fa-book')
 
     @property
@@ -27,7 +27,7 @@ class DocsAdmin(IframeAdmin):
 
 
 class ReDocsAdmin(IframeAdmin):
-    group_schema = PageSchema(label='APIDocs', sort=-100)
+    group_schema = PageSchema(label='APIDocs', icon='fa fa-book', sort=-100)
     page_schema = PageSchema(label='AdminRedocs', icon='fa fa-book')
 
     @property
@@ -37,7 +37,7 @@ class ReDocsAdmin(IframeAdmin):
 
 class HomeAdmin(PageAdmin):
     group_schema = None
-    page_schema = PageSchema(label='Home', icon='fa fa-home', url='/home', isDefaultPage=True,sort=100)
+    page_schema = PageSchema(label='Home', icon='fa fa-home', url='/home', isDefaultPage=True, sort=100)
     page_path = '/home/amis.json'
 
     async def get_page(self, request: Request) -> Page:
