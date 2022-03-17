@@ -32,6 +32,7 @@ try:
     from typing import Literal
 except ImportError:
     from typing_extensions import Literal
+
 _BaseAdminT = TypeVar('_BaseAdminT', bound="BaseAdmin")
 _BaseModel = NewType('_BaseModel', BaseModel)
 
@@ -51,8 +52,7 @@ class LinkModelForm:
         self.link_model = link_model
         self.pk_admin = pk_admin
         self.display_admin_cls = display_admin_cls or self.display_admin_cls
-        if self.display_admin_cls not in self.pk_admin.app._admins_dict:
-            raise f'{self.display_admin_cls} display_admin_cls is not register'
+        assert self.display_admin_cls in self.pk_admin.app._admins_dict, f'{self.display_admin_cls} display_admin_cls is not register'
         self.display_admin: ModelAdmin = self.pk_admin.app.create_admin_instance(self.display_admin_cls)
         assert isinstance(self.display_admin, ModelAdmin)
         self.session_factory = session_factory or self.pk_admin.session_factory
@@ -372,8 +372,6 @@ class BaseModelAdmin(SQLModelCrud):
         )
 
     async def get_create_action(self, request: Request, bulk: bool = False) -> Optional[Action]:
-        if not await self.has_create_permission(request, None):
-            return None
         return ActionType.Dialog(
             icon='fa fa-plus pull-left',
             label='新增',
@@ -383,7 +381,7 @@ class BaseModelAdmin(SQLModelCrud):
                 size=SizeEnum.lg,
                 body=await self.get_create_form(request, bulk=bulk),
             ),
-        )
+        ) if await self.has_create_permission(request, None) else None
 
     async def get_update_action(self, request: Request, bulk: bool = False) -> Optional[Action]:
         if not await self.has_update_permission(request, None, None):
@@ -416,20 +414,16 @@ class BaseModelAdmin(SQLModelCrud):
     async def get_delete_action(self, request: Request, bulk: bool = False) -> Optional[Action]:
         if not await self.has_delete_permission(request, None):
             return None
-        return (
-            ActionType.Ajax(
+        return ActionType.Ajax(
+                label='批量删除',
+                confirmText='确定要批量删除?',
+                api=f"delete:{self.router_path}/item/" + '${ids|raw}',
+            ) if bulk else ActionType.Ajax(
                 icon='fa fa-times text-danger',
                 tooltip='删除',
                 confirmText='您确认要删除?',
                 api=f"delete:{self.router_path}/item/$id",
             )
-            if not bulk
-            else ActionType.Ajax(
-                label='批量删除',
-                confirmText='确定要批量删除?',
-                api=f"delete:{self.router_path}/item/" + '${ids|raw}',
-            )
-        )
 
     async def get_actions_on_header_toolbar(self, request: Request) -> List[Action]:
         actions = [await self.get_create_action(request, bulk=False)]
@@ -467,6 +461,10 @@ class BaseAdmin:
     def __init__(self, app: "AdminApp"):
         self.app = app
         assert self.app, 'app is None'
+
+    @cached_property
+    def site(self) -> "BaseAdminSite":
+        return self.app if isinstance(self.app, BaseAdminSite) else self.app.site
 
 
 class PageSchemaAdmin(BaseAdmin):
@@ -868,10 +866,6 @@ class AdminApp(PageAdmin):
         self._register_admin_router_all()
         return self
 
-    @cached_property
-    def site(self) -> "BaseAdminSite":
-        return self.app if isinstance(self.app, BaseAdminSite) else self.app.site
-
     @lru_cache()
     def get_model_admin(self, table_name: str) -> Optional[ModelAdmin]:
         for admin_cls, admin in self._admins_dict.items():
@@ -942,6 +936,7 @@ class AdminApp(PageAdmin):
 class BaseAdminSite(AdminApp):
 
     def __init__(self, settings: Settings, fastapi: FastAPI = None, engine: AsyncEngine = None):
+        self.auth = None
         self.settings = settings
         self.fastapi = fastapi or FastAPI(debug=settings.debug, reload=settings.debug)
         self.router = self.fastapi.router
