@@ -47,6 +47,7 @@ dependencies = [
 [project.urls]
 Documentation = "http://docs.amis.work/"
 Source = "https://github.com/amisadmin/fastapi_amis_admin"
+FastAPI-User-Auth = "https://github.com/amisadmin/fastapi_user_auth"
 
 [project.optional-dependencies]
 test = [
