@@ -15,7 +15,7 @@
         <img src="https://badgen.net/pypi/v/fastapi-amis-admin?color=blue" alt="Package version">
     </a>
     <a href="https://pepy.tech/project/fastapi-amis-admin" target="_blank">
-        <img src="https://pepy.tech/badge/fastapi-amis-admin/month" alt="Downloads">
+        <img src="https://pepy.tech/badge/fastapi-amis-admin" alt="Downloads">
     </a>
     <a href="https://gitter.im/amisadmin/fastapi-amis-admin">
         <img src="https://badges.gitter.im/amisadmin/fastapi-amis-admin.svg" alt="Chat on Gitter"/>
