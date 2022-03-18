@@ -218,8 +218,9 @@ class BaseModelAdmin(SQLModelCrud):
         return self.app.router_path + self.router.prefix
 
     def get_link_model_forms(self) -> List[LinkModelForm]:
-        return list(
+        self.link_model_forms = list(
             filter(None, [LinkModelForm.bind_model_admin(self, insfield) for insfield in self.link_model_fields]))
+        return self.link_model_forms
 
     async def get_list_display(self, request: Request) -> List[Union[SQLModelListField, TableColumn]]:
         return self.list_display or list(self.schema_list.__fields__.values())
@@ -415,15 +416,15 @@ class BaseModelAdmin(SQLModelCrud):
         if not await self.has_delete_permission(request, None):
             return None
         return ActionType.Ajax(
-                label='批量删除',
-                confirmText='确定要批量删除?',
-                api=f"delete:{self.router_path}/item/" + '${ids|raw}',
-            ) if bulk else ActionType.Ajax(
-                icon='fa fa-times text-danger',
-                tooltip='删除',
-                confirmText='您确认要删除?',
-                api=f"delete:{self.router_path}/item/$id",
-            )
+            label='批量删除',
+            confirmText='确定要批量删除?',
+            api=f"delete:{self.router_path}/item/" + '${ids|raw}',
+        ) if bulk else ActionType.Ajax(
+            icon='fa fa-times text-danger',
+            tooltip='删除',
+            confirmText='您确认要删除?',
+            api=f"delete:{self.router_path}/item/$id",
+        )
 
     async def get_actions_on_header_toolbar(self, request: Request) -> List[Action]:
         actions = [await self.get_create_action(request, bulk=False)]
@@ -724,7 +725,6 @@ class ModelAdmin(BaseModelAdmin, PageAdmin):
         PageAdmin.__init__(self, app)
 
     def register_router(self):
-        self.link_model_forms: List[LinkModelForm] = self.get_link_model_forms()
         for form in self.link_model_forms:
             form.register_router()
         self.register_crud()
@@ -850,6 +850,9 @@ class AdminApp(PageAdmin):
     def create_admin_instance_all(self) -> None:
         [self.create_admin_instance(admin_cls) for admin_cls in self._admins_dict.keys()]
 
+    def _register_admin_router_all_pre(self):
+        [admin.get_link_model_forms() for admin in self._admins_dict.values() if isinstance(admin, ModelAdmin)]
+
     def _register_admin_router_all(self):
         for admin in self._admins_dict.values():
             if isinstance(admin, RouterAdmin):  # 注册路由
@@ -863,6 +866,7 @@ class AdminApp(PageAdmin):
         super(AdminApp, self).register_router()
         self.router.add_api_route('/', self.route_index, name='index', include_in_schema=False)
         self.create_admin_instance_all()
+        self._register_admin_router_all_pre()
         self._register_admin_router_all()
         return self
 
