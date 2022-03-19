@@ -114,8 +114,7 @@ class SQLModelSelector:
     @staticmethod
     def _parser_query_value(value: Any, operator: str = '__eq__') -> Tuple[Optional[str], Union[tuple, None]]:
         if isinstance(value, str):
-            match = sql_operator_pattern.match(value)
-            if match:
+            if match := sql_operator_pattern.match(value):
                 op_key = match.group(1)
                 operator = sql_operator_map.get(op_key)
                 value = value[len(op_key) + 2:]
@@ -135,8 +134,7 @@ class SQLModelSelector:
     def calc_filter_clause(self, data: Dict[str, Any]) -> List[BinaryExpression]:
         lst = []
         for k, v in data.items():
-            insfield = self._list_fields_ins.get(k)
-            if insfield:
+            if insfield := self._list_fields_ins.get(k):
                 operator, val = self._parser_query_value(v)
                 if operator:
                     lst.append(getattr(insfield, operator)(*val))
@@ -220,8 +218,7 @@ class SQLModelCrud(BaseCrud, SQLModelSelector):
             if paginator.show_total:
                 result = await session.execute(select(func.count('*')).select_from(stmt.subquery()))
                 data.total = result.scalar()
-            orderBy = self._calc_ordering(paginator.orderBy, paginator.orderDir)
-            if orderBy:
+            if orderBy := self._calc_ordering(paginator.orderBy, paginator.orderDir):
                 stmt = stmt.order_by(*orderBy)
             result = await session.execute(stmt.limit(perPage).offset((page - 1) * perPage))
             data.items = result.all()

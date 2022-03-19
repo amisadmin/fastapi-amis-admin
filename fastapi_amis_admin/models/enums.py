@@ -33,10 +33,11 @@ class ChoicesMeta(enum.EnumMeta):
         return enum.unique(cls)
 
     def __contains__(cls, member):
-        if not isinstance(member, enum.Enum):
-            # Allow non-enums to match against member values.
-            return any(x.value == member for x in cls)
-        return super().__contains__(member)
+        return (
+            super().__contains__(member)
+            if isinstance(member, enum.Enum)
+            else any(x.value == member for x in cls)
+        )
 
     @property
     def names(cls):
