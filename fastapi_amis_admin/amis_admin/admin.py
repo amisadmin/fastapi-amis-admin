@@ -659,6 +659,7 @@ class BaseFormAdmin(PageAdmin):
     async def get_form(self, request: Request) -> Form:
         form = self.form or Form()
         form.api = AmisAPI(method='POST', url=f"{self.router_path}{self.form_path}")
+        form.initApi = AmisAPI(method='GET', url=f"{self.router_path}{self.form_path}") if self.form_init else None
         form.title = ''
         form.body = []
         if self.schema:
