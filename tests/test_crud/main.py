@@ -21,5 +21,3 @@ async def startup():
         await conn.run_sync(SQLModel.metadata.drop_all)
         await conn.run_sync(SQLModel.metadata.create_all)
 
-
-asyncio.run(startup())
