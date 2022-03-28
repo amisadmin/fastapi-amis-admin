@@ -6,7 +6,7 @@
   FastAPI-Amis-Admin
 </h2>
 <p align="center">
-    <em>fastapi-amis-admin是一个拥有高性能,高效率,易拓展的fastapi管理后台框架</em><br/>
+    <em>fastapi-amis-admin是一个拥有高性能,高效率,易拓展的fastapi管理后台框架.</em><br/>
     <em>启发自Django-Admin,并且拥有不逊色于Django-Admin的强大功能.</em>
 </p>
 <p align="center">
