@@ -1,6 +1,7 @@
 from typing import Any, Callable, List, Type, Union, Optional
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
+from sqlalchemy.exc import IntegrityError
 from starlette import status
 from starlette.exceptions import HTTPException
 from starlette.requests import Request
@@ -163,4 +164,6 @@ class BaseCrud(RouterMixin):
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "error data handle")
 
     def error_execute_sql(self, request: Request, error: Exception):
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Error Execute SQL：{error}")
+        if isinstance(error,IntegrityError):
+            raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="Key already exists") from error
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Error Execute SQL：{error}") from error
