@@ -63,8 +63,10 @@ class LinkModelForm:
         self.path = f'/{self.display_admin_cls.model.__name__.lower()}'
 
     @classmethod
-    def bind_model_admin(cls, pk_admin: "BaseModelAdmin", insfield: InstrumentedAttribute) -> Optional[
-        "LinkModelForm"]:
+    def bind_model_admin(cls,
+                         pk_admin: "BaseModelAdmin",
+                         insfield: InstrumentedAttribute
+                         ) -> Optional["LinkModelForm"]:
         if not isinstance(insfield.prop, RelationshipProperty):
             return None
         table = insfield.prop.secondary
@@ -85,9 +87,13 @@ class LinkModelForm:
             else:
                 admin.link_models.update(
                     {pk_admin.model.__tablename__: (table, link_key.parent, item_key.parent)})
-            return LinkModelForm(pk_admin=pk_admin,
-                                 display_admin_cls=admin.__class__, link_model=table, link_col=link_key.parent,
-                                 item_col=item_key.parent)
+            return LinkModelForm(
+                pk_admin=pk_admin,
+                display_admin_cls=admin.__class__,
+                link_model=table,
+                link_col=link_key.parent,
+                item_col=item_key.parent
+            )
         return None
 
     @property
@@ -144,39 +150,71 @@ class LinkModelForm:
 
     async def get_form_item(self, request: Request):
         url = self.pk_admin.app.router_path + self.display_admin.router.url_path_for('page')
-        picker = Picker(name=self.display_admin_cls.model.__tablename__, label=self.display_admin_cls.page_schema.label,
-                        labelField='name',
-                        valueField='id', multiple=True,
-                        required=False, modalMode='dialog', size='full',
-                        pickerSchema={'&': '${body}'},
-                        source={'method': 'post', 'data': '${body.api.data}',
-                                'url': '${body.api.url}&link_model=' + self.pk_admin.model.__tablename__ + '&link_item_id=${api.qsOptions.id}'})
+        picker = Picker(
+            name=self.display_admin_cls.model.__tablename__,
+            label=self.display_admin_cls.page_schema.label,
+            labelField='name',
+            valueField='id', multiple=True,
+            required=False, modalMode='dialog', size='full',
+            pickerSchema={'&': '${body}'},
+            source={
+                'method': 'post',
+                'data': '${body.api.data}',
+                'url': '${body.api.url}&link_model=' + self.pk_admin.model.__tablename__ + '&link_item_id=${api.qsOptions.id}'
+            }
+        )
         adaptor = None
         if await self.pk_admin.has_update_permission(request, None, None):
-            button_create = ActionType.Ajax(actionType='ajax', label='添加关联', level=LevelEnum.danger,
-                                            confirmText='确定要添加关联?',
-                                            api=f"post:{self.pk_admin.app.router_path}{self.pk_admin.router.prefix}{self.path}" + '/${REPLACE(query.link_item_id, "!", "")}?link_id=${IF(ids, ids, id)}')  # query.link_item_id
-            adaptor = 'if(!payload.hasOwnProperty("_payload")){payload._payload=JSON.stringify(payload);}payload=JSON.parse(payload._payload);button_create=' + button_create.amis_json() + ';payload.data.body.bulkActions.push(button_create);payload.data.body.itemActions.push(button_create);return payload;'.replace(
+            button_create = ActionType.Ajax(
+                actionType='ajax', label='添加关联', level=LevelEnum.danger,
+                confirmText='确定要添加关联?',
+                api=f"post:{self.pk_admin.app.router_path}{self.pk_admin.router.prefix}{self.path}"
+                    + '/${REPLACE(query.link_item_id, "!", "")}?link_id=${IF(ids, ids, id)}'
+            )  # query.link_item_id
+            adaptor = 'if(!payload.hasOwnProperty("_payload")){payload._payload=JSON.stringify(payload);}payload=JSON.parse(payload._payload);button_create=' + button_create.amis_json() \
+                      + ';payload.data.body.bulkActions.push(button_create);payload.data.body.itemActions.push(button_create);return payload;'.replace(
                 'action_id', 'create' + self.path.replace('/', '_'))
-            button_create_dialog = ActionType.Dialog(icon='fa fa-plus pull-left', label='添加关联', level=LevelEnum.danger,
-                                                     dialog=Dialog(title='添加关联', size='full', body=Service(
-                                                         schemaApi=AmisAPI(method='get', url=url, cache=20000,
-                                                                           responseData={'&': '${body}',
-                                                                                         'api.url': '${body.api.url}&link_model=' + self.pk_admin.model.__tablename__ + '&link_item_id=!${api.qsOptions.id}'},
-                                                                           qsOptions={'id': '$id'}, adaptor=adaptor)
-                                                     ))
-                                                     )
+            button_create_dialog = ActionType.Dialog(
+                icon='fa fa-plus pull-left',
+                label='添加关联',
+                level=LevelEnum.danger,
+                dialog=Dialog(
+                    title='添加关联',
+                    size='full',
+                    body=Service(
+                        schemaApi=AmisAPI(
+                            method='get',
+                            url=url,
+                            cache=20000,
+                            responseData={
+                                '&': '${body}',
+                                'api.url': '${body.api.url}&link_model='
+                                           + self.pk_admin.model.__tablename__
+                                           + '&link_item_id=!${api.qsOptions.id}',
+                            },
+                            qsOptions={'id': f'${self.pk_admin.pk_name}'},
+                            adaptor=adaptor,
+                        )
+                    ),
+                ),
+            )
 
-            button_delete = ActionType.Ajax(actionType='ajax', label='移除关联', level=LevelEnum.danger,
-                                            confirmText='确定要移除关联?',
-                                            api=f"delete:{self.pk_admin.app.router_path}{self.pk_admin.router.prefix}{self.path}" + '/${query.link_item_id}?link_id=${IF(ids, ids, id)}')
-            adaptor = 'if(!payload.hasOwnProperty("_payload")){payload._payload=JSON.stringify(payload);}payload=JSON.parse(payload._payload);button_delete=' + button_delete.amis_json() + ';payload.data.body.headerToolbar.push(' + button_create_dialog.amis_json() + ');payload.data.body.bulkActions.push(button_delete);payload.data.body.itemActions.push(button_delete);return payload;'.replace(
+            button_delete = ActionType.Ajax(
+                actionType='ajax', label='移除关联', level=LevelEnum.danger,
+                confirmText='确定要移除关联?',
+                api=f"delete:{self.pk_admin.app.router_path}{self.pk_admin.router.prefix}{self.path}"
+                    + '/${query.link_item_id}?link_id=${IF(ids, ids, id)}'
+            )
+            adaptor = 'if(!payload.hasOwnProperty("_payload")){payload._payload=JSON.stringify(payload);}payload=JSON.parse(payload._payload);button_delete=' \
+                      + button_delete.amis_json() + ';payload.data.body.headerToolbar.push(' + button_create_dialog.amis_json() \
+                      + ');payload.data.body.bulkActions.push(button_delete);payload.data.body.itemActions.push(button_delete);return payload;'.replace(
                 'action_id', 'delete' + self.path.replace('/', '_'))
-        return Service(
-            schemaApi=AmisAPI(method='get', url=url, cache=20000, responseData=dict(controls=[picker]),
-                              qsOptions={'id': '$id'},
-                              adaptor=adaptor)
-        )
+        return Service(schemaApi=AmisAPI(
+            method='get', url=url, cache=20000,
+            responseData=dict(controls=[picker]),
+            qsOptions={'id': f'${self.pk_admin.pk_name}'},
+            adaptor=adaptor
+        ))
 
     def register_router(self):
         self.pk_admin.router.add_api_route(
@@ -293,6 +331,7 @@ class BaseModelAdmin(SQLModelCrud):
             bulkActions=await self.get_actions_on_bulk(request),
             footerToolbar=["statistics", "switch-per-page", "pagination", "load-more", "export-csv"],
             columns=await self.get_list_columns(request),
+            primaryField=self.pk_name,
         )
         if self.link_model_forms:
             table.footable = True
@@ -313,8 +352,8 @@ class BaseModelAdmin(SQLModelCrud):
         label = modelfield.field_info.title or modelfield.name
         remark = Remark(content=modelfield.field_info.description) if modelfield.field_info.description else None
         picker = Picker(name=modelfield.alias, label=label, labelField='name', valueField='id',
-                        required=modelfield.required, modalMode='dialog'
-                        , size='full', labelRemark=remark, pickerSchema='${body}', source='${body.api}')
+                        required=modelfield.required, modalMode='dialog',
+                        size='full', labelRemark=remark, pickerSchema='${body}', source='${body.api}')
         return Service(
             schemaApi=AmisAPI(method='get', url=url, cache=20000, responseData=dict(controls=[picker])))
 
@@ -363,7 +402,7 @@ class BaseModelAdmin(SQLModelCrud):
 
     async def get_update_form(self, request: Request, bulk: bool = False) -> Form:
         if not bulk:
-            api = f'put:{self.router_path}/item/$id'
+            api = f'put:{self.router_path}/item/${self.pk_name}'
             fields = self.schema_update.__fields__.values()
         else:
             api = f'put:{self.router_path}/item/' + '${ids|raw}'
@@ -429,7 +468,7 @@ class BaseModelAdmin(SQLModelCrud):
             icon='fa fa-times text-danger',
             tooltip='删除',
             confirmText='您确认要删除?',
-            api=f"delete:{self.router_path}/item/$id",
+            api=f"delete:{self.router_path}/item/${self.pk_name}",
         )
 
     async def get_actions_on_header_toolbar(self, request: Request) -> List[Action]:
