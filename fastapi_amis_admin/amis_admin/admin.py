@@ -1,4 +1,5 @@
 import datetime
+import re
 from functools import lru_cache
 from typing import Type, Callable, Generator, Any, List, Union, Dict, Iterable, Optional, Tuple, TypeVar, NewType
 from fastapi import Request, Depends, FastAPI, Query, HTTPException, Body
@@ -565,8 +566,8 @@ class IframeAdmin(PageSchemaAdmin):
     def get_page_schema(self) -> Optional[PageSchema]:
         super().get_page_schema()
         if self.page_schema:
-            self.page_schema.url = f'/{self.__class__.__module__}/{self.__class__.__name__}'
             iframe = self.iframe or Iframe(src=self.src)
+            self.page_schema.url = re.sub(r"^https?://", "", iframe.src)
             self.page_schema.schema_ = Page(body=iframe)
         return self.page_schema
 
@@ -616,7 +617,7 @@ class PageAdmin(PageSchemaAdmin, RouterAdmin):
     def get_page_schema(self) -> Optional[PageSchema]:
         super().get_page_schema()
         if self.page_schema:
-            self.page_schema.url = f'{self.router.prefix}{self.page_path}'
+            self.page_schema.url = f'{self.router_path}{self.page_path}'  # ?_parser=html
             self.page_schema.schemaApi = f'{self.router_path}{self.page_path}'
             if self.page_parser_mode == 'html':
                 self.page_schema.schema_ = Page(body=Iframe(src=self.page_schema.schemaApi))
