@@ -52,9 +52,9 @@ def test_crud_one():
 def test_crud_bulk():
     # create one
     category_name = 'category_name'
-    count = 2
+    count = 3
     # create bulk
-    categorys = [{'id': i + 1, "name": f'{category_name}_{i}', "description": "description"} for i in range(count)]
+    categorys = [{'id': i + 1, "name": f'{category_name}_{i}', "description": "description","create_time":f"2022-01-0{i+1} 00:00:00"} for i in range(count)]
     res = client.post('/category/item', json=categorys)
     assert res.json()['data'] == count, res.json()
     # update bulk
@@ -68,8 +68,35 @@ def test_crud_bulk():
     assert categorys_new[0]['description'] == "description2"
     # list
     res = client.post('/category/list')
-    categorys_new2 = res.json()['data']['items']
-    assert len(categorys_new2) == count, res.json()
+    categorys_new = res.json()['data']['items']
+    assert len(categorys_new) == count, res.json()
+
+    res = client.post('/category/list',json={"id":1})
+    categorys_new = res.json()['data']['items']
+    assert  categorys_new[0]['id'] == 1, res.json()
+
+    res = client.post('/category/list',json={"name":"category_name_1"})
+    categorys_new = res.json()['data']['items']
+    assert  categorys_new[0]['name'] == "category_name_1", res.json()
+
+    res = client.post('/category/list', json={"id": "[>]1"})
+    assert len(res.json()['data']['items']) == 2, res.json()
+
+    res = client.post('/category/list', json={"id": "[*]1,3"})
+    assert len(res.json()['data']['items']) == 2, res.json()
+
+    res = client.post('/category/list', json={"id": "[-]2,3"})
+    assert len(res.json()['data']['items']) == 2, res.json()
+
+    res = client.post('/category/list', json={"name": "[~]category_name%"})
+    assert len(res.json()['data']['items']) == 3, res.json()
+
+    res = client.post('/category/list', json={"create_time": "[-]2022-01-02 00:00:00,2022-01-04 00:00:00"})
+    assert len(res.json()['data']['items']) == 2, res.json()
+
+    res = client.post('/category/list', json={"create_time": "[-]2022-01-04 00:00:00,2022-01-05 00:00:00"})
+    assert len(res.json()['data']['items']) == 0, res.json()
+
     # delete one
     res = client.delete(f'/category/item/{item_ids}')
     assert res.json()['data'] == count, res.json()

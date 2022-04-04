@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Optional, List
 from sqlalchemy import Column, String, Text
 from sqlmodel import SQLModel, Field, Relationship
@@ -8,7 +9,7 @@ class Category(SQLModel, table=True):
     name: str = Field(title='CategoryName', sa_column=Column(String(100), unique=True, index=True, nullable=False))
     description: str = Field(default='', title='CategoryDescription')
     articles: List["Article"] = Relationship(back_populates="category")
-
+    create_time: datetime = Field(default_factory=datetime.utcnow, title='创建时间')
 
 class ArticleTagLink(SQLModel, table=True):
     tag_id: Optional[int] = Field(
@@ -41,3 +42,4 @@ class Article(SQLModel, table=True):
     content_id: Optional[int] = Field(default=None, foreign_key="articlecontent.id", title='ArticleContentId')
     content: Optional[ArticleContent] = Relationship(back_populates="article")
     tags: List[Tag] = Relationship(back_populates="articles", link_model=ArticleTagLink)
+    create_time: datetime = Field(default_factory=datetime.utcnow, title='创建时间')

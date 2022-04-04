@@ -1,6 +1,5 @@
 from fastapi import FastAPI
 from sqlmodel import SQLModel
-import asyncio
 from tests.test_crud.models import Category, Tag
 from tests.test_crud.db import session_factory, engine
 from fastapi_amis_admin.crud import SQLModelCrud
