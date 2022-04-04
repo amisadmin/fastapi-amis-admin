@@ -1,4 +1,6 @@
-from typing import Union, Optional, Type, List, Dict, Any, Iterable, Tuple
+import datetime
+from typing import Union, Optional, Type, List, Dict, Any, Iterable, Tuple, Callable
+from pydantic.datetime_parse import parse_datetime, parse_date
 from pydantic.fields import ModelField
 from pydantic.utils import smart_deepcopy
 from sqlalchemy import Column
@@ -111,3 +113,15 @@ class SQLModelFieldParser:
             elif save_class and isinstance(field, save_class):
                 result.append(field)
         return result
+
+    @staticmethod
+    def get_python_type_parse(field: Union[InstrumentedAttribute, Column]) -> Callable:
+        try:
+            python_type = field.expression.type.python_type
+            if issubclass(python_type, datetime.date):
+                if issubclass(python_type, datetime.datetime):
+                    return parse_datetime
+                return parse_date
+            return python_type
+        except NotImplementedError:
+            return str

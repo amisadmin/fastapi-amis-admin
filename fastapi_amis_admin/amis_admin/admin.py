@@ -109,9 +109,9 @@ class LinkModelForm:
             if not await self.pk_admin.has_update_permission(request, item_id, None):
                 return self.pk_admin.error_no_router_permission(request)
             stmt = delete(self.link_model).where(
-                self.link_col.in_(list(map(self.link_col.expression.type.python_type, parser_str_set_list(link_id))))
+                self.link_col.in_(list(map(self.pk_admin.parser.get_python_type_parse(self.link_col), parser_str_set_list(link_id))))
             ).where(
-                self.item_col.in_(list(map(self.item_col.expression.type.python_type, item_id)))
+                self.item_col.in_(list(map(self.pk_admin.parser.get_python_type_parse(self.item_col), item_id)))
             )
             result = await db.execute(stmt)
             if result.rowcount:  # type: ignore
@@ -132,11 +132,11 @@ class LinkModelForm:
             if not await self.pk_admin.has_update_permission(request, item_id, None):
                 return self.pk_admin.error_no_router_permission(request)
             values = []
-            for item in map(self.item_col.expression.type.python_type, item_id):
+            for item in map(self.pk_admin.parser.get_python_type_parse(self.item_col), item_id):
                 values.extend(
                     {self.link_col.key: link, self.item_col.key: item}
                     for link in
-                    map(self.link_col.expression.type.python_type, parser_str_set_list(link_id))
+                    map(self.pk_admin.parser.get_python_type_parse(self.link_col), parser_str_set_list(link_id))
                 )
             stmt = insert(self.link_model).values(values)
             try:

@@ -104,7 +104,7 @@ class SQLModelSelector:
                     link_item_id = link_item_id[1:]
                     if not link_item_id:
                         return None
-                link_item_id = list(map(link_col.expression.type.python_type, parser_str_set_list(link_item_id)))
+                link_item_id = list(map(self.parser.get_python_type_parse(link_col), parser_str_set_list(link_item_id)))
                 if op == 'in_':
                     return self.pk.in_(select(pk_col).where(link_col.in_(link_item_id)))
                 elif op == 'not_in':
@@ -112,7 +112,11 @@ class SQLModelSelector:
         return None
 
     @staticmethod
-    def _parser_query_value(value: Any, operator: str = '__eq__') -> Tuple[Optional[str], Union[tuple, None]]:
+    def _parser_query_value(
+            value: Any,
+            operator: str = '__eq__',
+            python_type_parse: Callable = str
+    ) -> Tuple[Optional[str], Union[tuple, None]]:
         if isinstance(value, str):
             match = sql_operator_pattern.match(value)
             if match:
@@ -122,15 +126,15 @@ class SQLModelSelector:
                 if not value:
                     return None, None
                 if operator in ['like', 'not_like'] and value.find('%') == -1:
-                    value = f'%{value}%'
+                    return operator, (f'%{value}%',)
                 elif operator in ['in_', 'not_in']:
-                    value = list(set(value.split(',')))
+                    return operator, (list(map(python_type_parse, set(value.split(',')))),)
                 elif operator == 'between':
                     value = value.split(',')[:2]
                     if len(value) < 2:
                         return None, None
-                    return operator, tuple(value)
-        return operator, (value,)
+                    return operator, tuple(map(python_type_parse, value))
+        return operator, (python_type_parse(value),)
 
     def calc_filter_clause(self, data: Dict[str, Any]) -> List[BinaryExpression]:
         lst = []
@@ -139,7 +143,7 @@ class SQLModelSelector:
             if insfield:
                 operator, val = self._parser_query_value(v)
                 if operator:
-                    lst.append(getattr(insfield, operator)(*list(map(insfield.expression.type.python_type, val))))
+                    lst.append(getattr(insfield, operator)(*val))
         return lst
 
 
@@ -275,7 +279,7 @@ class SQLModelCrud(BaseCrud, SQLModelSelector):
             if not await self.has_read_permission(request, item_id):
                 return self.error_no_router_permission(request)
             result = await session.execute(stmt.where(
-                self.pk.in_(list(map(self.pk.expression.type.python_type, item_id)))
+                self.pk.in_(list(map(self.parser.get_python_type_parse(self.pk), item_id)))
             ))
             items = result.all()
             items = self.parser.conv_row_to_dict(items)
@@ -296,7 +300,7 @@ class SQLModelCrud(BaseCrud, SQLModelSelector):
                         ):
             if not await self.has_update_permission(request, item_id, data):
                 return self.error_no_router_permission(request)
-            stmt = update(self.model).where(self.pk.in_(list(map(self.pk.expression.type.python_type, item_id))))
+            stmt = update(self.model).where(self.pk.in_(list(map(self.parser.get_python_type_parse(self.pk), item_id))))
             data = await self.on_update_pre(request, data)
             if not data:
                 return self.error_data_handle(request)
@@ -317,7 +321,7 @@ class SQLModelCrud(BaseCrud, SQLModelSelector):
         ):
             if not await self.has_delete_permission(request, item_id):
                 return self.error_no_router_permission(request)
-            stmt = delete(self.model).where(self.pk.in_(list(map(self.pk.expression.type.python_type, item_id))))
+            stmt = delete(self.model).where(self.pk.in_(list(map(self.parser.get_python_type_parse(self.pk), item_id))))
             result = await session.execute(stmt)
             if result.rowcount:  # type: ignore
                 await session.commit()
