@@ -4,6 +4,7 @@ from pydantic.fields import ModelField
 from pydantic.utils import smart_deepcopy
 from fastapi_amis_admin.amis.components import FormItem, Remark, Validation, InputNumber, TableColumn
 from fastapi_amis_admin.models.enums import Choices
+from typing import Any
 
 
 class AmisParser():
@@ -37,7 +38,7 @@ class AmisParser():
                 formitem = None
         if formitem is not None:
             pass
-        elif self.modelfield.type_ == str:
+        elif self.modelfield.type_ in [str, Any]:
             kwargs['type'] = 'input-text'
         elif issubclass(self.modelfield.type_, Choices):
             kwargs.update({
@@ -112,7 +113,7 @@ class AmisParser():
                 column = None
         if column is not None:
             pass
-        elif self.modelfield.type_ == str:
+        elif self.modelfield.type_ in [str, Any]:
             pass
         elif issubclass(self.modelfield.type_, bool):
             kwargs['type'] = 'switch'
