@@ -39,6 +39,7 @@ dependencies = [
     "sqlmodel>=0.0.4",
     "ujson>=4.0.1",
     "python-multipart>=0.0.5",
+    "SQLAlchemy<=1.4.35",
     "aiofiles",
 ]
 
