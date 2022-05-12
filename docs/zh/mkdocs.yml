@@ -81,6 +81,7 @@ nav:
           - tutorials/basic/_more.md
       - 高级教程:
           - tutorials/advanced/permission.md
+          - tutorials/advanced/scheduler.md
           - tutorials/advanced/AdminApp.md
           - tutorials/advanced/structure.md
           - tutorials/advanced/debug.md
