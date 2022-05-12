@@ -42,7 +42,6 @@
 
 `fastapi-amis-admin`是一个基于`fastapi`+`amis`开发的高性能并且高效率 `web-admin` 框架，使用 Python 3.7+ 并基于标准的 Python 类型提示.
 `fastapi-amis-admin`开发的初衷是为了完善`fastapi`应用生态, 为`fastapi` web应用程序快速生成一个可视化管理后台.
-`fastapi-amis-admin`遵循`Apache2.0`协议免费开源, 但是为了更好的长期运营与维护此项目, `fastapi-amis-admin`非常希望能够得到大家的赞助与支持.
 
 ## 关键特性
 
@@ -209,11 +208,12 @@ if __name__ == '__main__':
 
 ![Docs](https://raw.githubusercontent.com/amisadmin/fastapi_amis_admin_demo/master/upload/img/Docs.png)
 
-## 未来计划
+## 相关项目
 
-- [ ] bug修复,细节完善.
-- [ ] 完善用户教程文档.
-- [ ] 不断拓展与完善核心功能.
+- [`FastAPI-User-Auth`](https://github.com/amisadmin/fastapi_user_auth): 一个简单而强大的`FastAPI`用户`RBAC`认证与授权库.
+- [`FastAPI-Scheduler`](https://github.com/amisadmin/fastapi_scheduler): 一个基于`APScheduler`的简单定时任务管理`FastAPI`拓展库.
+- [`FastAPI-Amis-Admin-Demo`](https://github.com/amisadmin/fastapi_amis_admin_demo):  一个`FastAPI-Amis-Admin` 应用程序示例.
+- [`FastAPI-User-Auth-Demo`](https://github.com/amisadmin/fastapi_user_auth_demo): 一个`FastAPI-User-Auth` 应用程序示例.
 
 
 ## 许可协议

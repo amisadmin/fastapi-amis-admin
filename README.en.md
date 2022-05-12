@@ -209,12 +209,12 @@ if __name__ == '__main__':
 
 ![Docs](https://raw.githubusercontent.com/amisadmin/fastapi_amis_admin_demo/master/upload/img/Docs.png)
 
-## Future
+## Project
 
-- [ ] Fix bug and improve details.
-- [ ] Improve the user tutorial documentation.
-- [ ] Expand and improve core functions continuously .
-- [ ] Add user authentication and authorization system.
+- [`FastAPI-User-Auth`](https://github.com/amisadmin/fastapi_user_auth): A simple and powerful `FastAPI` user `RBAC` authentication and authorization library.
+- [`FastAPI-Scheduler`](https://github.com/amisadmin/fastapi_scheduler): A simple scheduled task management `FastAPI` extension based on `APScheduler`.
+- [`FastAPI-Amis-Admin-Demo`](https://github.com/amisadmin/fastapi_amis_admin_demo): An example `FastAPI-Amis-Admin` application.
+- [`FastAPI-User-Auth-Demo`](https://github.com/amisadmin/fastapi_user_auth_demo): An example `FastAPI-User-Auth` application.
 
 ## License
 
