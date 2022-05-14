@@ -55,7 +55,8 @@ class LinkModelForm:
         self.link_model = link_model
         self.pk_admin = pk_admin
         self.display_admin_cls = display_admin_cls or self.display_admin_cls
-        assert self.display_admin_cls in self.pk_admin.app._admins_dict, f'{self.display_admin_cls} display_admin_cls is not register'
+        assert self.display_admin_cls in self.pk_admin.app._admins_dict, \
+            f'{self.display_admin_cls} display_admin_cls is not register'
         self.display_admin: ModelAdmin = self.pk_admin.app.create_admin_instance(self.display_admin_cls)
         assert isinstance(self.display_admin, ModelAdmin)
         self.session_factory = session_factory or self.pk_admin.session_factory
@@ -175,9 +176,11 @@ class LinkModelForm:
                 api=f"post:{self.pk_admin.app.router_path}{self.pk_admin.router.prefix}{self.path}"
                     + '/${REPLACE(query.link_item_id, "!", "")}?link_id=${IF(ids, ids, id)}'
             )  # query.link_item_id
-            adaptor = 'if(!payload.hasOwnProperty("_payload")){payload._payload=JSON.stringify(payload);}payload=JSON.parse(payload._payload);button_create=' + button_create.amis_json() \
-                      + ';payload.data.body.bulkActions.push(button_create);payload.data.body.itemActions.push(button_create);return payload;'.replace(
-                'action_id', 'create' + self.path.replace('/', '_'))
+            adaptor = 'if(!payload.hasOwnProperty("_payload")){payload._payload=JSON.stringify(payload);}' \
+                      'payload=JSON.parse(payload._payload);button_create=' + button_create.amis_json() \
+                      + ';' 'payload.data.body.bulkActions.push(button_create);' \
+                        'payload.data.body.itemActions.push(button_create);' \
+                        'return payload;'.replace('action_id', 'create' + self.path.replace('/', '_'))
             button_create_dialog = ActionType.Dialog(
                 icon='fa fa-plus pull-left',
                 label='添加关联',
@@ -209,10 +212,11 @@ class LinkModelForm:
                 api=f"delete:{self.pk_admin.app.router_path}{self.pk_admin.router.prefix}{self.path}"
                     + '/${query.link_item_id}?link_id=${IF(ids, ids, id)}'
             )
-            adaptor = 'if(!payload.hasOwnProperty("_payload")){payload._payload=JSON.stringify(payload);}payload=JSON.parse(payload._payload);button_delete=' \
-                      + button_delete.amis_json() + ';payload.data.body.headerToolbar.push(' + button_create_dialog.amis_json() \
-                      + ');payload.data.body.bulkActions.push(button_delete);payload.data.body.itemActions.push(button_delete);return payload;'.replace(
-                'action_id', 'delete' + self.path.replace('/', '_'))
+            adaptor = 'if(!payload.hasOwnProperty("_payload")){payload._payload=JSON.stringify(payload);}' \
+                      'payload=JSON.parse(payload._payload);button_delete=' + button_delete.amis_json() \
+                      + ';payload.data.body.headerToolbar.push(' + button_create_dialog.amis_json() \
+                      + ');payload.data.body.bulkActions.push(button_delete);payload.data.body.itemActions.push(button_delete);' \
+                        'return payload;'.replace('action_id', 'delete' + self.path.replace('/', '_'))
         return Service(schemaApi=AmisAPI(
             method='get', url=url, cache=20000,
             responseData=dict(controls=[picker]),
@@ -344,8 +348,11 @@ class BaseModelAdmin(SQLModelCrud):
             table.footable = True
         return table
 
-    async def get_form_item_on_foreign_key(self, request: Request,
-                                           modelfield: ModelField) -> Union[Service, SchemaNode]:
+    async def get_form_item_on_foreign_key(
+            self, request: Request,
+            modelfield: ModelField,
+            is_filter: bool = False
+    ) -> Union[Service, SchemaNode,None]:
         column = self.parser.get_column(modelfield.alias)
         if column is None:
             return None
@@ -359,16 +366,15 @@ class BaseModelAdmin(SQLModelCrud):
         label = modelfield.field_info.title or modelfield.name
         remark = Remark(content=modelfield.field_info.description) if modelfield.field_info.description else None
         picker = Picker(name=modelfield.alias, label=label, labelField='name', valueField='id',
-                        required=modelfield.required, modalMode='dialog',
+                        required=modelfield.required, modalMode='dialog', inline=is_filter,
                         size='full', labelRemark=remark, pickerSchema='${body}', source='${body.api}')
-        return Service(
-            schemaApi=AmisAPI(method='get', url=url, cache=20000, responseData=dict(controls=[picker])))
+        return Service(schemaApi=AmisAPI(method='get', url=url, cache=20000, responseData=dict(controls=[picker])))
 
     async def get_form_item(self, request: Request, modelfield: ModelField,
                             action: CrudEnum) -> Union[FormItem, SchemaNode]:
         is_filter = action == CrudEnum.list
-        return await self.get_form_item_on_foreign_key(request, modelfield) or AmisParser(modelfield).as_form_item(
-            is_filter=is_filter)
+        return (await self.get_form_item_on_foreign_key(request, modelfield, is_filter=is_filter)
+                or AmisParser(modelfield).as_form_item(is_filter=is_filter))
 
     async def get_list_filter_form(self, request: Request) -> Form:
         body = await self._conv_modelfields_to_formitems(request, await self.get_list_filter(request),
@@ -507,6 +513,7 @@ class BaseModelAdmin(SQLModelCrud):
                     item = await self.get_form_item(request, field, action)
                     if item:
                         items.append(item)
+        items.extend(items.pop(i) for i, item in enumerate(items.copy()) if isinstance(item, Service))
         return items
 
 
@@ -613,9 +620,13 @@ class PageAdmin(PageSchemaAdmin, RouterAdmin):
 
     def error_no_page_permission(self, request: Request):
         page_parser_mode = request.query_params.get('_parser') or self.page_parser_mode
-        raise HTTPException(status_code=status.HTTP_307_TEMPORARY_REDIRECT, detail='No page permissions',
-                            headers={
-                                'location': f'{self.app.site.router_path}/auth/form/login?_parser={page_parser_mode}&redirect={request.url}'})
+        raise HTTPException(
+            status_code=status.HTTP_307_TEMPORARY_REDIRECT, detail='No page permissions',
+            headers={
+                'location': f'{self.app.site.router_path}/auth/form/login?'
+                            f'_parser={page_parser_mode}&redirect={request.url}',
+            },
+        )
 
     async def get_page(self, request: Request) -> Page:
         return self.page or Page()
@@ -953,7 +964,8 @@ class AdminApp(PageAdmin):
                      f'<a target="_blank" href="{fastapi_amis_admin.__url__}" ' \
                      f'class="link-secondary" rel="noopener">v{fastapi_amis_admin.__version__}</a></div> '
         # app.asideBefore = '<div class="p-2 text-center">菜单前面区域</div>'
-        # app.asideAfter = f'<div class="p-2 text-center"><a href="{fastapi_amis_admin.__url__}"  target="_blank">fastapi-amis-admin</a></div>'
+        # app.asideAfter = f'<div class="p-2 text-center">' \
+        #                  f'<a href="{fastapi_amis_admin.__url__}"  target="_blank">fastapi-amis-admin</a></div>'
         _parser = request.query_params.get('_parser') or self.page_parser_mode
         if _parser == 'json':
             children = await self.get_page_schema_children(request)
