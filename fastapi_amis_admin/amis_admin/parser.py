@@ -134,17 +134,8 @@ class AmisParser():
         column.remark = column.remark or self.remark
         column.sortable = True
         if quick_edit:
-            item = self.as_form_item()
-            column.quickEdit = item.dict(exclude_none=True, by_alias=True, exclude={'name', 'label'})
-            column.quickEdit.update(
-                {
-                    "saveImmediately": True
-                }
-            )
-            if item.type == 'switch':
-                column.quickEdit.update(
-                    {
-                        "mode": "inline",
-                    }
-                )
+            column.quickEdit = self.as_form_item().dict(exclude_none=True, by_alias=True, exclude={'name', 'label'})
+            column.quickEdit.update({"saveImmediately": True})
+            if column.quickEdit.get('type') == 'switch':
+                column.quickEdit.update({"mode": "inline"})
         return column

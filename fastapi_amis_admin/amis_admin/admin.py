@@ -281,9 +281,17 @@ class BaseModelAdmin(SQLModelCrud):
         return self.list_filter or list(self.schema_filter.__fields__.values())
 
     async def get_list_column(self, request: Request, modelfield: ModelField) -> TableColumn:
-        quick_edit = (await self.has_update_permission(request, None, None)
-                      and modelfield.name in self.schema_update.__fields__)
-        return AmisParser(modelfield).as_table_column(quick_edit=quick_edit)
+        column = AmisParser(modelfield).as_table_column()
+        if await self.has_update_permission(request, None, None) and modelfield.name in self.schema_update.__fields__:
+            item = await self.get_form_item(request, modelfield, action=CrudEnum.update)
+            if isinstance(item, BaseModel):
+                item = item.dict(exclude_none=True, by_alias=True, exclude={'name', 'label'})
+            if isinstance(item, dict):
+                column.quickEdit = item
+                column.quickEdit.update({"saveImmediately": True})
+                if item.get('type') == 'switch':
+                    column.quickEdit.update({"mode": "inline"})
+        return column
 
     async def get_list_columns(self, request: Request) -> List[TableColumn]:
         columns = []
@@ -352,7 +360,7 @@ class BaseModelAdmin(SQLModelCrud):
             self, request: Request,
             modelfield: ModelField,
             is_filter: bool = False
-    ) -> Union[Service, SchemaNode,None]:
+    ) -> Union[Service, SchemaNode, None]:
         column = self.parser.get_column(modelfield.alias)
         if column is None:
             return None
