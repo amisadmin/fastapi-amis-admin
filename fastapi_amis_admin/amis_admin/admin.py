@@ -2,6 +2,7 @@ import datetime
 import re
 from functools import lru_cache
 from typing import Type, Callable, Generator, Any, List, Union, Dict, Iterable, Optional, Tuple, TypeVar, NewType
+
 from fastapi import Request, Depends, FastAPI, Query, HTTPException, Body
 from pydantic import BaseModel
 from pydantic.fields import ModelField
@@ -14,19 +15,20 @@ from sqlmodel.main import SQLModelMetaclass
 from starlette import status
 from starlette.responses import HTMLResponse, JSONResponse, Response, RedirectResponse
 from starlette.templating import Jinja2Templates
+
 import fastapi_amis_admin
 from fastapi_amis_admin.amis.components import Page, TableCRUD, Action, ActionType, Dialog, Form, FormItem, Picker, \
     Remark, Service, Iframe, PageSchema, TableColumn, ColumnOperation, App, Tpl
 from fastapi_amis_admin.amis.constants import LevelEnum, DisplayModeEnum, SizeEnum
 from fastapi_amis_admin.amis.types import BaseAmisApiOut, BaseAmisModel, AmisAPI, SchemaNode
 from fastapi_amis_admin.amis_admin.parser import AmisParser
-from fastapi_amis_admin.crud.base import RouterMixin
+from fastapi_amis_admin.amis_admin.settings import Settings
 from fastapi_amis_admin.crud._sqlmodel import SQLModelCrud, SQLModelSelector
+from fastapi_amis_admin.crud.base import RouterMixin
 from fastapi_amis_admin.crud.parser import SQLModelFieldParser, SQLModelField, SQLModelListField
 from fastapi_amis_admin.crud.schema import CrudEnum, BaseApiOut, Paginator
 from fastapi_amis_admin.crud.utils import parser_item_id, schema_create_by_schema, parser_str_set_list
 from fastapi_amis_admin.utils.db import SqlalchemyAsyncClient
-from fastapi_amis_admin.amis_admin.settings import Settings
 from fastapi_amis_admin.utils.functools import cached_property
 
 try:
@@ -109,7 +111,8 @@ class LinkModelForm:
             if not await self.pk_admin.has_update_permission(request, item_id, None):
                 return self.pk_admin.error_no_router_permission(request)
             stmt = delete(self.link_model).where(
-                self.link_col.in_(list(map(self.pk_admin.parser.get_python_type_parse(self.link_col), parser_str_set_list(link_id))))
+                self.link_col.in_(
+                    list(map(self.pk_admin.parser.get_python_type_parse(self.link_col), parser_str_set_list(link_id))))
             ).where(
                 self.item_col.in_(list(map(self.pk_admin.parser.get_python_type_parse(self.item_col), item_id)))
             )
@@ -274,7 +277,11 @@ class BaseModelAdmin(SQLModelCrud):
         return self.list_filter or list(self.schema_filter.__fields__.values())
 
     async def get_list_column(self, request: Request, modelfield: ModelField) -> TableColumn:
-        return AmisParser(modelfield).as_table_column()
+        if await self.has_update_permission(request, None, None):
+            for field in self.schema_update.__fields__.values():
+                if modelfield.alias == field.alias:
+                    return AmisParser(modelfield).as_table_column(quick_edit=True)
+        return AmisParser(modelfield).as_table_column(quick_edit=False)
 
     async def get_list_columns(self, request: Request) -> List[TableColumn]:
         columns = []
@@ -333,6 +340,7 @@ class BaseModelAdmin(SQLModelCrud):
             footerToolbar=["statistics", "switch-per-page", "pagination", "load-more", "export-csv"],
             columns=await self.get_list_columns(request),
             primaryField=self.pk_name,
+            quickSaveItemApi=f'put:{self.router_path}/item/' + '${id}',
         )
         if self.link_model_forms:
             table.footable = True

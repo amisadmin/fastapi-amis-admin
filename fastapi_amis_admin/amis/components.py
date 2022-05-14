@@ -1175,7 +1175,7 @@ class TableColumn(AmisNode):
     tpl: Template = None  # 模板
     fixed: str = None  # 是否固定当前列 left | right | none
     popOver: bool = None  # 弹出框
-    quickEdit: bool = None  # 快速编辑
+    quickEdit: Union[bool,dict] = None  # 快速编辑
     copyable: Union[bool, dict] = None  # 是否可复制  boolean 或 {icon: string, content:string}
     sortable: bool = None  # False  # 是否可排序
     searchable: Union[bool, SchemaNode] = None  # False  # 是否可快速搜索  boolean | Schema

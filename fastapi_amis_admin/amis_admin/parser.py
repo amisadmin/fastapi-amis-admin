@@ -1,10 +1,12 @@
 import datetime
+from typing import Any
+
 from pydantic import Json
 from pydantic.fields import ModelField
 from pydantic.utils import smart_deepcopy
+
 from fastapi_amis_admin.amis.components import FormItem, Remark, Validation, InputNumber, TableColumn
 from fastapi_amis_admin.models.enums import Choices
-from typing import Any
 
 
 class AmisParser():
@@ -97,7 +99,7 @@ class AmisParser():
         formitem.labelRemark = formitem.labelRemark or self.remark
         return formitem
 
-    def as_table_column(self) -> TableColumn:
+    def as_table_column(self, quick_edit: bool = False) -> TableColumn:
         kwargs = {}
         column = self.modelfield.field_info.extra.get('amis_table_column')
         if column is not None:
@@ -131,4 +133,18 @@ class AmisParser():
         column.label = column.label or self.label
         column.remark = column.remark or self.remark
         column.sortable = True
+        if quick_edit:
+            item = self.as_form_item()
+            column.quickEdit = item.dict(exclude_none=True, by_alias=True, exclude={'name', 'label'})
+            column.quickEdit.update(
+                {
+                    "saveImmediately": True
+                }
+            )
+            if item.type == 'switch':
+                column.quickEdit.update(
+                    {
+                        "mode": "inline",
+                    }
+                )
         return column
