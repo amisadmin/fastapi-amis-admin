@@ -645,6 +645,17 @@ class Editor(FormItem):
     options: dict = None  # monaco编辑器的其它配置，比如是否显示行号等，请参考这里，不过无法设置readOnly,只读模式需要使用disabled: true
 
 
+class Markdown(AmisNode):
+    """Markdown渲染"""
+    type: str = 'markdown'
+    name: str = None  # 字段名，指定该表单项提交时的 key
+    value: Union[int, str] = None  # 字段的值
+    className: str = None  # 表单最外层类名
+    src: API = None  # 外部地址
+    options: dict = None  # html，是否支持 html 标签，默认 false;
+    # linkify，是否自动识别链接，默认值是 true;breaks，是否回车就是换行，默认 false
+
+
 class InputFile(FormItem):
     """文件上传"""
     type: str = 'input-file'
