@@ -2,6 +2,7 @@ import os.path
 import platform
 import time
 import uuid
+
 import aiofiles
 from fastapi import UploadFile, File, FastAPI
 from pydantic import BaseModel
@@ -9,12 +10,12 @@ from sqlalchemy.ext.asyncio import AsyncEngine
 from starlette.requests import Request
 from starlette.staticfiles import StaticFiles
 
+import fastapi_amis_admin
 from fastapi_amis_admin.amis.components import PageSchema, Page, Property
 from fastapi_amis_admin.amis_admin.admin import IframeAdmin, PageAdmin, AdminApp, RouterAdmin, \
     BaseAdminSite
 from fastapi_amis_admin.amis_admin.settings import Settings
 from fastapi_amis_admin.crud.schema import BaseApiOut
-import fastapi_amis_admin
 
 
 class DocsAdmin(IframeAdmin):

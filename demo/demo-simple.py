@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+
 from fastapi_amis_admin.amis_admin.settings import Settings
 from fastapi_amis_admin.amis_admin.site import AdminSite
 

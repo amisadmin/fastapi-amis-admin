@@ -2,8 +2,6 @@
 
 `fastapi-sqlmodel-crud`是一个基于`FastAPI`+`SQLModel`, 用于快速构建Create,Read,Update,Delete通用API接口的项目.
 
-
-
 ## 安装
 
 ```bash
@@ -62,19 +60,15 @@ async def startup():
 
 ```
 
-
 ## 开发文档
 
 - https://docs.gh.amis.work/crud/SQLModelCrud/
-
-
 
 ## 依赖项目
 
 - [Fastapi](https://fastapi.tiangolo.com)
 
 - [SQLModel](https://sqlmodel.tiangolo.com/)
-
 
 ## 许可协议
 

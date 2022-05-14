@@ -1,5 +1,6 @@
 from enum import Enum
 from typing import Dict, TypeVar, Optional, Generic, List, Any, Union
+
 import ujson
 from pydantic import BaseModel, Extra
 from pydantic.generics import GenericModel

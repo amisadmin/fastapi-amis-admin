@@ -277,11 +277,9 @@ class BaseModelAdmin(SQLModelCrud):
         return self.list_filter or list(self.schema_filter.__fields__.values())
 
     async def get_list_column(self, request: Request, modelfield: ModelField) -> TableColumn:
-        if await self.has_update_permission(request, None, None):
-            for field in self.schema_update.__fields__.values():
-                if modelfield.alias == field.alias:
-                    return AmisParser(modelfield).as_table_column(quick_edit=True)
-        return AmisParser(modelfield).as_table_column(quick_edit=False)
+        quick_edit = (await self.has_update_permission(request, None, None)
+                      and modelfield.name in self.schema_update.__fields__)
+        return AmisParser(modelfield).as_table_column(quick_edit=quick_edit)
 
     async def get_list_columns(self, request: Request) -> List[TableColumn]:
         columns = []

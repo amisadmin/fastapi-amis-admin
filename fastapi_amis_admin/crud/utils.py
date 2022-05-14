@@ -1,9 +1,11 @@
 from enum import Enum
 from typing import Optional, Type, List, Set, Union, Iterable
+
 from fastapi.params import Path
 from pydantic import BaseModel, BaseConfig
 from pydantic.fields import ModelField
 from pydantic.utils import smart_deepcopy
+
 from .schema import Paginator
 
 

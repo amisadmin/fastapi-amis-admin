@@ -8,4 +8,3 @@ class Settings(BaseSettings):
     site_url: str = ''
     root_path: str = '/admin'
     database_url_async: str = Field(..., env='DATABASE_URL_ASYNC')
-

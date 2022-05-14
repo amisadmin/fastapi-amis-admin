@@ -1,7 +1,9 @@
 from typing import Any
+
 from fastapi import FastAPI
 from pydantic import BaseModel
 from starlette.requests import Request
+
 from fastapi_amis_admin.amis.components import Form
 from fastapi_amis_admin.amis_admin import admin
 from fastapi_amis_admin.amis_admin.settings import Settings

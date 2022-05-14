@@ -1,4 +1,5 @@
 from fastapi.testclient import TestClient
+
 from tests.test_crud.main import app
 
 client = TestClient(app)
@@ -54,7 +55,13 @@ def test_crud_bulk():
     category_name = 'category_name'
     count = 3
     # create bulk
-    categorys = [{'id': i + 1, "name": f'{category_name}_{i}', "description": "description","create_time":f"2022-01-0{i+1} 00:00:00"} for i in range(count)]
+    categorys = [
+        {'id': i + 1,
+         "name": f'{category_name}_{i}',
+         "description": "description",
+         "create_time": f"2022-01-0{i + 1} 00:00:00"
+         } for i in range(count)
+    ]
     res = client.post('/category/item', json=categorys)
     assert res.json()['data'] == count, res.json()
     # update bulk
@@ -71,13 +78,13 @@ def test_crud_bulk():
     categorys_new = res.json()['data']['items']
     assert len(categorys_new) == count, res.json()
 
-    res = client.post('/category/list',json={"id":1})
+    res = client.post('/category/list', json={"id": 1})
     categorys_new = res.json()['data']['items']
-    assert  categorys_new[0]['id'] == 1, res.json()
+    assert categorys_new[0]['id'] == 1, res.json()
 
-    res = client.post('/category/list',json={"name":"category_name_1"})
+    res = client.post('/category/list', json={"name": "category_name_1"})
     categorys_new = res.json()['data']['items']
-    assert  categorys_new[0]['name'] == "category_name_1", res.json()
+    assert categorys_new[0]['name'] == "category_name_1", res.json()
 
     res = client.post('/category/list', json={"id": "[>]1"})
     assert len(res.json()['data']['items']) == 2, res.json()

@@ -9,6 +9,7 @@ from typing import (
     Optional,
     Union, Dict, Tuple, AsyncGenerator, Pattern,
 )
+
 from fastapi import Depends, Body, APIRouter, Query
 from pydantic import Json, BaseModel
 from sqlalchemy import insert, update, delete, func, Table, Column
@@ -19,6 +20,7 @@ from sqlmodel import SQLModel
 from sqlmodel.ext.asyncio.session import AsyncSession
 from sqlmodel.sql.expression import Select
 from starlette.requests import Request
+
 from .base import BaseCrud
 from .parser import SQLModelFieldParser, SQLModelListField
 from .schema import BaseApiOut, ItemListSchema
@@ -88,10 +90,14 @@ class SQLModelSelector:
             select_maker = self.get_select
         return select_maker
 
-    async def get_link_clause(self, request: Request, link_model: str = None,
-                              link_item_id: Union[int, str] = Query(None, title='pk', example='1,2,3',
-                                                                    description='Link Model Primary key or list of primary keys')) -> \
-            Optional[Any]:
+    async def get_link_clause(
+            self, request: Request,
+            link_model: str = None,
+            link_item_id: Union[int, str] = Query(
+                None, title='pk', example='1,2,3',
+                description='Link Model Primary key or list of primary keys',
+            )
+    ) -> Optional[Any]:
         if link_model and link_item_id:
             result = self.link_models.get(link_model)
             if not result:

@@ -1,13 +1,17 @@
 """详细文档阅读地址: https://baidu.gitee.io/amis/zh-CN/components"""
 from typing import Union, List, Optional, Any
+
 from pydantic import Field
+
 from .constants import LevelEnum, DisplayModeEnum, SizeEnum
-from .types import API, Expression, AmisNode, SchemaNode, Template, BaseAmisModel, OptionsNode
+from .types import API, Expression, AmisNode, SchemaNode, Template, BaseAmisModel, OptionsNode, Tpl
 from .utils import amis_templates
+
 try:
     from typing import Literal
 except ImportError:
     from typing_extensions import Literal
+
 
 class Html(AmisNode):
     """Html"""
@@ -28,17 +32,10 @@ class Remark(AmisNode):
     className: str = None  # 外层 CSS 类名
     content: str = None  # 提示文本
     placement: str = None  # 弹出位置
-    trigger: str = None  # 触发条件 ['hover', 'focus']
+    trigger: str = None  # 触发条件 ['hover','focus']
     icon: str = None  # "fa fa-question-circle"  # 图标
 
 
-class Tpl(AmisNode):
-    type: str = "tpl"  # 指定为 Tpl 组件
-    tpl: str  # 配置模板
-    className: str = None  # 外层 Dom 的类名
-
-
-##########################其他########################
 class Badge(AmisNode):
     """角标"""
     mode: str = "dot"  # 角标类型，可以是 dot/text/ribbon
@@ -53,8 +50,6 @@ class Badge(AmisNode):
     style: dict = None  # 角标的自定义样式
     visibleOn: Expression = None  # 控制角标的显示隐藏
 
-
-##########################布局########################
 
 class Page(AmisNode):
     """页面"""
@@ -116,14 +111,14 @@ class Grid(AmisNode):
         sm: int = None  # "auto"  # 宽度占比： 1 - 12
         md: int = None  # "auto"   # 宽度占比： 1 - 12
         lg: int = None  # "auto"   # 宽度占比： 1 - 12
-        valign: str = None  # 'top' | 'middle' | 'bottom' | 'between = None # 当前列内容的垂直对齐
+        valign: str = None  # 'top'|'middle'|'bottom'|'between = None # 当前列内容的垂直对齐
         body: List[SchemaNode] = None  #
 
     type: str = "grid"  # 指定为 Grid 渲染器
     className: str = None  # 外层 Dom 的类名
-    gap: str = None  # 'xs' | 'sm' | 'base' | 'none' | 'md' | 'lg = None # 水平间距
-    valign: str = None  # 'top' | 'middle' | 'bottom' | 'between = None # 垂直对齐方式
-    align: str = None  # 'left' | 'right' | 'between' | 'center = None # 水平对齐方式
+    gap: str = None  # 'xs'|'sm'|'base'|'none'|'md'|'lg = None # 水平间距
+    valign: str = None  # 'top'|'middle'|'bottom'|'between = None # 垂直对齐方式
+    align: str = None  # 'left'|'right'|'between'|'center = None # 水平对齐方式
     columns: List[SchemaNode] = None  #
 
 
@@ -174,7 +169,6 @@ class Horizontal(AmisNode):
     offset: int = None  # 当没有设置 label 时，右边控制器的偏移量
 
 
-##########################功能########################
 class Action(AmisNode):
     """行为按钮"""
     type: str = "button"  # 指定为 Page 渲染器。 button  action
@@ -241,7 +235,10 @@ class PageSchema(AmisNode):
     """页面配置"""
     label: str = None  # 菜单名称。
     icon: str = None  # 菜单图标，比如：fa fa-file.
-    url: str = None  # 页面路由路径，当路由命中该路径时，启用当前页面。当路径不是 / 打头时，会连接父级路径。比如：父级的路径为 folder，而此时配置 pageA, 那么当页面地址为 /folder/pageA 时才会命中此页面。当路径是 / 开头如： /crud/list 时，则不会拼接父级路径。另外还支持 /crud/view/:id 这类带参数的路由，页面中可以通过 ${params.id} 取到此值。
+    url: str = None  # 页面路由路径，当路由命中该路径时，启用当前页面。当路径不是 / 打头时，会连接父级路径。
+    # 比如：父级的路径为 folder，而此时配置 pageA, 那么当页面地址为 /folder/pageA 时才会命中此页面。
+    # 当路径是 / 开头如： /crud/list 时，则不会拼接父级路径。
+    # 另外还支持 /crud/view/:id 这类带参数的路由，页面中可以通过 ${params.id} 取到此值。
     schema_: Page = Field(None, alias='schema')  # 页面的配置，具体配置请前往 Page 页面说明
     schemaApi: API = None  # 如果想通过接口拉取，请配置。返回路径为 json>data。schema 和 schemaApi 只能二选一。
     link: str = None  # 如果想配置个外部链接菜单，只需要配置 link 即可。
@@ -265,8 +262,9 @@ class App(AmisNode):
     asideBefore: str = None  # 页面菜单上前面区域。
     asideAfter: str = None  # 页面菜单下前面区域。
     footer: str = None  # 页面。
-    pages: List[
-        PageSchema] = None  # Array<页面配置>具体的页面配置。 通常为数组，数组第一层为分组，一般只需要配置 label 集合，如果你不想分组，直接不配置，真正的页面请在第二层开始配置，即第一层的 children 中。
+    pages: List[PageSchema] = None  # Array<页面配置>具体的页面配置。
+
+    # 通常为数组，数组第一层为分组，一般只需要配置 label 集合，如果你不想分组，直接不配置，真正的页面请在第二层开始配置，即第一层的 children 中。
 
     def amis_html(self, template_path: str = ''):
         """渲染html模板"""
@@ -349,7 +347,6 @@ class AnchorNav(AmisNode):
     active: str = None  # 需要定位的区域
 
 
-##########################数据输入########################
 class ButtonToolbar(AmisNode):
     """按钮工具栏"""
     type: str = 'button-toolbar'
@@ -416,7 +413,8 @@ class Form(AmisNode):
     type: str = "form"  # "form" 指定为 Form 渲染器
     name: str = None  # 设置一个名字后，方便其他组件与其通信
     mode: DisplayModeEnum = None  # 表单展示方式，可以是：normal、horizontal 或者 inline
-    horizontal: Horizontal = None  # 当 mode 为 horizontal 时有用，用来控制 label {"left": "col-sm-2", "right": "col-sm-10","offset": "col-sm-offset-2"}
+    horizontal: Horizontal = None  # 当 mode 为 horizontal 时有用，
+    # 用来控制 label {"left": "col-sm-2", "right": "col-sm-10","offset": "col-sm-offset-2"}
     title: Optional[str] = None  # Form 的标题
     submitText: Optional[str] = "提交"  # 默认的提交按钮名称，如果设置成空，则可以把默认按钮去掉。
     className: str = None  # 外层 Dom 的类名
@@ -445,7 +443,9 @@ class Form(AmisNode):
     submitOnInit: bool = None  # 初始就提交一次
     resetAfterSubmit: bool = None  # 提交后是否重置表单
     primaryField: str = None  # 设置主键 id, 当设置后，检测表单是否完成时（asyncApi），只会携带此数据。
-    target: str = None  # 默认表单提交自己会通过发送 api 保存数据，但是也可以设定另外一个 form 的 name 值，或者另外一个 CRUD 模型的 name 值。 如果 target 目标是一个 Form ，则目标 Form 会重新触发 initApi，api 可以拿到当前 form 数据。如果目标是一个 CRUD 模型，则目标模型会重新触发搜索，参数为当前 Form 数据。当目标是 window 时，会把当前表单的数据附带到页面地址上。
+    target: str = None  # 默认表单提交自己会通过发送 api 保存数据，但是也可以设定另外一个 form 的 name 值，
+    # 或者另外一个 CRUD 模型的 name 值。 如果 target 目标是一个 Form ，则目标 Form 会重新触发 initApi，api 可以拿到当前 form 数据。
+    # 如果目标是一个 CRUD 模型，则目标模型会重新触发搜索，参数为当前 Form 数据。当目标是 window 时，会把当前表单的数据附带到页面地址上。
     redirect: str = None  # 设置此属性后，Form 保存成功后，自动跳转到指定页面。支持相对地址，和绝对地址（相对于组内的）。
     reload: str = None  # 操作完后刷新目标对象。请填写目标组件设置的 name 值，如果填写为 window 则让当前页面整体刷新。
     autoFocus: bool = None  # 是否自动聚焦。
@@ -463,12 +463,13 @@ class Button(FormItem):
     """按钮"""
     className: str = None  # 指定添加 button 类名
     href: str = None  # 点击跳转的地址，指定此属性 button 的行为和 a 链接一致
-    size: str = None  # 设置按钮大小 'xs' | 'sm' | 'md' | 'lg'
-    actionType: str = None  # 设置按钮类型 'button' | 'reset' | 'submit'| 'clear'| 'url'
-    level: LevelEnum = None  # 设置按钮样式 'link' | 'primary' | 'enhance' | 'secondary' | 'info'|'success' | 'warning' | 'danger' | 'light'| 'dark' | 'default'
+    size: str = None  # 设置按钮大小 'xs'|'sm'|'md'|'lg'
+    actionType: str = None  # 设置按钮类型 'button'|'reset'|'submit'| 'clear'| 'url'
+    level: LevelEnum = None
+    # 设置按钮样式 'link'|'primary'|'enhance'|'secondary'|'info'|'success'|'warning'|'danger'|'light'| 'dark'|'default'
     tooltip: Union[str, dict] = None  # 气泡提示内容 TooltipObject
-    tooltipPlacement: str = None  # 气泡框位置器 'top' | 'right' | 'bottom' | 'left'
-    tooltipTrigger: str = None  # 触发 tootip 'hover' | 'focus'
+    tooltipPlacement: str = None  # 气泡框位置器 'top'|'right'|'bottom'|'left'
+    tooltipTrigger: str = None  # 触发 tootip 'hover'|'focus'
     disabled: bool = None  # 按钮失效状态
     block: bool = None  # 将按钮宽度调整为其父宽度的选项
     loading: bool = None  # 显示按钮 loading 效果
@@ -532,7 +533,7 @@ class InputCity(FormItem):
     allowCity: bool = None  # True  # 允许选择城市
     allowDistrict: bool = None  # True  # 允许选择区域
     searchable: bool = None  # False  # 是否出搜索框
-    extractValue: bool = None  # True  # 默认 true 是否抽取值，如果设置成 false 值格式会变成对象，包含 code、province、city 和 district 文字信息。
+    extractValue: bool = None  # True#是否抽取值，如果设置成 false 值格式会变成对象，包含 code、province、city和district文字信息。
 
 
 class InputColor(FormItem):
@@ -575,8 +576,8 @@ class Combo(FormItem):
     conditions: dict = None  # 数组的形式包含所有条件的渲染类型，单个数组内的test 为判断条件，数组内的items为符合该条件后渲染的schema
     typeSwitchable: bool = False  # 是否可切换条件，配合conditions使用
     strictMode: bool = True  # 默认为严格模式，设置为 false 时，当其他表单项更新是，里面的表单项也可以及时获取，否则不会。
-    syncFields: List[
-        str] = "[]"  # 配置同步字段。只有 strictMode 为 false 时有效。如果 Combo 层级比较深，底层的获取外层的数据可能不同步。但是给 combo 配置这个属性就能同步下来。输入格式：["os"]
+    syncFields: List[str] = []  # 配置同步字段。只有 strictMode 为 false 时有效。
+    # 如果 Combo 层级比较深，底层的获取外层的数据可能不同步。但是给 combo 配置这个属性就能同步下来。输入格式：["os"]
     nullable: bool = False  # 允许为空，如果子表单项里面配置验证器，且又是单条模式。可以允许用户选择清空（不填）。
 
 
@@ -587,8 +588,8 @@ class ConditionBuilder(FormItem):
         type: str = "text"  # 字段配置中配置成 "text"
         label: str = None  # 字段名称。
         placeholder: str = None  # 占位符
-        operators: List[
-            str] = None  # 默认为 [ 'equal', 'not_equal', 'is_empty', 'is_not_empty', 'like', 'not_like', 'starts_with', 'ends_with' ] 如果不要那么多，可以配置覆盖。
+        operators: List[str] = None  # 如果不要那么多，可以配置覆盖。
+        # 默认为 ['equal','not_equal','is_empty','is_not_empty','like','not_like','starts_with','ends_with']
         defaultOp: str = None  # 默认为 "equal"
 
     class Text(Field):
@@ -636,10 +637,12 @@ class Editor(FormItem):
     """代码编辑器"""
     type: str = 'editor'
     language: str = None  # "javascript"  # 编辑器高亮的语言，支持通过 ${xxx} 变量获取
-    # bat、 c、 coffeescript、 cpp、 csharp、 css、 dockerfile、 fsharp、 go、 handlebars、 html、 ini、 java、 javascript、 json、 less、 lua、 markdown、 msdax、 objective-c、 php、 plaintext、 postiats、 powershell、 pug、 python、 r、 razor、 ruby、 sb、 scss、shell、 sol、 sql、 swift、 typescript、 vb、 xml、 yaml
+    # bat、 c、 coffeescript、 cpp、 csharp、 css、 dockerfile、 fsharp、 go、 handlebars、 html、 ini、 java、
+    # javascript、 json、 less、 lua、 markdown、 msdax、 objective-c、 php、 plaintext、 postiats、 powershell、
+    # pug、 python、 r、 razor、 ruby、 sb、 scss、shell、 sol、 sql、 swift、 typescript、 vb、 xml、 yaml
     size: str = None  # "md"  # 编辑器高度，取值可以是 md、lg、xl、xxl
     allowFullscreen: bool = None  # False  # 是否显示全屏模式开关
-    options: dict = None  # monaco 编辑器的其它配置，比如是否显示行号等，请参考这里，不过无法设置 readOnly，只读模式需要使用 disabled: true
+    options: dict = None  # monaco编辑器的其它配置，比如是否显示行号等，请参考这里，不过无法设置readOnly,只读模式需要使用disabled: true
 
 
 class InputFile(FormItem):
@@ -657,14 +660,15 @@ class InputFile(FormItem):
     delimiter: str = None  # ","  # 拼接符
     autoUpload: bool = None  # True  # 否选择完就自动开始上传
     hideUploadButton: bool = None  # False  # 隐藏上传按钮
-    stateTextMap: dict = None  # {init: '', pending: '等待上传', uploading: '上传中', error: '上传出错', uploaded: '已上传',ready: ''}  # 上传状态文案
+    stateTextMap: dict = None  # 上传状态文案
+    # 默认: {init: '', pending: '等待上传', uploading: '上传中', error: '上传出错', uploaded: '已上传',ready: ''}
     fileField: str = None  # "file"  # 如果你不想自己存储，则可以忽略此属性。
     nameField: str = None  # "name"  # 接口返回哪个字段用来标识文件名
     valueField: str = None  # "value"  # 文件的值用那个字段来标识。
     urlField: str = None  # "url"  # 文件下载地址的字段名。
     btnLabel: str = None  # 上传按钮的文字
-    downloadUrl: Union[
-        str, bool] = None  # 1.1.6 版本开始支持 post:http://xxx.com/${value} 这种写法 # 默认显示文件路径的时候会支持直接下载，可以支持加前缀如：http://xx.dom/filename= ，如果不希望这样，可以把当前配置项设置为 false。
+    downloadUrl: Union[str, bool] = None  # 1.1.6 版本开始支持 post:http://xxx.com/${value} 这种写法
+    # 默认显示文件路径的时候会支持直接下载，可以支持加前缀如：http://xx.dom/filename= ，如果不希望这样，可以把当前配置项设置为 false。
     useChunk: bool = None  # amis 所在服务器，限制了文件上传大小不得超出 10M，所以 amis 在用户选择大文件的时候，自动会改成分块上传模式。
     chunkSize: int = None  # 5 * 1024 * 1024  # 分块大小
     startChunkApi: API = None  # startChunkApi
@@ -688,7 +692,8 @@ class InputImage(FormItem):
         minHeight: int = None  # 限制图片最小高度。
         maxWidth: int = None  # 限制图片最大宽度。
         maxHeight: int = None  # 限制图片最大高度。
-        aspectRatio: float = None  # 限制图片宽高比，格式为浮点型数字，默认 1 即 1:1，如果要设置 16:9 请设置 1.7777777777777777 即 16 / 9。 如果不想限制比率，请设置空字符串。
+        aspectRatio: float = None  # 限制图片宽高比，格式为浮点型数字，默认 1 即 1:1，
+        # 如果要设置 16:9 请设置 1.7777777777777777 即 16 / 9。 如果不想限制比率，请设置空字符串。
 
     type: str = 'input-image'
     receiver: API = None  # 上传文件接口
@@ -708,7 +713,8 @@ class InputImage(FormItem):
     limit: Limit = None  # 限制图片大小，超出不让上传。
     frameImage: str = None  # 默认占位图地址
     fixedSize: bool = None  # 是否开启固定尺寸,若开启，需同时设置 fixedSizeClassName
-    fixedSizeClassName: str = None  # 开启固定尺寸时，根据此值控制展示尺寸。例如h-30,即图片框高为 h-30,AMIS 将自动缩放比率设置默认图所占位置的宽度，最终上传图片根据此尺寸对应缩放。
+    fixedSizeClassName: str = None  # 开启固定尺寸时，根据此值控制展示尺寸。
+    # 例如h-30,即图片框高为 h-30,AMIS 将自动缩放比率设置默认图所占位置的宽度，最终上传图片根据此尺寸对应缩放。
 
 
 class LocationPicker(FormItem):
@@ -748,8 +754,8 @@ class Picker(FormItem):
     extractValue: bool = None  # False # 提取值
     autoFill: dict = None  # 自动填充
     modalMode: Literal["dialog", "drawer"] = None  # "dialog" # 设置 dialog 或者 drawer，用来配置弹出方式。
-    pickerSchema: Union[
-        "CRUD", SchemaNode] = None  # "{mode: 'list', listItem: {title: '${label}'}}" # 即用 List 类型的渲染，来展示列表信息。更多配置参考 CRUD
+    pickerSchema: Union["CRUD", SchemaNode] = None  # "{mode: 'list', listItem: {title: '${label}'}}"
+    # 即用 List 类型的渲染，来展示列表信息。更多配置参考 CRUD
     embed: bool = None  # False # 是否使用内嵌模式
 
 
@@ -779,7 +785,7 @@ class Static(FormItem):
 
 class InputText(FormItem):
     """输入框"""
-    type: str = 'input-text'  # input-text | input-url | input-email | input-password | divider
+    type: str = 'input-text'  # input-text|input-url|input-email|input-password|divider
     options: Union[List[str], List[dict]] = None  # 选项组
     source: Union[str, API] = None  # 动态选项组
     autoComplete: Union[str, API] = None  # 自动补全
@@ -848,7 +854,8 @@ class Select(FormItem):
     clearable: bool = None  # 单选模式下是否支持清空
     hideSelected: bool = False  # 隐藏已选选项
     mobileClassName: str = None  # 移动端浮层类名
-    selectMode: str = None  # 可选：group、table、tree、chained、associated。分别为：列表形式、表格形式、树形选择形式、级联选择形式，关联选择形式（与级联选择的区别在于，级联是无限极，而关联只有一级，关联左边可以是个 tree）。
+    selectMode: str = None  # 可选：group、table、tree、chained、associated。分别为：列表形式、表格形式、树形选择形式、
+    # 级联选择形式， 关联选择形式（与级联选择的区别在于，级联是无限极，而关联只有一级，关联左边可以是个 tree）。
     searchResultMode: str = None  # 如果不设置将采用 selectMode 的值，可以单独配置，参考 selectMode，决定搜索结果的展示形式。
     columns: List[dict] = None  # 当展示形式为 table 可以用来配置展示哪些列，跟 table 中的 columns 配置相似，只是只有展示功能。
     leftOptions: List[dict] = None  # 当展示形式为 associated 时用来配置左边的选项集。
@@ -922,8 +929,8 @@ class InputDate(FormItem):
     timeConstraints: dict = None  # True  # 请参考： react-datetime
     closeOnSelect: bool = None  # False  # 点选日期后，是否马上关闭选择框
     schedules: Union[list, str] = None  # 日历中展示日程，可设置静态数据或从上下文中取数据，className参考背景色
-    scheduleClassNames: List[
-        str] = None  # "['bg-warning', 'bg-danger', 'bg-success', 'bg-info', 'bg-secondary']"  # 日历中展示日程的颜色，参考背景色
+    scheduleClassNames: List[str] = None  # "['bg-warning','bg-danger','bg-success','bg-info','bg-secondary']"
+    # 日历中展示日程的颜色，参考背景色
     scheduleAction: SchemaNode = None  # 自定义日程展示
     largeMode: bool = None  # False  # 放大模式
 
@@ -942,8 +949,8 @@ class InputTimeRange(FormItem):
 class InputDatetimeRange(InputTimeRange):
     """日期时间范围"""
     type: str = 'input-datetime-range'
-    ranges: Union[str, List[
-        str]] = None  # "yesterday,7daysago,prevweek,thismonth,prevmonth,prevquarter"  # 日期范围快捷键，可选：today, yesterday, 1dayago, 7daysago, 30daysago, 90daysago, prevweek, thismonth, thisquarter, prevmonth, prevquarter
+    ranges: Union[str, List[str]] = None  # "yesterday,7daysago,prevweek,thismonth,prevmonth,prevquarter" 日期范围快捷键，
+    # 可选：today,yesterday,1dayago,7daysago,30daysago,90daysago,prevweek,thismonth,thisquarter,prevmonth,prevquarter
     minDate: str = None  # 限制最小日期时间，用法同 限制范围
     maxDate: str = None  # 限制最大日期时间，用法同 限制范围
     utc: bool = None  # False  # 保存 UTC 值
@@ -975,7 +982,8 @@ class Transfer(FormItem):
     selectTitle: str = None  # "请选择"  # 左侧的标题文字
     resultTitle: str = None  # "当前选择"  # 右侧结果的标题文字
     sortable: bool = None  # False  # 结果可以进行拖拽排序
-    selectMode: str = None  # "list"  # 可选：list、table、tree、chained、associated。分别为：列表形式、表格形式、树形选择形式、级联选择形式，关联选择形式（与级联选择的区别在于，级联是无限极，而关联只有一级，关联左边可以是个 tree）。
+    selectMode: str = None  # "list"  # 可选：list、table、tree、chained、associated。分别为：列表形式、表格形式、树形选择形式、
+    # 级联选择形式，关联选择形式（与级联选择的区别在于，级联是无限极，而关联只有一级，关联左边可以是个 tree）。
     searchResultMode: str = None  # 如果不设置将采用 selectMode 的值，可以单独配置，参考 selectMode，决定搜索结果的展示形式。
     columns: List[dict] = None  # 当展示形式为 table 可以用来配置展示哪些列，跟 table 中的 columns 配置相似，只是只有展示功能。
     leftOptions: List[dict] = None  # 当展示形式为 associated 时用来配置左边的选项集。
@@ -1064,9 +1072,9 @@ class Image(AmisNode):
     enlargeAble: bool = None  # 支持放大预览
     enlargeTitle: str = None  # 放大预览的标题
     enlargeCaption: str = None  # 放大预览的描述
-    thumbMode: str = None  # "contain"  # 预览图模式，可选：'w-full', 'h-full', 'contain', 'cover'
-    thumbRatio: str = None  # "1:1"  # 预览图比例，可选：'1:1', '4:3', '16:9'
-    imageMode: str = None  # "thumb"  # 图片展示模式，可选：'thumb', 'original' 即：缩略图模式 或者 原图模式
+    thumbMode: str = None  # "contain"  # 预览图模式，可选：'w-full','h-full','contain','cover'
+    thumbRatio: str = None  # "1:1"  # 预览图比例，可选：'1:1','4:3','16:9'
+    imageMode: str = None  # "thumb"  # 图片展示模式，可选：'thumb','original' 即：缩略图模式 或者 原图模式
 
 
 class Images(AmisNode):
@@ -1080,8 +1088,8 @@ class Images(AmisNode):
     src: str = None  # 预览图地址，支持数据映射获取对象中图片变量
     originalSrc: str = None  # 原图地址，支持数据映射获取对象中图片变量
     enlargeAble: bool = None  # 支持放大预览
-    thumbMode: str = None  # "contain"  # 预览图模式，可选：'w-full', 'h-full', 'contain', 'cover'
-    thumbRatio: str = None  # "1:1"  # 预览图比例，可选：'1:1', '4:3', '16:9'
+    thumbMode: str = None  # "contain"  # 预览图模式，可选：'w-full','h-full','contain','cover'
+    thumbRatio: str = None  # "1:1"  # 预览图比例，可选：'1:1','4:3','16:9'
 
 
 class Carousel(AmisNode):
@@ -1106,13 +1114,12 @@ class Carousel(AmisNode):
     duration: str = None  # "0.5s"  # 切换动画时长
     width: str = None  # "auto"  # 宽度
     height: str = None  # "200px"  # 高度
-    controls: List[str] = None  # "['dots', 'arrows']"  # 显示左右箭头、底部圆点索引
+    controls: List[str] = None  # "['dots','arrows']"  # 显示左右箭头、底部圆点索引
     controlsTheme: str = None  # "light"  # 左右箭头、底部圆点索引颜色，默认light，另有dark模式
     animation: str = None  # "fade"  # 切换动画效果，默认fade，另有slide模式
-    thumbMode: str = None  # "cover" | "contain"  # 图片默认缩放模式
+    thumbMode: str = None  # "cover"|"contain"  # 图片默认缩放模式
 
 
-##########################数据展示########################
 class CRUD(AmisNode):
     """增删改查"""
 
@@ -1158,10 +1165,12 @@ class CRUD(AmisNode):
     hideQuickSaveBtn: bool = None  # 隐藏顶部快速保存提示
     autoJumpToTopOnPagerChange: bool = None  # 当切分页的时候，是否自动跳顶部。
     syncResponse2Query: bool = None  # True  # 将返回数据同步到过滤器上。
-    keepItemSelectionOnPageChange: bool = None  # True  # 保留条目选择，默认分页、搜素后，用户选择条目会被清空，开启此选项后会保留用户选择，可以实现跨页面批量操作。
-    labelTpl: str = None  # 单条描述模板，keepItemSelectionOnPageChange设置为true后会把所有已选择条目列出来，此选项可以用来定制条目展示文案。
-    headerToolbar: list = None  # ['bulkActions', 'pagination']  # 顶部工具栏配置
-    footerToolbar: list = None  # ['statistics', 'pagination']  # 底部工具栏配置
+    keepItemSelectionOnPageChange: bool = None  # True
+    # 保留条目选择，默认分页、搜素后，用户选择条目会被清空，开启此选项后会保留用户选择，可以实现跨页面批量操作。
+    labelTpl: str = None  # 单条描述模板，keepItemSelectionOnPageChange
+    # 设置为true后会把所有已选择条目列出来，此选项可以用来定制条目展示文案。
+    headerToolbar: list = None  # ['bulkActions','pagination']  # 顶部工具栏配置
+    footerToolbar: list = None  # ['statistics','pagination']  # 底部工具栏配置
     alwaysShowPagination: bool = None  # 是否总是显示分页
     affixHeader: bool = None  # True  # 是否固定表头(table 下)
     autoGenerateFilter: bool = None  # 是否开启查询区域，开启后会根据列元素的 searchable 属性值，自动生成查询条件表单
@@ -1169,16 +1178,17 @@ class CRUD(AmisNode):
 
 class TableColumn(AmisNode):
     """列配置"""
-    type: str = None  # Literal['text', 'audio','image', 'link', 'tpl', 'mapping','carousel','date', 'progress','status','switch','list','json','operation']
+    type: str = None  # Literal['text','audio','image','link','tpl','mapping','carousel','date',
+    # 'progress','status','switch','list','json','operation']
     label: Template = None  # 表头文本内容
     name: str = None  # 通过名称关联数据
     tpl: Template = None  # 模板
-    fixed: str = None  # 是否固定当前列 left | right | none
+    fixed: str = None  # 是否固定当前列 left|right|none
     popOver: bool = None  # 弹出框
-    quickEdit: Union[bool,dict] = None  # 快速编辑
+    quickEdit: Union[bool, dict] = None  # 快速编辑
     copyable: Union[bool, dict] = None  # 是否可复制  boolean 或 {icon: string, content:string}
     sortable: bool = None  # False  # 是否可排序
-    searchable: Union[bool, SchemaNode] = None  # False  # 是否可快速搜索  boolean | Schema
+    searchable: Union[bool, SchemaNode] = None  # False  # 是否可快速搜索  boolean|Schema
     width: Union[str, int] = None  # 列宽
     remark: Remark = None  # 提示信息
     breakpoint: str = None  # *,ls
@@ -1228,8 +1238,8 @@ class Table(AmisNode):
     affixRow: list = None  # 底部总结行
     itemBadge: "Badge" = None  # 行角标配置
     autoFillHeight: bool = None  # 内容区域自适应高度
-    footable: Union[
-        bool, dict] = None  # 列太多时，内容没办法全部显示完，可以让部分信息在底部显示，可以让用户展开查看详情。配置很简单，只需要开启 footable 属性，同时将想在底部展示的列加个 breakpoint 属性为 * 即可。
+    footable: Union[bool, dict] = None  # 列太多时，内容没办法全部显示完，可以让部分信息在底部显示，可以让用户展开查看详情。
+    # 配置很简单，只需要开启 footable 属性，同时将想在底部展示的列加个 breakpoint 属性为 * 即可。
 
 
 class Chart(AmisNode):
@@ -1355,7 +1365,6 @@ class Video(AmisNode):
     rates: List[float] = None  # 倍数，格式为[1.0, 1.5, 2.0]
 
 
-##########################反馈########################
 class Alert(AmisNode):
     """提示"""
     type: str = "alert"  # 指定为 alert 渲染器
@@ -1416,8 +1425,6 @@ class Spinner(AmisNode):
     type: str = "spinner"
 
 
-##########################常用组件########################
-
 class TableCRUD(CRUD, Table):
     """表格CRUD"""
 
@@ -1444,7 +1451,7 @@ class Audio(AmisNode):
     loop: bool = None  # False  # 是否循环播放
     autoPlay: bool = None  # False  # 是否自动播放
     rates: List[float] = None  # "[]"  # 可配置音频播放倍速如：[1.0, 1.5, 2.0]
-    controls: List[str] = None  # "['rates', 'play', 'time', 'process', 'volume']"  # 内部模块定制化
+    controls: List[str] = None  # "['rates','play','time','process','volume']"  # 内部模块定制化
 
 
 class Tasks(AmisNode):
@@ -1454,7 +1461,8 @@ class Tasks(AmisNode):
         label: str = None  # 任务名称
         key: str = None  # 任务键值，请唯一区分
         remark: str = None  # 当前任务状态，支持 html
-        status: str = None  # 任务状态： 0: 初始状态，不可操作。1: 就绪，可操作状态。2: 进行中，还没有结束。3：有错误，不可重试。4: 已正常结束。5：有错误，且可以重试。
+        status: str = None  # 任务状态： 0: 初始状态，不可操作。1: 就绪，可操作状态。2: 进行中，还没有结束。
+        # 3：有错误，不可重试。4: 已正常结束。5：有错误，且可以重试。
 
     type: str = "tasks"  # 指定为 Tasks 渲染器
     className: str = None  # 外层 Dom 的类名
@@ -1472,8 +1480,8 @@ class Tasks(AmisNode):
     retryBtnText: str = None  # "重试"  # 重试操作按钮文字
     btnClassName: str = None  # "btn-sm btn-default"  # 配置容器按钮 className
     retryBtnClassName: str = None  # "btn-sm btn-danger"  # 配置容器重试按钮 className
-    statusLabelMap: List[
-        str] = None  # "["label-warning", "label-info", "label-success", "label-danger", "label-default", "label-danger"]" # 状态显示对应的类名配置
+    statusLabelMap: List[str] = None  # 状态显示对应的类名配置
+    # "["label-warning", "label-info", "label-success", "label-danger", "label-default", "label-danger"]"
     statusTextMap: List[str] = None  # "["未开始", "就绪", "进行中", "出错", "已完成", "出错"]" # 状态显示对应的文字显示配置
 
 
@@ -1504,9 +1512,11 @@ class Wizard(AmisNode):
     actionClassName: str = None  # "btn-sm btn-default"  # 按钮 CSS 类名
     reload: str = None  # 操作完后刷新目标对象。请填写目标组件设置的 name 值，如果填写为 window 则让当前页面整体刷新。
     redirect: Template = None  # "3000"  # 操作完后跳转。
-    target: str = None  # "False"  # 可以把数据提交给别的组件而不是自己保存。请填写目标组件设置的 name 值，如果填写为 window 则把数据同步到地址栏上，同时依赖这些数据的组件会自动重新刷新。
+    target: str = None  # "False"  # 可以把数据提交给别的组件而不是自己保存。请填写目标组件设置的 name 值，
+    # 如果填写为 window 则把数据同步到地址栏上，同时依赖这些数据的组件会自动重新刷新。
     steps: List[Step] = None  # 数组，配置步骤信息
-    startStep: int = None  # "1"  # 起始默认值，从第几步开始。可支持模版，但是只有在组件创建时渲染模版并设置当前步数，在之后组件被刷新时，当前 step 不会根据 startStep 改变
+    startStep: int = None  # "1"  # 起始默认值，从第几步开始。可支持模版，但是只有在组件创建时渲染模版并设置当前步数，在之后组件被刷新时，
+    # 当前 step 不会根据 startStep 改变
 
 
 PageSchema.update_forward_refs()

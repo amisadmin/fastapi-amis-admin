@@ -1,16 +1,12 @@
-################################################################################
-### cached_property() - computed once per instance, cached as attribute
-################################################################################
 try:
     from functools import cached_property
 except ImportError:
-
     from threading import RLock
 
     _NOT_FOUND = object()
 
 
-    class cached_property:
+    class cached_property:  # noqa: E303
         def __init__(self, func):
             self.func = func
             self.attrname = None
