@@ -1465,6 +1465,15 @@ class Audio(AmisNode):
     controls: List[str] = None  # "['rates','play','time','process','volume']"  # 内部模块定制化
 
 
+class Status(AmisNode):
+    """状态"""
+    type: str = "status"  # 指定为 Status 渲染器
+    className: str = None  # 外层 Dom 的类名
+    placeholder: str = None  # 占位文本
+    map: dict = None  # 映射图标
+    labelMap: dict = None  # 映射文本
+
+
 class Tasks(AmisNode):
     """任务操作集合"""
 

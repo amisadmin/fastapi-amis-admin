@@ -30,3 +30,22 @@ class DisplayModeEnum(str, Enum):
     normal = 'normal'  # 常规模式
     horizontal = 'horizontal'  # 水平模式
     inline = 'inline'  # 内联模式
+
+
+class LabelEnum(str, Enum):
+    """标签样式"""
+    primary = 'primary'
+    success = 'success'
+    warning = 'warning'
+    danger = 'danger'
+    default = 'default'
+    info = 'info'
+
+
+class StatusEnum(str, Enum):
+    """默认状态"""
+    success = 'success'  # 成功
+    fail = 'fail'  # 失败
+    pending = 'pending'  # 运行中
+    queue = 'queue'  # 排队中
+    schedule = 'schedule'  # 调度中
