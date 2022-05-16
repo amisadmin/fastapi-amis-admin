@@ -627,7 +627,10 @@ class PageAdmin(PageSchemaAdmin, RouterAdmin):
     def error_no_page_permission(self, request: Request):
         raise HTTPException(
             status_code=status.HTTP_307_TEMPORARY_REDIRECT, detail='No page permissions',
-            headers={'location': f'{self.app.site.router_path}/auth/form/login?redirect={request.url}'},
+            headers={
+                'location': f'{"post:" if request.method == "POST" else ""}'
+                            f'{self.app.site.router_path}/auth/form/login?redirect={request.url}',
+            },
         )
 
     async def get_page(self, request: Request) -> Page:
