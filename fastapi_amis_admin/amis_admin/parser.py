@@ -1,11 +1,12 @@
 import datetime
-from typing import Any
+from typing import Any, Iterable
 
 from pydantic import Json
 from pydantic.fields import ModelField
 from pydantic.utils import smart_deepcopy
 
 from fastapi_amis_admin.amis.components import FormItem, Remark, Validation, InputNumber, TableColumn
+from fastapi_amis_admin.amis.constants import LabelEnum
 from fastapi_amis_admin.models.enums import Choices
 
 
@@ -127,7 +128,8 @@ class AmisParser():
             kwargs['type'] = 'time'
         elif issubclass(self.modelfield.type_, Choices):
             kwargs['type'] = 'mapping'
-            kwargs['map'] = dict(self.modelfield.type_.choices)
+            kwargs['map'] = {k: f"<span class='label label-{l}'>{v}</span>"
+                             for (k, v), l in zip(self.modelfield.type_.choices, cyclic_generator(LabelEnum))}
         column = column or TableColumn(**kwargs)
         column.name = self.modelfield.alias
         column.label = column.label or self.label
@@ -139,3 +141,8 @@ class AmisParser():
             if column.quickEdit.get('type') == 'switch':
                 column.quickEdit.update({"mode": "inline"})
         return column
+
+
+def cyclic_generator(iterable: Iterable):
+    while True:
+        yield from iterable
