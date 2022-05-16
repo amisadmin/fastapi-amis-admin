@@ -13,7 +13,7 @@ from sqlmodel import SQLModel, select
 from sqlmodel.engine.result import ScalarResult
 from sqlmodel.main import SQLModelMetaclass
 from starlette import status
-from starlette.responses import HTMLResponse, JSONResponse, Response, RedirectResponse
+from starlette.responses import HTMLResponse, JSONResponse, Response
 from starlette.templating import Jinja2Templates
 
 import fastapi_amis_admin
@@ -190,9 +190,7 @@ class LinkModelForm:
                     size='full',
                     body=Service(
                         schemaApi=AmisAPI(
-                            method='get',
-                            url=url,
-                            cache=20000,
+                            method='post', url=url, data={}, cache=300000,
                             responseData={
                                 '&': '${body}',
                                 'api.url': '${body.api.url}&link_model='
@@ -218,7 +216,7 @@ class LinkModelForm:
                       + ');payload.data.body.bulkActions.push(button_delete);payload.data.body.itemActions.push(button_delete);' \
                         'return payload;'.replace('action_id', 'delete' + self.path.replace('/', '_'))
         return Service(schemaApi=AmisAPI(
-            method='get', url=url, cache=20000,
+            method='post', url=url, data={}, cache=300000,
             responseData=dict(controls=[picker]),
             qsOptions={'id': f'${self.pk_admin.pk_name}'},
             adaptor=adaptor
@@ -376,7 +374,7 @@ class BaseModelAdmin(SQLModelCrud):
         picker = Picker(name=modelfield.alias, label=label, labelField='name', valueField='id',
                         required=modelfield.required, modalMode='dialog', inline=is_filter,
                         size='full', labelRemark=remark, pickerSchema='${body}', source='${body.api}')
-        return Service(schemaApi=AmisAPI(method='get', url=url, cache=20000, responseData=dict(controls=[picker])))
+        return Service(schemaApi=AmisAPI(method='post', url=url, data={}, cache=300000, responseData=dict(controls=[picker])))
 
     async def get_form_item(self, request: Request, modelfield: ModelField,
                             action: CrudEnum) -> Union[FormItem, SchemaNode]:
@@ -620,20 +618,16 @@ class PageAdmin(PageSchemaAdmin, RouterAdmin):
     def __init__(self, app: "AdminApp"):
         RouterAdmin.__init__(self, app)
         if self.page_path is None:
-            self.page_path = f'/{self.__class__.__module__}/{self.__class__.__name__.lower()}/amis.json'
+            self.page_path = f'/{self.__class__.__module__}/{self.__class__.__name__.lower()}'
         PageSchemaAdmin.__init__(self, app)
 
     async def page_permission_depend(self, request: Request) -> bool:
         return await self.has_page_permission(request) or self.error_no_page_permission(request)
 
     def error_no_page_permission(self, request: Request):
-        page_parser_mode = request.query_params.get('_parser') or self.page_parser_mode
         raise HTTPException(
             status_code=status.HTTP_307_TEMPORARY_REDIRECT, detail='No page permissions',
-            headers={
-                'location': f'{self.app.site.router_path}/auth/form/login?'
-                            f'_parser={page_parser_mode}&redirect={request.url}',
-            },
+            headers={'location': f'{self.app.site.router_path}/auth/form/login?redirect={request.url}'},
         )
 
     async def get_page(self, request: Request) -> Page:
@@ -642,36 +636,42 @@ class PageAdmin(PageSchemaAdmin, RouterAdmin):
     def get_page_schema(self) -> Optional[PageSchema]:
         super().get_page_schema()
         if self.page_schema:
-            self.page_schema.url = f'{self.router_path}{self.page_path}'  # ?_parser=html
-            self.page_schema.schemaApi = f'{self.router_path}{self.page_path}'
+            self.page_schema.url = f'{self.router_path}{self.page_path}'
+            self.page_schema.schemaApi = AmisAPI(method='post', url=f'{self.router_path}{self.page_path}', cache=300000)
             if self.page_parser_mode == 'html':
-                self.page_schema.schema_ = Page(body=Iframe(src=self.page_schema.schemaApi))
+                self.page_schema.schema_ = Page(body=Iframe(src=self.page_schema.url))
         return self.page_schema
 
     def page_parser(self, request: Request, page: Page) -> Response:
-        mode = request.query_params.get('_parser') or self.page_parser_mode
+        _parser = 'html' if request.method == 'GET' else 'json'
         result = None
-        if mode == 'json':
-            result = BaseAmisApiOut(data=page.amis_dict())
-            result = JSONResponse(result.dict())
-        elif mode == 'html':
+        if _parser == 'html':
             result = page.amis_html(self.template_name)
             result = HTMLResponse(result)
+        elif _parser == 'json':
+            result = BaseAmisApiOut(data=page.amis_dict())
+            result = JSONResponse(result.dict())
         return result
 
     def register_router(self):
-        kwargs = {**self.page_route_kwargs}
-        if self.page_parser_mode == 'json':
-            kwargs.update(dict(response_model=BaseAmisApiOut))
-        else:
-            kwargs.update(dict(response_class=HTMLResponse))
         self.router.add_api_route(
             self.page_path,
             self.route_page,
             methods=["GET"],
-            name='page', **kwargs,
+            name='page',
             dependencies=[Depends(self.page_permission_depend)],
             include_in_schema=False,
+            response_class=HTMLResponse,
+            **self.page_route_kwargs,
+        )
+        self.router.add_api_route(
+            self.page_path,
+            self.route_page,
+            methods=["POST"],
+            name='page',
+            dependencies=[Depends(self.page_permission_depend)],
+            response_model=BaseAmisApiOut,
+            **self.page_route_kwargs,
         )
         return self
 
@@ -717,7 +717,7 @@ class BaseFormAdmin(PageAdmin):
     def __init__(self, app: "AdminApp"):
         super().__init__(app)
         assert self.route_submit, 'route_submit is None'
-        self.form_path = self.form_path or self.page_path.replace('/amis.json', '') + '/api'
+        self.form_path = self.form_path or f'{self.page_path}/api'
 
     async def get_page(self, request: Request) -> Page:
         page = await super(BaseFormAdmin, self).get_page(request)
@@ -789,7 +789,7 @@ class ModelFormAdmin(FormAdmin, SQLModelSelector):
 
 class ModelAdmin(BaseModelAdmin, PageAdmin):
     """模型管理"""
-    page_path: str = '/amis.json'
+    page_path: str = '/'
     bind_model: bool = True
 
     def __init__(self, app: "AdminApp"):
@@ -887,8 +887,7 @@ class ModelAction(BaseFormAdmin, BaseModelAction):
 class AdminApp(PageAdmin):
     group_schema: Union[PageSchema, str] = None
     engine: AsyncEngine = None
-    page_path = '/amis.json'
-    page_parser_mode = 'json'
+    page_path = '/'
 
     def __init__(self, app: "AdminApp"):
         super().__init__(app)
@@ -901,7 +900,6 @@ class AdminApp(PageAdmin):
     def get_page_schema(self) -> Optional[PageSchema]:
         super().get_page_schema()
         if self.page_schema:
-            self.page_schema.url = None
             self.page_schema.schemaApi = None
         return self.page_schema
 
@@ -931,12 +929,8 @@ class AdminApp(PageAdmin):
                 admin.register_router()
                 self.router.include_router(admin.router)
 
-    def route_index(self):
-        return RedirectResponse(url=self.router_path + self.page_path + '?_parser=html')
-
     def register_router(self):
         super(AdminApp, self).register_router()
-        self.router.add_api_route('/', self.route_index, name='index', include_in_schema=False)
         self.create_admin_instance_all()
         self._register_admin_router_all_pre()
         self._register_admin_router_all()
@@ -960,7 +954,7 @@ class AdminApp(PageAdmin):
         [self._admins_dict.pop(cls) for cls in admin_cls if cls]
 
     async def get_page(self, request: Request) -> App:
-        app = App(api=self.router_path + self.page_path)
+        app = App()
         app.brandName = 'AmisAdmin'
         app.header = Tpl(className='w-full',
                          tpl='<div class="flex justify-between"><div></div>'
@@ -974,10 +968,8 @@ class AdminApp(PageAdmin):
         # app.asideBefore = '<div class="p-2 text-center">菜单前面区域</div>'
         # app.asideAfter = f'<div class="p-2 text-center">' \
         #                  f'<a href="{fastapi_amis_admin.__url__}"  target="_blank">fastapi-amis-admin</a></div>'
-        _parser = request.query_params.get('_parser') or self.page_parser_mode
-        if _parser == 'json':
-            children = await self.get_page_schema_children(request)
-            app.pages = [{'children': children}] if children else []
+        children = await self.get_page_schema_children(request)
+        app.pages = [{'children': children}] if children else []
         return app
 
     async def get_page_schema_children(self, request: Request) -> List[PageSchema]:
