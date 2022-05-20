@@ -42,8 +42,8 @@ class Badge(AmisNode):
     text: Union[str, int] = None  # 角标文案，支持字符串和数字，在mode='dot'下设置无效
     size: int = None  # 角标大小
     level: str = None  # 角标级别, 可以是info/success/warning/danger, 设置之后角标背景颜色不同
-    overflowCount: int = 99  # 设置封顶的数字值
-    position: str = "top-right"  # 角标位置， 可以是top-right/top-left/bottom-right/bottom-left
+    overflowCount: int = None  # 99  # 设置封顶的数字值
+    position: str = None  # "top-right"  # 角标位置， 可以是top-right/top-left/bottom-right/bottom-left
     offset: int = None  # 角标位置，优先级大于position，当设置了offset后，以postion为top-right为基准进行定位  number[top, left]
     className: str = None  # 外层 dom 的类名
     animation: bool = None  # 角标是否显示动画
@@ -148,7 +148,7 @@ class Tabs(AmisNode):
         hash: str = None  # 设置以后将跟 url 的 hash 对应
         reload: bool = None  # 设置以后内容每次都会重新渲染，对于 crud 的重新拉取很有用
         unmountOnExit: bool = None  # 每次退出都会销毁当前 tab 栏内容
-        className: str = "bg-white b-l b-r b-b wrapper-md"  # Tab 区域样式
+        className: str = None  # "bg-white b-l b-r b-b wrapper-md"  # Tab 区域样式
 
     type: str = "tabs"  # 指定为 Tabs 渲染器
     className: str = None  # 外层 Dom 的类名
@@ -416,7 +416,7 @@ class Form(AmisNode):
     horizontal: Horizontal = None  # 当 mode 为 horizontal 时有用，
     # 用来控制 label {"left": "col-sm-2", "right": "col-sm-10","offset": "col-sm-offset-2"}
     title: Optional[str] = None  # Form 的标题
-    submitText: Optional[str] = "提交"  # 默认的提交按钮名称，如果设置成空，则可以把默认按钮去掉。
+    submitText: Optional[str] = None  # "提交"  # 默认的提交按钮名称，如果设置成空，则可以把默认按钮去掉。
     className: str = None  # 外层 Dom 的类名
     body: List[Union[FormItem, SchemaNode]] = None  # Form 表单项集合
     actions: List["Action"] = None  # Form 提交按钮，成员为 Action
@@ -484,7 +484,7 @@ class InputArray(FormItem):
     removable: bool = None  # 是否可删除
     draggable: bool = False  # 是否可以拖动排序, 需要注意的是当启用拖动排序的时候，会多一个$id 字段
     draggableTip: str = None  # 可拖拽的提示文字，默认为："可通过拖动每行中的【交换】按钮进行顺序调整"
-    addButtonText: str = "新增"  # 新增按钮文字
+    addButtonText: str = None  # "新增"  # 新增按钮文字
     minLength: int = None  # 限制最小长度
     maxLength: int = None  # 限制最大长度
 
@@ -562,16 +562,16 @@ class Combo(FormItem):
     maxLength: int = None  # 最多添加的条数
     flat: bool = False  # 是否将结果扁平化(去掉 name),只有当 items 的 length 为 1 且 multiple 为 true 的时候才有效。
     joinValues: bool = True  # 默认为 true 当扁平化开启的时候，是否用分隔符的形式发送给后端，否则采用 array 的方式。
-    delimiter: str = "False"  # 当扁平化开启并且 joinValues 为 true 时，用什么分隔符。
+    delimiter: str = None  # "False"  # 当扁平化开启并且 joinValues 为 true 时，用什么分隔符。
     addable: bool = False  # 是否可新增
-    addButtonText: str = "新增"  # 新增按钮文字
+    addButtonText: str = None  # "新增"  # 新增按钮文字
     removable: bool = False  # 是否可删除
     deleteApi: API = None  # 如果配置了，则删除前会发送一个 api，请求成功才完成删除
-    deleteConfirmText: str = "确认要删除？"  # 当配置 deleteApi 才生效！删除时用来做用户确认
+    deleteConfirmText: str = None  # "确认要删除？"  # 当配置 deleteApi 才生效！删除时用来做用户确认
     draggable: bool = False  # 是否可以拖动排序, 需要注意的是当启用拖动排序的时候，会多一个$id 字段
-    draggableTip: str = "可通过拖动每行中的【交换】按钮进行顺序调整"  # 可拖拽的提示文字
-    subFormMode: str = "normal"  # 可选normal、horizontal、inline
-    placeholder: str = "``"  # 没有成员时显示。
+    draggableTip: str = None  # "可通过拖动每行中的【交换】按钮进行顺序调整"  # 可拖拽的提示文字
+    subFormMode: str = None  # "normal"  # 可选normal、horizontal、inline
+    placeholder: str = None  # "``"  # 没有成员时显示。
     canAccessSuperData: bool = False  # 指定是否可以自动获取上层的数据并映射到表单项上
     conditions: dict = None  # 数组的形式包含所有条件的渲染类型，单个数组内的test 为判断条件，数组内的items为符合该条件后渲染的schema
     typeSwitchable: bool = False  # 是否可切换条件，配合conditions使用
@@ -841,18 +841,18 @@ class Select(FormItem):
     source: API = None  # 动态选项组
     autoComplete: API = None  # 自动提示补全
     delimeter: Union[bool, str] = False  # 拼接符
-    labelField: str = "label"  # 选项标签字段
-    valueField: str = "value"  # 选项值字段
+    labelField: str = None  # "label"  # 选项标签字段
+    valueField: str = None  # "value"  # 选项值字段
     joinValues: bool = True  # 拼接值
     extractValue: bool = False  # 提取值
     checkAll: bool = False  # 是否支持全选
-    checkAllLabel: str = "全选"  # 全选的文字
+    checkAllLabel: str = None  # "全选"  # 全选的文字
     checkAllBySearch: bool = False  # 有检索时只全选检索命中的项
     defaultCheckAll: bool = False  # 默认是否全选
     creatable: bool = False  # 新增选项
     multiple: bool = False  # 多选
     searchable: bool = False  # 检索
-    createBtnLabel: str = "新增选项"  # 新增选项
+    createBtnLabel: str = None  # "新增选项"  # 新增选项
     addControls: List[FormItem] = None  # 自定义新增表单项
     addApi: API = None  # 配置新增选项接口
     editable: bool = False  # 编辑选项
@@ -1208,7 +1208,7 @@ class TableColumn(AmisNode):
 class ColumnOperation(TableColumn):
     """操作列"""
     type: str = 'operation'
-    label: Template = "操作"
+    label: Template = None  # "操作"
     toggled: bool = True
     buttons: List[Union[Action, AmisNode]] = None
 

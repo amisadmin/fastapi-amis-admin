@@ -49,7 +49,7 @@ class AmisNode(BaseAmisModel):
 
 class AmisAPI(BaseAmisModel):
     url: Template  # 当前接口 Api 地址
-    method: str = 'GET'  # 请求方式 持：get、post、put、delete
+    method: str = None  # 'GET'  # 请求方式 持：get、post、put、delete
     data: Union[str, dict] = None  # 请求的数据体,支持数据映射
     dataType: str = None  # 默认为 json 可以配置成 form 或者 form-data。
     # 当 data 中包含文件时，自动会采用 form-data（multipart/form-data） 格式。
