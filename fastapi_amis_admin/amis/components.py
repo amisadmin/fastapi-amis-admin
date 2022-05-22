@@ -77,11 +77,11 @@ class Page(AmisNode):
     stopAutoRefreshWhen: Expression = None  # 通过表达式来配置停止刷新的条件
     regions: List[str] = None
 
-    def amis_html(self, template_path: str = ''):
+    def amis_html(self, template_path: str = '', locale: str = ''):
         """渲染html模板"""
         return amis_templates('page.html', template_path).replace(
             '[[AmisSchemaJson]]', self.amis_json()
-        )
+        ).replace('[[locale]]', locale)
 
 
 class Divider(AmisNode):
@@ -266,11 +266,11 @@ class App(AmisNode):
 
     # 通常为数组，数组第一层为分组，一般只需要配置 label 集合，如果你不想分组，直接不配置，真正的页面请在第二层开始配置，即第一层的 children 中。
 
-    def amis_html(self, template_path: str = ''):
+    def amis_html(self, template_path: str = '', locale: str = ''):
         """渲染html模板"""
         return amis_templates('app.html', template_path).replace(
             '[[AmisSchemaJson]]', self.amis_json()
-        )
+        ).replace('[[locale]]', locale)
 
 
 class ButtonGroup(AmisNode):

@@ -30,6 +30,7 @@ from fastapi_amis_admin.crud.schema import CrudEnum, BaseApiOut, Paginator
 from fastapi_amis_admin.crud.utils import parser_item_id, schema_create_by_schema, parser_str_set_list
 from fastapi_amis_admin.utils.db import SqlalchemyAsyncClient
 from fastapi_amis_admin.utils.functools import cached_property
+from fastapi_amis_admin.utils.translation import i18n as _
 
 try:
     from typing import Literal
@@ -171,8 +172,8 @@ class LinkModelForm:
         adaptor = None
         if await self.pk_admin.has_update_permission(request, None, None):
             button_create = ActionType.Ajax(
-                actionType='ajax', label='添加关联', level=LevelEnum.danger,
-                confirmText='确定要添加关联?',
+                actionType='ajax', label=_("Add Association"), level=LevelEnum.danger,
+                confirmText=_('Are you sure you want to add the association?'),
                 api=f"post:{self.pk_admin.app.router_path}{self.pk_admin.router.prefix}{self.path}"
                     + '/${REPLACE(query.link_item_id, "!", "")}?link_id=${IF(ids, ids, id)}'
             )  # query.link_item_id
@@ -183,10 +184,10 @@ class LinkModelForm:
                         'return payload;'.replace('action_id', 'create' + self.path.replace('/', '_'))
             button_create_dialog = ActionType.Dialog(
                 icon='fa fa-plus pull-left',
-                label='添加关联',
+                label=_("Add Association"),
                 level=LevelEnum.danger,
                 dialog=Dialog(
-                    title='添加关联',
+                    title=_("Add Association"),
                     size='full',
                     body=Service(
                         schemaApi=AmisAPI(
@@ -205,8 +206,8 @@ class LinkModelForm:
             )
 
             button_delete = ActionType.Ajax(
-                actionType='ajax', label='移除关联', level=LevelEnum.danger,
-                confirmText='确定要移除关联?',
+                actionType='ajax', label=_("Remove Association"), level=LevelEnum.danger,
+                confirmText=_('Are you sure you want to remove the association?'),
                 api=f"delete:{self.pk_admin.app.router_path}{self.pk_admin.router.prefix}{self.path}"
                     + '/${query.link_item_id}?link_id=${IF(ids, ids, id)}'
             )
@@ -331,7 +332,8 @@ class BaseModelAdmin(SQLModelCrud):
     async def get_list_table(self, request: Request) -> TableCRUD:
         headerToolbar = ["filter-toggler", "reload", "bulkActions", {"type": "columns-toggler", "align": "right"},
                          {"type": "drag-toggler", "align": "right"}, {"type": "pagination", "align": "right"},
-                         {"type": "tpl", "tpl": "当前有 ${total} 条数据.", "className": "v-middle", "align": "right"}]
+                         {"type": "tpl", "tpl": _("SHOWING ${items|count} OF ${total} RESULT(S)"), "className": "v-middle",
+                          "align": "right"}]
         headerToolbar.extend(await self.get_actions_on_header_toolbar(request))
         table = TableCRUD(
             api=await self.get_list_filter_api(request),
@@ -387,22 +389,22 @@ class BaseModelAdmin(SQLModelCrud):
                                                          CrudEnum.list)
         return Form(
             type='',
-            title='数据筛选',
+            title=_('Filter'),
             name=CrudEnum.list,
             body=body,
             mode=DisplayModeEnum.inline,
             actions=[
                 Action(
                     actionType='clear-and-submit',
-                    label='清空',
+                    label=_('Clear'),
                     level=LevelEnum.default,
                 ),
                 Action(
                     actionType='reset-and-submit',
-                    label='重置',
+                    label=_('Reset'),
                     level=LevelEnum.default,
                 ),
-                Action(actionType='submit', label='搜索', level=LevelEnum.primary),
+                Action(actionType='submit', label=_('Search'), level=LevelEnum.primary),
             ],
             trimValues=True,
         )
@@ -439,10 +441,10 @@ class BaseModelAdmin(SQLModelCrud):
     async def get_create_action(self, request: Request, bulk: bool = False) -> Optional[Action]:
         return ActionType.Dialog(
             icon='fa fa-plus pull-left',
-            label='新增',
+            label=_('Create'),
             level=LevelEnum.primary,
             dialog=Dialog(
-                title='新增',
+                title=_('Create'),
                 size=SizeEnum.lg,
                 body=await self.get_create_form(request, bulk=bulk),
             ),
@@ -455,9 +457,9 @@ class BaseModelAdmin(SQLModelCrud):
         if not bulk:
             return ActionType.Dialog(
                 icon='fa fa-pencil',
-                tooltip='编辑',
+                tooltip=_('Update'),
                 dialog=Dialog(
-                    title='编辑',
+                    title=_('Update'),
                     size=SizeEnum.lg,
                     body=await self.get_update_form(request, bulk=bulk),
                 ),
@@ -465,9 +467,9 @@ class BaseModelAdmin(SQLModelCrud):
 
         elif self.bulk_edit_fields:
             return ActionType.Dialog(
-                label='批量修改',
+                label=_('Bulk Update'),
                 dialog=Dialog(
-                    title='批量修改',
+                    title=_('Bulk Update'),
                     size=SizeEnum.lg,
                     body=await self.get_update_form(request, bulk=True),
                 ),
@@ -480,13 +482,13 @@ class BaseModelAdmin(SQLModelCrud):
         if not await self.has_delete_permission(request, None):
             return None
         return ActionType.Ajax(
-            label='批量删除',
-            confirmText='确定要批量删除?',
+            label=_('Bulk Delete'),
+            confirmText=_('Are you sure you want to delete the selected rows?'),
             api=f"delete:{self.router_path}/item/" + '${ids|raw}',
         ) if bulk else ActionType.Ajax(
             icon='fa fa-times text-danger',
-            tooltip='删除',
-            confirmText='您确认要删除?',
+            tooltip=_('Delete'),
+            confirmText=_('Are you sure you want to delete row ${%s}?') % self.pk_name,
             api=f"delete:{self.router_path}/item/${self.pk_name}",
         )
 
@@ -649,7 +651,7 @@ class PageAdmin(PageSchemaAdmin, RouterAdmin):
         _parser = 'html' if request.method == 'GET' else 'json'
         result = None
         if _parser == 'html':
-            result = page.amis_html(self.template_name)
+            result = page.amis_html(self.template_name, _.get_language())
             result = HTMLResponse(result)
         elif _parser == 'json':
             result = BaseAmisApiOut(data=page.amis_dict())
@@ -860,7 +862,7 @@ class ModelAction(BaseFormAdmin, BaseModelAction):
         BaseFormAdmin.__init__(self, self.admin.app)
 
     async def get_action(self, request: Request, **kwargs) -> Action:
-        action = self.action or ActionType.Dialog(label='自定义表单动作', dialog=Dialog())
+        action = self.action or ActionType.Dialog(label=_('Custom form actions'), dialog=Dialog())
         action.dialog.title = action.label
         action.dialog.body = Service(schemaApi=AmisAPI(method='get',
                                                        url=self.router_path + self.page_path + '?item_id=${IF(ids, ids, id)}',
@@ -962,7 +964,7 @@ class AdminApp(PageAdmin):
         app.header = Tpl(className='w-full',
                          tpl='<div class="flex justify-between"><div></div>'
                              f'<div><a href="{fastapi_amis_admin.__url__}" target="_blank" '
-                             'title="版权信息,不可删除!"><i class="fa fa-github fa-2x"></i></a></div></div>')
+                             'title="Copyright"><i class="fa fa-github fa-2x"></i></a></div></div>')
         app.footer = '<div class="p-2 text-center bg-light">Copyright © 2021 - 2022  ' \
                      f'<a href="{fastapi_amis_admin.__url__}" target="_blank" ' \
                      'class="link-secondary">fastapi-amis-admin</a>. All rights reserved. ' \

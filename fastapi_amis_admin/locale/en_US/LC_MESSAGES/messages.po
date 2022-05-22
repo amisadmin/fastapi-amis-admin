@@ -1,0 +1,91 @@
+# English (United States) translations for PROJECT.
+# Copyright (C) 2022 ORGANIZATION
+# This file is distributed under the same license as the PROJECT project.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2022.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PROJECT VERSION\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2022-05-21 22:09+0800\n"
+"PO-Revision-Date: 2022-05-21 22:11+0800\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: en_US\n"
+"Language-Team: en_US <LL@li.org>\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.10.1\n"
+
+#: amis_admin/admin.py:175 amis_admin/admin.py:187 amis_admin/admin.py:190
+msgid "Add Association"
+msgstr ""
+
+#: amis_admin/admin.py:176
+msgid "Are you sure you want to add the association?"
+msgstr ""
+
+#: amis_admin/admin.py:209
+msgid "Remove Association"
+msgstr ""
+
+#: amis_admin/admin.py:210
+msgid "Are you sure you want to remove the association?"
+msgstr ""
+
+#: amis_admin/admin.py:335
+msgid "SHOWING ${items|count} OF ${total} RESULT(S)"
+msgstr ""
+
+#: amis_admin/admin.py:391
+msgid "Filter"
+msgstr ""
+
+#: amis_admin/admin.py:398
+msgid "Clear"
+msgstr ""
+
+#: amis_admin/admin.py:403
+msgid "Reset"
+msgstr ""
+
+#: amis_admin/admin.py:406
+msgid "Search"
+msgstr ""
+
+#: amis_admin/admin.py:443 amis_admin/admin.py:446
+msgid "Create"
+msgstr ""
+
+#: amis_admin/admin.py:459 amis_admin/admin.py:461
+msgid "Update"
+msgstr ""
+
+#: amis_admin/admin.py:469 amis_admin/admin.py:471
+msgid "Bulk Update"
+msgstr ""
+
+#: amis_admin/admin.py:484
+msgid "Bulk Delete"
+msgstr ""
+
+#: amis_admin/admin.py:485
+msgid "Are you sure you want to delete the selected rows?"
+msgstr ""
+
+#: amis_admin/admin.py:489
+msgid "Delete"
+msgstr ""
+
+#: amis_admin/admin.py:490
+#, python-format
+msgid "Are you sure you want to delete row ${%s}?"
+msgstr ""
+
+#: amis_admin/admin.py:864
+msgid "Custom form actions"
+msgstr ""
+
+msgid "Home"
+msgstr ""

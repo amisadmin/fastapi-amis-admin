@@ -15,13 +15,14 @@ from fastapi_amis_admin.models.fields import Field
 app = FastAPI()
 
 # 创建AdminSite实例
-site = AdminSite(settings=Settings(database_url_async='sqlite+aiosqlite:///admisadmin.db'))
+site = AdminSite(settings=Settings(database_url_async='sqlite+aiosqlite:///admisadmin.db', language='zh_CN'))
 
 
 # 注册FormAdmin
 @site.register_admin
 class UserLoginFormAdmin(admin.FormAdmin):
-    page_schema = 'UserLoginForm'
+    group_schema = None
+    page_schema = '用户登录表单'
     # 配置表单信息, 可省略
     form = Form(title='这是一个测试登录表单', submitText='登录')
 

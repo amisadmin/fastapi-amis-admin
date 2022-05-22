@@ -16,6 +16,7 @@ from fastapi_amis_admin.amis_admin.admin import IframeAdmin, PageAdmin, AdminApp
     BaseAdminSite
 from fastapi_amis_admin.amis_admin.settings import Settings
 from fastapi_amis_admin.crud.schema import BaseApiOut
+from fastapi_amis_admin.utils.translation import i18n as _
 
 
 class DocsAdmin(IframeAdmin):
@@ -38,7 +39,7 @@ class ReDocsAdmin(IframeAdmin):
 
 class HomeAdmin(PageAdmin):
     group_schema = None
-    page_schema = PageSchema(label='Home', icon='fa fa-home', url='/home', isDefaultPage=True, sort=100)
+    page_schema = PageSchema(label=_('Home'), icon='fa fa-home', url='/home', isDefaultPage=True, sort=100)
     page_path = '/home'
 
     async def get_page(self, request: Request) -> Page:

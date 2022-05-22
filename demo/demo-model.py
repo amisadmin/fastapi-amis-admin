@@ -23,7 +23,8 @@ class Category(SQLModel, table=True):
 # 注册ModelAdmin
 @site.register_admin
 class CategoryAdmin(admin.ModelAdmin):
-    page_schema = '分类管理'
+    group_schema = None
+    page_schema = 'Category'
     # 配置管理模型
     model = Category
 
