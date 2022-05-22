@@ -78,6 +78,7 @@ nav:
           - tutorials/basic/ModelAdmin.md
           - tutorials/basic/ModelAction.md
           - tutorials/basic/Settings.md
+          - tutorials/basic/i18n.md
           - tutorials/basic/_more.md
       - 高级教程:
           - tutorials/advanced/permission.md
