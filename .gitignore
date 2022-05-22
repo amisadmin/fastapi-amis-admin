@@ -143,4 +143,4 @@ note/
 /docs/zh/site.rar
 /docs/zh/site/
 pypi/
-test_*.db
+*.db
