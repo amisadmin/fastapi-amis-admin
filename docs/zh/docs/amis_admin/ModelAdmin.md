@@ -6,15 +6,14 @@
 
 - #### [SQLModelCrud](../../crud/SQLModelCrud)
 
-
-
 ### 字段
 
 #### list_display
 
 批量查询需要显示的字段列表.
+
 - 支持SQLModel模型字段, SQLModel模型, 当前模型数据库表字段名
-- 支持当前模型字段,和其它模型字段. 
+- 支持当前模型字段,和其它模型字段.
 - 支持amis类型:  TableColumn
 
 - 默认: `self.schema_list.__fields__.values()`
@@ -44,10 +43,7 @@
 
 - 批量查询需要链接的多对多关联的字段表单列表,默认根据`self.link_model_fields`生成.
 
-
-
 ### 方法
-
 
 #### get_list_display
 
@@ -65,7 +61,6 @@ async def get_list_display(self,
 ```python
 async def get_list_filter(self, request: Request) -> List[Union[SQLModelListField, FormItem]]
 ```
-
 
 #### get_list_column
 
@@ -97,7 +92,8 @@ async def get_list_filter_api(self, request: Request) -> AmisAPI
 #### get_list_table
 
 - 返回页面的`amis` `TableCRUD`对象.
-- 参考: [CRUD 增删改查](https://baidu.gitee.io/amis/zh-CN/components/crud) , [Table 表格](https://baidu.gitee.io/amis/zh-CN/components/table)
+- 参考: [CRUD 增删改查](https://baidu.gitee.io/amis/zh-CN/components/crud)
+  , [Table 表格](https://baidu.gitee.io/amis/zh-CN/components/table)
 
 ```python
 async def get_list_table(self, request: Request) -> TableCRUD
@@ -115,7 +111,6 @@ async def get_form_item(self, request: Request,
                   modelfield: ModelField, 
                   action: CrudEnum) -> Union[FormItem, SchemaNode]
 ```
-
 
 #### get_form_item_on_foreign_key
 
@@ -211,8 +206,6 @@ async def get_actions_on_item(self, request: Request) -> List[Action]
 async def get_actions_on_bulk(self, request: Request) -> List[Action]
 ```
 
-
-
 ## ModelAdmin
 
 - 模型管理
@@ -222,9 +215,6 @@ async def get_actions_on_bulk(self, request: Request) -> List[Action]
 - #### [PageAdmin](../PageAdmin)
 
 - #### [BaseModelAdmin](#BaseModelAdmin)
-
-  
-
 
 ### 字段
 

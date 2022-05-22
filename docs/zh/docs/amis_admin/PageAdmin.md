@@ -8,8 +8,6 @@
 
 - #### [RouterAdmin](../RouterAdmin)
 
-  
-
 ### 字段
 
 #### page
@@ -24,6 +22,7 @@
 #### page_response_mode
 
 页面响应类型, 默认: `json`
+
 - `json`: 响应格式解析为json. 即 `page.amis_dict()`
 - `html`: 响应格式解析为amis html. 即 `page.amis_html()`
 
@@ -44,8 +43,6 @@
   def route_page(self)->Callable
 ```
 
-
-
 ### 方法
 
 #### page_permission_depend
@@ -56,20 +53,17 @@
  async def page_permission_depend(self, request: Request) -> bool
 ```
 
-
 #### get_page
 
 - 获取amis页面Page对象.
-
 
 ```python
  async def get_page(self, request: Request) -> Page
 ```
 
-####  page_parser
+#### page_parser
 
 - 将Page对象解析为响应数据.
-
 
 ```python
  def page_parser(self, request: Request, page: Page) -> Response

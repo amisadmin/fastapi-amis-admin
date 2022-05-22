@@ -1,3 +1,1 @@
-((window.gitter = {}).chat = {}).options = {
-  room: 'amisadmin/fastapi-amis-admin'
-};
+((window.gitter = {}).chat = {}).options = {room: 'amisadmin/fastapi-amis-admin'};

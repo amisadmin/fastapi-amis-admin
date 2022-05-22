@@ -24,26 +24,21 @@ site = AdminSite(settings=Settings(debug=False),
                  engine=create_async_engine('sqlite+aiosqlite:///admisadmin.db', echo=False, future=True))
 ```
 
-
-
-
 ## ApiDocs
 
 `fastapi`可自动生成两个交互式文档,`fastapi-amis-admin`的全部接口都可以通过docs文档进行在线调试.
 
 ### 主应用
 
--  `/docs` 
+- `/docs`
 
--  `/redoc`
+- `/redoc`
 
 ### admin
 
--  `/admin/docs` 
+- `/admin/docs`
 
--  `/admin/redoc`
-
-
+- `/admin/redoc`
 
 ## Amis调试
 
@@ -54,7 +49,7 @@ site = AdminSite(settings=Settings(debug=False),
 默认不会开启这个功能，可以通过下面两种方式开启：
 
 1. 配置全局变量 `enableAMISDebug` 的值为 `true`，比如 `window.enableAMISDebug = true`。
-2. 在页面 URL 参数中加上 `amisDebug=1`，比如 `https://demo.amis.work/admin/amis.json?_parser=html&amisDebug=1` 
+2. 在页面 URL 参数中加上 `amisDebug=1`，比如 `https://demo.amis.work/admin/amis.json?_parser=html&amisDebug=1`
 
 开启之后，在页面右侧就会显示。
 
@@ -64,8 +59,6 @@ site = AdminSite(settings=Settings(debug=False),
 
 1. 运行日志，主要是 api 及数据转换的日志
 2. 查看组件数据链，Debug 工具展开后，点击任意组件就能看到这个组件的数据链
-
-
 
 ## Amis可视化编辑器
 

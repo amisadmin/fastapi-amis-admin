@@ -21,19 +21,15 @@ class CategoryAdmin(admin.ModelAdmin):
 
 先看一下这个简单的示例-1吧.它完成了以下几个步骤:
 
-1. 定义了一个`Category`模型. 
-1. 定义一个模型管理类, 继承`admin.ModelAdmin`. 
+1. 定义了一个`Category`模型.
+1. 定义一个模型管理类, 继承`admin.ModelAdmin`.
 1. 配置模型,并注册到管理站点.
-
-
 
 !!! note annotate "关于SQLModel模型"
 
     事实上这部分代码并不属于`amis-admin`的代码,因为它可以用重用在任何需要ORM映射的地方, 在项目中你应该单独定义一个`models.py`文件编写这部分代码.
     
     SQLModel是一个非常优秀的Python ORM库,由FastAPI同一位作者编写,完美的结合了SQLAlchemy和Pydantic.请阅读它的官方文档: https://sqlmodel.tiangolo.com/
-
-
 
 ## 示例-2
 
@@ -66,13 +62,14 @@ class ArticleAdmin(admin.ModelAdmin):
         return stmt
 ```
 
-示例2相比于示例1显得更为复杂. 但是如果你熟悉`Django-Admin`你会发现他们非常的相似,是的. `fastapi_amis_admin`启发自`Django-Admin`,所以很多功能的设计都与之类似, 并且`fastapi_amis_admin`的功能更加丰富,配置更加灵活.
+示例2相比于示例1显得更为复杂. 但是如果你熟悉`Django-Admin`你会发现他们非常的相似,是的. `fastapi_amis_admin`启发自`Django-Admin`,所以很多功能的设计都与之类似, 并且`fastapi_amis_admin`
+的功能更加丰富,配置更加灵活.
 
 ### 配置展示字段
 
 默认情况下,管理列表非展示当前模型的全部字段.但是如果你只需要展示部分字段,或者你还需要展示相关模型的其他字段,你可以通过配置`list_display`来自定义需要展示的字段.
 
-- 例如在示例2中: 
+- 例如在示例2中:
 
 - `Article.content`与`Article.category_id`并不包括在展示字段当中.
 - `Category.name`是另一个模型的字段,也可以包括在展示字段中, 但是这里需要通过`get_select`方法自定义选择器`left join` `Category`模型.
@@ -119,19 +116,17 @@ class ArticleAdmin(admin.ModelAdmin):
 |       自定义删除数据权限       |      `has_delete_permission`       |                                             |
 |                                |                                    |                                             |
 
-
-
 ## 更多用法
 
-`ModelAdmin`的用法非常灵活,这里仅仅展示了最为基本的用法,你可以阅读[API文档](/amis_admin/ModelAdmin/)或参考[demo程序](https://github.com/amisadmin/fastapi_amis_admin_demo/blob/master/apps/blog/admin.py)了解更为详细的用法.后续将会陆续补充具体的应用场景示例. 如果你有较好的应用示例或教程文档,可以通过github提交,非常感谢你的支持!`fastapi_amis_admin`将会做的更好!
+`ModelAdmin`的用法非常灵活,这里仅仅展示了最为基本的用法,你可以阅读[API文档](/amis_admin/ModelAdmin/)
+或参考[demo程序](https://github.com/amisadmin/fastapi_amis_admin_demo/blob/master/apps/blog/admin.py)了解更为详细的用法.后续将会陆续补充具体的应用场景示例.
+如果你有较好的应用示例或教程文档,可以通过github提交,非常感谢你的支持!`fastapi_amis_admin`将会做的更好!
 
 - [amisadmin/fastapi_amis_admin_demo (github.com)](https://github.com/amisadmin/fastapi_amis_admin_demo)
 - [ModelAdmin - FastAPI-Amis-Admin](/amis_admin/ModelAdmin/)
 
 - [SQLModelCrud - FastAPI-Amis-Admin](/fastapi_amis_admin/crud/SQLModelCrud/)
 - [Table 表格 (gitee.io)](https://baidu.gitee.io/amis/zh-CN/components/table)
-
-
 
 !!! note annotate "关于fastapi_amis_admin与django-admin"
 

@@ -6,8 +6,6 @@
 
 - #### [PageAdmin](../PageAdmin)
 
-  
-
 ### 字段
 
 #### schema
@@ -43,15 +41,11 @@
 
 - 提交表单路由
 
-
-
 ### 方法
-
 
 #### get_form
 
 - 获取当前页面Form表单对象.
-
 
 ```python
 async def get_form(self, request: Request) -> Form
@@ -67,8 +61,6 @@ async def get_form_item(self, request: Request,
                   modelfield: ModelField) -> Union[FormItem, SchemaNode]
 ```
 
-
-
 # FormAdmin
 
 - 表单管理
@@ -77,10 +69,7 @@ async def get_form_item(self, request: Request,
 
 - ### [BaseFormAdmin](#baseformadmin)
 
-    
-
 ### 方法
-
 
 #### handle
 
@@ -92,7 +81,6 @@ async def get_form_item(self, request: Request,
 ```python
 async def handle(self, request: Request, data: BaseModel, **kwargs) -> BaseApiOut[Any]
 ```
-
 
 #### get_init_data
 

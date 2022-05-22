@@ -2,14 +2,13 @@
 
 - `sqlalchemy`异步客户端
 
-
-
 ### 字段
 
 #### engine
 
 - `sqlalchemy`异步引擎.
-- 参考: [Asynchronous I/O (asyncio) — SQLAlchemy 1.4 Documentation](https://docs.sqlalchemy.org/en/14/orm/extensions/asyncio.html?highlight=async#sqlalchemy.ext.asyncio.AsyncEngine)
+-
+参考: [Asynchronous I/O (asyncio) — SQLAlchemy 1.4 Documentation](https://docs.sqlalchemy.org/en/14/orm/extensions/asyncio.html?highlight=async#sqlalchemy.ext.asyncio.AsyncEngine)
 - 示例:
 
 ```python
@@ -25,8 +24,6 @@ engine = create_async_engine("sqlite+aiosqlite:///admisadmin.db", future=True)
 self.session_maker: sessionmaker = sessionmaker(self.engine, class_=AsyncSession, autoflush=False)
 ```
 
-
-
 ### 方法:
 
 #### session_factory
@@ -37,20 +34,17 @@ async def session_factory(self) -> AsyncGenerator[AsyncSession, Any]:
         yield session
 ```
 
-
-
 ## SqlalchemySyncClient
 
 - `sqlalchemy`同步客户端
-
-
 
 ### 字段
 
 #### engine
 
 - `sqlalchemy`同步引擎.
-- 参考: [Establishing Connectivity - the Engine — SQLAlchemy 1.4 Documentation](https://docs.sqlalchemy.org/en/14/tutorial/engine.html)
+-
+参考: [Establishing Connectivity - the Engine — SQLAlchemy 1.4 Documentation](https://docs.sqlalchemy.org/en/14/tutorial/engine.html)
 
 - 示例:
 
@@ -68,8 +62,6 @@ engine = create_engine("sqlite+pysqlite:///admisadmin.db", echo=True, future=Tru
 ```python
 self.session_maker: sessionmaker = sessionmaker(self.engine, autoflush=False)
 ```
-
-
 
 ### 方法:
 

@@ -67,6 +67,7 @@ if __name__ == '__main__':
 
     uvicorn.run(app, debug=True)
 ```
+
 ## 界面预览
 
 - Open `http://127.0.0.1:8000/admin/` in your browser:

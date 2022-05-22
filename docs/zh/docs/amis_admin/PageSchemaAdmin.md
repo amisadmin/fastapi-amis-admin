@@ -6,8 +6,6 @@
 
 - #### [BaseAdmin](../BaseAdmin)
 
-
-
 ### 字段
 
 #### group_schema
@@ -17,8 +15,6 @@
 #### page_schema
 
 - 当前页面菜单导航信息
-
-
 
 ### 方法
 
@@ -55,8 +51,6 @@ def get_page_schema(self) -> Optional[PageSchema]
 ```python
 def get_group_schema(self) -> Optional[PageSchema]
 ```
-
-
 
 ## LinkAdmin
 

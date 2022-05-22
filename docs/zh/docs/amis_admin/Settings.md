@@ -6,8 +6,6 @@
 
 - #### [Pydantic BaseSettings](https://pydantic-docs.helpmanual.io/usage/settings/)
 
-
-
 ### 字段
 
 #### debug

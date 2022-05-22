@@ -1,8 +1,6 @@
-
 ## SQLModelSelector
 
 - SQLModel 选择器
-
 
 ### 字段
 
@@ -10,15 +8,13 @@
 
 - 当前SQLModel ORM模型, 必须设置.
 
-
 #### fields
 
 查询字段列表.
 
 - 支持SQLModel模型字段, SQLModel模型, 当前模型数据库表字段名
-- 支持当前模型字段,和其它模型字段. 
+- 支持当前模型字段,和其它模型字段.
 - 默认: `self.model`
-
 
 #### exclude
 
@@ -38,7 +34,7 @@
 
 #### pk_name
 
-- 当前模型主键字符串, 默认: `id`. 
+- 当前模型主键字符串, 默认: `id`.
 - 说明: **数据库表有且只能有一个自增加主键**.(待拓展)
 
 #### pk
@@ -54,10 +50,7 @@
 
 - 批量查询sqlalchemy字段列表.
 
-
-
 ### 方法:
-
 
 #### get_select
 
@@ -75,14 +68,9 @@ def get_select(self, request: Request) -> Select
 def calc_filter_clause(self, data: Dict[str, Any]) -> List[BinaryExpression]
 ```
 
-
-
-
 ## SQLModelCrud
 
 - SQLModel ORM Crud注册器
-
-
 
 ### 继承基类
 
@@ -90,13 +78,11 @@ def calc_filter_clause(self, data: Dict[str, Any]) -> List[BinaryExpression]
 
 - #### [SQLModelSelector](#sqlmodelselector)
 
-
-
 ### 字段
 
 #### session_factory
 
-- sqlalchemy  AsyncSession  生成器, 必须设置.
+- sqlalchemy AsyncSession 生成器, 必须设置.
 
 ```python
 session_factory: Callable[..., Generator[AsyncSession, Any, None]]
@@ -107,7 +93,9 @@ session_factory: Callable[..., Generator[AsyncSession, Any, None]]
 ```python
 engine: AsyncEngine = create_async_engine(database_url, future=True, pool_recycle=1200)
 session_maker: sessionmaker = sessionmaker(engine, class_=AsyncSession,
-                                           expire_on_commit=False,autocommit=False,autoflush=False)
+                                           expire_on_commit=False, autocommit=False, autoflush=False)
+
+
 async def session_factory(self) -> Generator[AsyncSession, Any, None]:
     async with self.session_maker() as session:
         yield session
@@ -118,13 +106,10 @@ async def session_factory(self) -> Generator[AsyncSession, Any, None]:
 只读字段列表:
 
 - 支持SQLModel模型字段, SQLModel模型, 当前模型数据库表字段名
-- 支持当前模型字段,和其它模型字段. 
+- 支持当前模型字段,和其它模型字段.
 - 默认: `[]`
 
-
-
 ### 方法:
-
 
 #### get_select
 

@@ -18,8 +18,6 @@
 - 注册依赖
 - 其他FastAPI配置,参考: [FastAPI](https://fastapi.tiangolo.com/zh/tutorial/metadata/?h=docs_url#urls)
 
-
-
 ## 数据库配置
 
 `AdminSite`对象内部还维护一个`sqlalchemy`异步客户端,你可以通过`engine`参数提供一个自定义异步数据库引擎.
@@ -74,9 +72,7 @@ class NewAdminSite(AdminSite):
 site = NewAdminSite(settings=Settings(debug=True, database_url_async='sqlite+aiosqlite:///admisadmin.db'))
 ```
 
-- 通过修改`template_name`字段,你可以自定义后台界面模板. 例如: 修改静态资源链接以加快网络访问速度, 修改后台展示样式. 
-
-
+- 通过修改`template_name`字段,你可以自定义后台界面模板. 例如: 修改静态资源链接以加快网络访问速度, 修改后台展示样式.
 
 !!! note annotate "关于自定义管理站点"
 

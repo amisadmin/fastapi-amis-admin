@@ -6,8 +6,6 @@
 pip install fastapi_amis_admin
 ```
 
-
-
 ## 简单示例
 
 1.创建文件**`adminsite.py`**:
@@ -16,6 +14,7 @@ pip install fastapi_amis_admin
 from fastapi_amis_admin.amis_admin.settings import Settings
 from fastapi_amis_admin.amis_admin.site import AdminSite
 from fastapi_amis_admin.amis_admin import admin
+from fastapi_amis_admin.amis.components import PageSchema
 
 # 创建AdminSite实例
 site = AdminSite(settings=Settings(database_url_async='sqlite+aiosqlite:///admisadmin.db'))
@@ -45,15 +44,11 @@ if __name__ == '__main__':
     uvicorn.run(app,debug=True)
 ```
 
-
-
 ## 运行程序
 
 ```bash
 uvicorn main:app
 ```
-
-
 
 ## 更多功能
 

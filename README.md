@@ -1,4 +1,5 @@
-[简体中文](https://github.com/amisadmin/fastapi_amis_admin) | [English](https://github.com/amisadmin/fastapi_amis_admin/blob/master/README.en.md)
+[简体中文](https://github.com/amisadmin/fastapi_amis_admin)
+| [English](https://github.com/amisadmin/fastapi_amis_admin/blob/master/README.en.md)
 
 # 项目介绍
 
@@ -214,7 +215,6 @@ if __name__ == '__main__':
 - [`FastAPI-Scheduler`](https://github.com/amisadmin/fastapi_scheduler): 一个基于`APScheduler`的简单定时任务管理`FastAPI`拓展库.
 - [`FastAPI-Amis-Admin-Demo`](https://github.com/amisadmin/fastapi_amis_admin_demo):  一个`FastAPI-Amis-Admin` 应用程序示例.
 - [`FastAPI-User-Auth-Demo`](https://github.com/amisadmin/fastapi_user_auth_demo): 一个`FastAPI-User-Auth` 应用程序示例.
-
 
 ## 许可协议
 

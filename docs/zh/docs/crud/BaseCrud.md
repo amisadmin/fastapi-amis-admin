@@ -6,16 +6,11 @@
 
 - #### [RouterMixin](../RouterMixin/#routermixin)
 
-
-
 ### 派生子类
 
 - #### [SQLModelCrud](../SQLModelCrud/#sqlmodelcrud)
 
 - 其他ORM后端暂时未支持, SQLModel已经足够强大...
-
-
-
 
 ### 字段
 
@@ -45,7 +40,7 @@
 
 #### pk_name
 
-- 当前模型主键字符串, 默认: `id`. 
+- 当前模型主键字符串, 默认: `id`.
 - 说明: **数据库表有且只能有一个自增加主键**.(待拓展)
 
 #### list_per_page_max
@@ -97,12 +92,7 @@ def route_update(self)->Callable
 def route_delete(self)->Callable
 ```
 
-
-
 ### 方法:
-
-
-
 
 #### has_list_permission
 
@@ -145,14 +135,9 @@ async def has_delete_permission(self, request: Request, item_id: Optional[List[s
         return True
 ```
 
-
-
-
-
 #### register_crud
 
 - 注册Crud路由.
-
 
 ```python
 def register_crud(self,

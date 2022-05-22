@@ -2,7 +2,7 @@
 
 如果你喜欢`fastapi_amis_admin`项目,或者它对你有用,你可以通过以下方式帮助`fastapi_amis_admin`.
 
-## GitHub 中的 Star 
+## GitHub 中的 Star
 
 您可以在 GitHub 中"为 FastAPI 加注星标"（单击右上角的星形按钮）：
 
@@ -33,7 +33,7 @@
 
 - 修复您在文档中找到的拼写错误.
 - 帮助[将文档翻译成]您的语言.
-  - 您还可以帮助审阅其他人创建的翻译.
+    - 您还可以帮助审阅其他人创建的翻译.
 - 建议新的文档部分.
 - 修复现有问题/错误.
 - 添加新功能.
@@ -45,8 +45,6 @@
 - [爱发电 (afdian.net)](https://afdian.net/@amisadmin/plan)
 
 - [PayPal.Me](https://www.paypal.com/paypalme/amisadmin)
-
-  
 
 ## 赞助为项目提供支持的工具
 

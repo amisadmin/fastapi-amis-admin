@@ -332,8 +332,7 @@ class BaseModelAdmin(SQLModelCrud):
     async def get_list_table(self, request: Request) -> TableCRUD:
         headerToolbar = ["filter-toggler", "reload", "bulkActions", {"type": "columns-toggler", "align": "right"},
                          {"type": "drag-toggler", "align": "right"}, {"type": "pagination", "align": "right"},
-                         {"type": "tpl", "tpl": _("SHOWING ${items|count} OF ${total} RESULT(S)"), "className": "v-middle",
-                          "align": "right"}]
+                         {"type": "tpl", "tpl": _("SHOWING ${items|count} OF ${total} RESULT(S)"), "className": "v-middle", "align": "right"}]
         headerToolbar.extend(await self.get_actions_on_header_toolbar(request))
         table = TableCRUD(
             api=await self.get_list_filter_api(request),
@@ -574,8 +573,7 @@ class LinkAdmin(PageSchemaAdmin):
     link: str = ''
 
     def get_page_schema(self) -> Optional[PageSchema]:
-        super().get_page_schema()
-        if self.page_schema:
+        if super().get_page_schema():
             self.page_schema.link = self.page_schema.link or self.link
         return self.page_schema
 
@@ -585,8 +583,7 @@ class IframeAdmin(PageSchemaAdmin):
     src: str = ''
 
     def get_page_schema(self) -> Optional[PageSchema]:
-        super().get_page_schema()
-        if self.page_schema:
+        if super().get_page_schema():
             iframe = self.iframe or Iframe(src=self.src)
             self.page_schema.url = re.sub(r"^https?://", "", iframe.src)
             self.page_schema.schema_ = Page(body=iframe)
@@ -629,18 +626,14 @@ class PageAdmin(PageSchemaAdmin, RouterAdmin):
     def error_no_page_permission(self, request: Request):
         raise HTTPException(
             status_code=status.HTTP_307_TEMPORARY_REDIRECT, detail='No page permissions',
-            headers={
-                'location': f'{"post:" if request.method == "POST" else ""}'
-                            f'{self.app.site.router_path}/auth/form/login?redirect={request.url}',
-            },
+            headers={'location': f'{self.app.site.router_path}/auth/form/login?redirect={request.url}'},
         )
 
     async def get_page(self, request: Request) -> Page:
         return self.page or Page()
 
     def get_page_schema(self) -> Optional[PageSchema]:
-        super().get_page_schema()
-        if self.page_schema:
+        if super().get_page_schema():
             self.page_schema.url = f'{self.router_path}{self.page_path}'
             self.page_schema.schemaApi = AmisAPI(method='post', url=f'{self.router_path}{self.page_path}', data={}, cache=300000)
             if self.page_parser_mode == 'html':
@@ -648,12 +641,10 @@ class PageAdmin(PageSchemaAdmin, RouterAdmin):
         return self.page_schema
 
     def page_parser(self, request: Request, page: Page) -> Response:
-        _parser = 'html' if request.method == 'GET' else 'json'
-        result = None
-        if _parser == 'html':
+        if request.method == 'GET':
             result = page.amis_html(self.template_name, _.get_language())
             result = HTMLResponse(result)
-        elif _parser == 'json':
+        else:
             result = BaseAmisApiOut(data=page.amis_dict())
             result = JSONResponse(result.dict())
         return result
@@ -903,8 +894,7 @@ class AdminApp(PageAdmin):
         self._admins_dict: Dict[Type[BaseAdmin], Optional[BaseAdmin]] = {}
 
     def get_page_schema(self) -> Optional[PageSchema]:
-        super().get_page_schema()
-        if self.page_schema:
+        if super().get_page_schema():
             self.page_schema.schemaApi = None
         return self.page_schema
 

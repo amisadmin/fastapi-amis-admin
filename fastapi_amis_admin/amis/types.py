@@ -27,8 +27,7 @@ class BaseAmisModel(BaseModel):
         return self
 
     def update_from_kwargs(self, **kwargs):
-        self.update_from_dict(kwargs)
-        return self
+        return self.update_from_dict(kwargs)
 
 
 class BaseAmisApiOut(BaseAmisModel):

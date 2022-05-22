@@ -7,7 +7,8 @@
 
 ## 页面管理
 
-`PageAdmin`实现在菜单列表显示一个菜单.点击菜单后将展现一个`amis`页面.你可以通过阅读[`baidu-amis`官方文档](https://baidu.gitee.io/amis/zh-CN/components/page),实现各种复杂的页面展示.先看一个Hello World页面示例吧.
+`PageAdmin`实现在菜单列表显示一个菜单.点击菜单后将展现一个`amis`页面.你可以通过阅读[`baidu-amis`官方文档](https://baidu.gitee.io/amis/zh-CN/components/page)
+,实现各种复杂的页面展示.先看一个Hello World页面示例吧.
 
 ```python
 @site.register_admin
@@ -80,7 +81,6 @@ class ReDocsAdmin(admin.IframeAdmin):
 
 1. 通过 `group_schema`字段配置菜单组信息, 设置了所在菜单组的标签,以及菜单组的展示位置排序.
 2. 通过`src`动态字段,设置`Iframe`跳转的链接.
-
 
 !!! note annotate "关于 `self.app.site.settings.site_url`"
 

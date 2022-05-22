@@ -2,8 +2,6 @@
 
 - 页面管理基类
 
-
-
 ### 字段
 
 #### app
@@ -13,7 +11,6 @@
 ## Admin ClassDiagram
 
 - FastAPI-Amis-Admin 核心类图
-
 
 ``` mermaid
 classDiagram
@@ -73,8 +70,6 @@ classDiagram
     AdminSite: +Settings settings
     
 ```
-
-
 
 ## Admin & Amis
 

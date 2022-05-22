@@ -1,4 +1,5 @@
-[简体中文](https://github.com/amisadmin/fastapi_amis_admin) | [English](https://github.com/amisadmin/fastapi_amis_admin/blob/master/README.en.md)
+[简体中文](https://github.com/amisadmin/fastapi_amis_admin)
+| [English](https://github.com/amisadmin/fastapi_amis_admin/blob/master/README.en.md)
 
 # Introduction
 
@@ -211,8 +212,10 @@ if __name__ == '__main__':
 
 ## Project
 
-- [`FastAPI-User-Auth`](https://github.com/amisadmin/fastapi_user_auth): A simple and powerful `FastAPI` user `RBAC` authentication and authorization library.
-- [`FastAPI-Scheduler`](https://github.com/amisadmin/fastapi_scheduler): A simple scheduled task management `FastAPI` extension based on `APScheduler`.
+- [`FastAPI-User-Auth`](https://github.com/amisadmin/fastapi_user_auth): A simple and powerful `FastAPI` user `RBAC`
+  authentication and authorization library.
+- [`FastAPI-Scheduler`](https://github.com/amisadmin/fastapi_scheduler): A simple scheduled task management `FastAPI` extension
+  based on `APScheduler`.
 - [`FastAPI-Amis-Admin-Demo`](https://github.com/amisadmin/fastapi_amis_admin_demo): An example `FastAPI-Amis-Admin` application.
 - [`FastAPI-User-Auth-Demo`](https://github.com/amisadmin/fastapi_user_auth_demo): An example `FastAPI-User-Auth` application.
 

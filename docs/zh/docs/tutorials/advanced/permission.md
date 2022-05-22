@@ -39,8 +39,6 @@ graph LR
 	end
 ```
 
-
-
 ## 验证方式
 
 ### 继承重写权限验证方法
@@ -56,16 +54,11 @@ async def has_page_permission(self, request: Request)->bool:
     return self.app is self or await self.app.has_page_permission(request)
 ```
 
-
-
 !!! note "如果`has_page_permission`验证结果为`False`"
 
 	- 后台菜单将不显示当前管理对象页面,并且当前管理对象下的默认路由都将禁止访问.
 	- 如果当前对象为`AdminApp`,则管理应用下注册的全部管理对象`has_page_permission`都默认返回`False`.
 	- 如果当前对象为`ModelAdmin`,则`has_list_permission`,`has_read_permission`,`has_create_permission`,`has_update_permission`,`has_delete_permission`都默认返回`False`.
-
-
-
 
 #### has_list_permission
 
@@ -111,8 +104,6 @@ async def has_delete_permission(self, request: Request, item_id: Optional[List[s
 
 	- CRUD表格页面将会不再显示对应的操作按钮,并且对应的API路由都将禁止访问.
 
-
-
 ### 自定义权限验证依赖
 
 #### router_permission_depend
@@ -122,8 +113,6 @@ async def has_delete_permission(self, request: Request, item_id: Optional[List[s
 #### page_permission_depend
 
 - 当前页面路由权限验证依赖.默认: `has_page_permission`
-
-  
 
 ### 注册全局权限验证依赖
 
@@ -141,13 +130,12 @@ site = AdminSite(settings=Settings(debug=True, database_url_async='sqlite+aiosql
 
 ```
 
-
-
 ## 用户认证与授权系统
 
 `FastAPI-Amis-Admin`以应用插件的方式为系统提供简单而强大的用户`RBAC`认证与授权.
 
-项目地址: [FastAPI-User-Auth](https://github.com/amisadmin/fastapi_user_auth),更多教程文档及使用示例正在持续补充, 欢迎加入Q群[229036692](https://jq.qq.com/?_wv=1027&k=U4Dv6x8W)一起学习讨论. 
+项目地址: [FastAPI-User-Auth](https://github.com/amisadmin/fastapi_user_auth),更多教程文档及使用示例正在持续补充,
+欢迎加入Q群[229036692](https://jq.qq.com/?_wv=1027&k=U4Dv6x8W)一起学习讨论.
 
 ### 安装
 
@@ -303,11 +291,6 @@ class ArticleAdmin(admin.ModelAdmin):
         data['user_id'] = request.user.id
         return data
 ```
-
-
-
-
-
 
 ### 界面预览
 

@@ -6,8 +6,6 @@
 
 - #### [AdminApp](../AdminApp)
 
-
-
 ### 字段
 
 #### settings
@@ -20,8 +18,6 @@
 
 - 当前管理站点所挂载的FastAPI对象.
 - 参考: https://fastapi.tiangolo.com/
-
-
 
 ### 方法
 
@@ -47,18 +43,16 @@ def mount_app(self, fastapi: FastAPI, name: str = None) -> None
 
 #### create_db_and_tables
 
-创建SQLModel数据以及数据库表. 
+创建SQLModel数据以及数据库表.
 
-- 一般在项目第一次初始化未创建数据库表时, 调用一次即可. 
+- 一般在项目第一次初始化未创建数据库表时, 调用一次即可.
 
-- 示例: 
+- 示例:
 
 ```python
 import asyncio
 asyncio.run(site.create_db_and_tables())
 ```
-
-
 
 ## AdminSite
 

@@ -21,8 +21,7 @@ class AmisParser():
 
     @property
     def remark(self):
-        return Remark(
-            content=self.modelfield.field_info.description) if self.modelfield.field_info.description else None
+        return Remark(content=self.modelfield.field_info.description) if self.modelfield.field_info.description else None
 
     def as_form_item(self, set_deafult: bool = False, is_filter: bool = False) -> FormItem:
         # sourcery no-metrics
