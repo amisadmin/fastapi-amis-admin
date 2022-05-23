@@ -59,7 +59,7 @@ class SQLModelFieldParser:
                 table_name=field.table.name, field_key=field.name)
         elif isinstance(field, InstrumentedAttribute):
             return field.key if field.class_.__tablename__ == self.default_model.__tablename__ else self._alias_format.format(
-                table_name=field.class_.__tablename__, field_key=field.key)
+                table_name=field.class_.__tablename__, field_key=field.expression.key)
         elif isinstance(field, Label):
             return field.key
         elif isinstance(field, str) and field in self.default_model.__fields__:
