@@ -332,7 +332,8 @@ class BaseModelAdmin(SQLModelCrud):
     async def get_list_table(self, request: Request) -> TableCRUD:
         headerToolbar = ["filter-toggler", "reload", "bulkActions", {"type": "columns-toggler", "align": "right"},
                          {"type": "drag-toggler", "align": "right"}, {"type": "pagination", "align": "right"},
-                         {"type": "tpl", "tpl": _("SHOWING ${items|count} OF ${total} RESULT(S)"), "className": "v-middle", "align": "right"}]
+                         {"type": "tpl", "tpl": _("SHOWING ${items|count} OF ${total} RESULT(S)"), "className": "v-middle",
+                          "align": "right"}]
         headerToolbar.extend(await self.get_actions_on_header_toolbar(request))
         table = TableCRUD(
             api=await self.get_list_filter_api(request),
@@ -667,6 +668,7 @@ class PageAdmin(PageSchemaAdmin, RouterAdmin):
             name='page',
             dependencies=[Depends(self.page_permission_depend)],
             response_model=BaseAmisApiOut,
+            include_in_schema=(self.page_parser_mode == 'json'),
             **self.page_route_kwargs,
         )
         return self
