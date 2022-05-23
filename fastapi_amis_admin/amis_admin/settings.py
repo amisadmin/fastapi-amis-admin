@@ -1,5 +1,3 @@
-from typing import Literal
-
 from pydantic import BaseSettings, Field, validator
 
 
@@ -10,8 +8,5 @@ class Settings(BaseSettings):
     site_url: str = ''
     root_path: str = '/admin'
     database_url_async: str = Field(..., env='DATABASE_URL_ASYNC')
-    language: Literal['en_US', 'zh_CN'] = 'en_US'  # 'zh_CN'
+    language: str = ''  # 'zh_CN','en_US'
 
-    @validator('language', pre=True)
-    def check_language(cls, v):
-        return 'zh_CN' if str(v).startswith('zh') else 'en_US'

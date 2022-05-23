@@ -13,10 +13,5 @@ i18n.load_translations({
         domain='messages',
         localedir=os.path.join(BASE_DIR, "locale"),
         languages=['zh_CN']
-    ),
-    "en_US": gettext.translation(
-        domain='messages',
-        localedir=os.path.join(BASE_DIR, "locale"),
-        languages=['en_US']
     )
 })
