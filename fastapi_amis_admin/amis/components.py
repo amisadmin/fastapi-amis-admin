@@ -281,6 +281,19 @@ class ButtonGroup(AmisNode):
     vertical: bool = None  # 是否使用垂直模式
 
 
+class Custom(AmisNode):
+    """自定义组件"""
+    type: str = 'custom'
+    id: str = None  # 节点 id
+    name: str = None  # 节点 名称
+    className: str = None  # 节点 class
+    inline: bool = False  # 默认使用 div 标签，如果 true 就使用 span 标签
+    html: str = None  # 初始化节点 html
+    onMount: str = None  #"Function"  # 节点初始化之后调的用函数
+    onUpdate: str = None  #"Function"  # 数据有更新的时候调用的函数
+    onUnmount: str = None  #"Function"  # 节点销毁的时候调用的函数
+
+
 class Service(AmisNode):
     """功能型容器"""
     type: str = "service"  # 指定为 service 渲染器
