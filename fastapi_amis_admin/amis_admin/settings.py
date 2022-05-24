@@ -1,4 +1,4 @@
-from pydantic import BaseSettings, Field, validator
+from pydantic import BaseSettings, Field
 
 
 class Settings(BaseSettings):
@@ -9,4 +9,3 @@ class Settings(BaseSettings):
     root_path: str = '/admin'
     database_url_async: str = Field(..., env='DATABASE_URL_ASYNC')
     language: str = ''  # 'zh_CN','en_US'
-
