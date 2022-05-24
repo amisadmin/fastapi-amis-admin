@@ -794,6 +794,12 @@ class ModelAdmin(BaseModelAdmin, PageAdmin):
         BaseModelAdmin.__init__(self, app)
         PageAdmin.__init__(self, app)
 
+    @property
+    def router_prefix(self):
+        if issubclass(self.__class__.__base__, ModelAdmin):
+            return f'/{self.__class__.__name__.lower()}'
+        return f'/{self.model.__name__.lower()}'
+
     def register_router(self):
         for form in self.link_model_forms:
             form.register_router()
