@@ -520,7 +520,7 @@ class Checkboxes(FormItem):
     type: str = 'checkboxes'
     options: OptionsNode = None  # 选项组
     source: API = None  # 动态选项组
-    delimeter: str = None  # ","  # 拼接符
+    delimiter: str = None  # ","  # 拼接符
     labelField: str = None  # "label"  # 选项标签字段
     valueField: str = None  # "value"  # 选项值字段
     joinValues: bool = None  # True  # 拼接值
@@ -727,7 +727,7 @@ class InputImage(FormItem):
     multiple: bool = None  # False  # 是否多选。
     joinValues: bool = None  # True  # 拼接值
     extractValue: bool = None  # False  # 提取值
-    delimeter: str = None  # ","  # 拼接符
+    delimiter: str = None  # ","  # 拼接符
     autoUpload: bool = None  # True  # 否选择完就自动开始上传
     hideUploadButton: bool = None  # False  # 隐藏上传按钮
     fileField: str = None  # "file"  # 如果你不想自己存储，则可以忽略此属性。
@@ -771,7 +771,7 @@ class Picker(FormItem):
     options: OptionsNode = None  # 选项组
     source: API = None  # 动态选项组
     multiple: bool = None  # 是否为多选。
-    delimeter: bool = None  # False # 拼接符
+    delimiter: bool = None  # False # 拼接符
     labelField: str = None  # "label" # 选项标签字段
     valueField: str = None  # "value" # 选项值字段
     joinValues: bool = None  # True # 拼接值
@@ -814,7 +814,7 @@ class InputText(FormItem):
     source: Union[str, API] = None  # 动态选项组
     autoComplete: Union[str, API] = None  # 自动补全
     multiple: bool = None  # 是否多选
-    delimeter: str = None  # 拼接符 ","
+    delimiter: str = None  # 拼接符 ","
     labelField: str = None  # 选项标签字段 "label"
     valueField: str = None  # 选项值字段 "value"
     joinValues: bool = True  # 拼接值
@@ -853,7 +853,7 @@ class Select(FormItem):
     options: OptionsNode = None  # 选项组
     source: API = None  # 动态选项组
     autoComplete: API = None  # 自动提示补全
-    delimeter: Union[bool, str] = False  # 拼接符
+    delimiter: Union[bool, str] = False  # 拼接符
     labelField: str = None  # "label"  # 选项标签字段
     valueField: str = None  # "value"  # 选项值字段
     joinValues: bool = True  # 拼接值
@@ -997,7 +997,7 @@ class Transfer(FormItem):
     type: Literal['transfer', 'transfer-picker', 'tabs-transfer', 'tabs-transfer-picker'] = 'transfer'
     options: OptionsNode = None  # 选项组
     source: API = None  # 动态选项组
-    delimeter: str = None  # "False"  # 拼接符
+    delimiter: str = None  # "False"  # 拼接符
     joinValues: bool = None  # True  # 拼接值
     extractValue: bool = None  # False  # 提取值
     searchable: bool = None  # False  # 当设置为 true 时表示可以通过输入部分内容检索出选项。
@@ -1039,7 +1039,7 @@ class InputTree(FormItem):
     source: API = None  # 动态选项组
     autoComplete: API = None  # 自动提示补全
     multiple: bool = None  # False  # 是否多选
-    delimeter: str = None  # "False"  # 拼接符
+    delimiter: str = None  # "False"  # 拼接符
     labelField: str = None  # "label"  # 选项标签字段
     valueField: str = None  # "value"  # 选项值字段
     iconField: str = None  # "icon"  # 图标值字段
