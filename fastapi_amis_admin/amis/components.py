@@ -289,9 +289,9 @@ class Custom(AmisNode):
     className: str = None  # 节点 class
     inline: bool = False  # 默认使用 div 标签，如果 true 就使用 span 标签
     html: str = None  # 初始化节点 html
-    onMount: str = None  #"Function"  # 节点初始化之后调的用函数
-    onUpdate: str = None  #"Function"  # 数据有更新的时候调用的函数
-    onUnmount: str = None  #"Function"  # 节点销毁的时候调用的函数
+    onMount: str = None  # "Function"  # 节点初始化之后调的用函数
+    onUpdate: str = None  # "Function"  # 数据有更新的时候调用的函数
+    onUnmount: str = None  # "Function"  # 节点销毁的时候调用的函数
 
 
 class Service(AmisNode):
@@ -698,6 +698,45 @@ class InputFile(FormItem):
     startChunkApi: API = None  # startChunkApi
     chunkApi: API = None  # chunkApi
     finishChunkApi: API = None  # finishChunkApi
+
+
+class InputExcel(FormItem):
+    """解析 Excel"""
+    type: str = 'input-excel'
+    allSheets: bool = None  # False  # 是否解析所有 sheet
+    parseMode: str = None  # 'array' 或 'object' 解析模式
+    includeEmpty: bool = None  # True  # 是否包含空值
+    plainText: bool = None  # True  # 是否解析为纯文本
+
+
+class InputTable(FormItem):
+    """表格"""
+    type: str = 'input-table'  # 指定为 Table 渲染器
+    addable: bool = None  # False  # 是否可增加一行
+    editable: bool = None  # False  # 是否可编辑
+    removable: bool = None  # False  # 是否可删除
+    showAddBtn: bool = None  # True  # 是否显示添加按钮
+    addApi: API = None  # 新增时提交的 API
+    updateApi: API = None  # 修改时提交的 API
+    deleteApi: API = None  # 删除时提交的 API
+    addBtnLabel: str = None  # 增加按钮名称
+    addBtnIcon: str = None  # "plus"  # 增加按钮图标
+    copyBtnLabel: str = None  # 复制按钮文字
+    copyBtnIcon: str = None  # "copy"  # 复制按钮图标
+    editBtnLabel: str = None  # ""  # 编辑按钮名称
+    editBtnIcon: str = None  # "pencil"  # 编辑按钮图标
+    deleteBtnLabel: str = None  # ""  # 删除按钮名称
+    deleteBtnIcon: str = None  # "minus"  # 删除按钮图标
+    confirmBtnLabel: str = None  # ""  # 确认编辑按钮名称
+    confirmBtnIcon: str = None  # "check"  # 确认编辑按钮图标
+    cancelBtnLabel: str = None  # ""  # 取消编辑按钮名称
+    cancelBtnIcon: str = None  # "times"  # 取消编辑按钮图标
+    needConfirm: bool = None  # True  # 是否需要确认操作，，可用来控控制表格的操作交互
+    canAccessSuperData: bool = None  # False  # 是否可以访问父级数据，也就是表单中的同级数据，通常需要跟 strictMode 搭配使用
+    strictMode: bool = None  # True  # 为了性能，默认其他表单项项值变化不会让当前表格更新，有时候为了同步获取其他表单项字段，需要开启这个。
+    columns: list = None  # "[]"  # 列信息
+    # columns[x].quickEdit: boolean|object = None  # 配合 editable 为 true 一起使用
+    # columns[x].quickEditOnUpdate: boolean|object = None  # 可以用来区分新建模式和更新模式的编辑配置
 
 
 class InputImage(FormItem):
