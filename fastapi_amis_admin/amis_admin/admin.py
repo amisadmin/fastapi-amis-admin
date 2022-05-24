@@ -374,7 +374,7 @@ class BaseModelAdmin(SQLModelCrud):
         label = modelfield.field_info.title or modelfield.name
         remark = Remark(content=modelfield.field_info.description) if modelfield.field_info.description else None
         picker = Picker(name=modelfield.alias, label=label, labelField='name', valueField='id',
-                        required=modelfield.required, modalMode='dialog', inline=is_filter,
+                        required=(modelfield.required and not is_filter), modalMode='dialog', inline=is_filter,
                         size='full', labelRemark=remark, pickerSchema='${body}', source='${body.api}')
         return Service(schemaApi=AmisAPI(method='post', url=url, data={}, cache=300000, responseData=dict(controls=[picker])))
 
