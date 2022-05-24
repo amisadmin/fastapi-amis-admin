@@ -521,7 +521,7 @@ class BaseModelAdmin(SQLModelCrud):
                     item = await self.get_form_item(request, field, action)
                     if item:
                         items.append(item)
-        items.extend(items.pop(i) for i, item in enumerate(items.copy()) if isinstance(item, Service))
+        items.sort(key=lambda item: isinstance(item, Service))
         return items
 
 
