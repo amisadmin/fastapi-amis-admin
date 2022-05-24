@@ -347,7 +347,7 @@ class BaseModelAdmin(SQLModelCrud):
             perPage=self.list_per_page,
             itemActions=await self.get_actions_on_item(request),
             bulkActions=await self.get_actions_on_bulk(request),
-            footerToolbar=["statistics", "switch-per-page", "pagination", "load-more", "export-csv"],
+            footerToolbar=["statistics", "switch-per-page", "pagination", "load-more", "export-csv","export-excel"],
             columns=await self.get_list_columns(request),
             primaryField=self.pk_name,
             quickSaveItemApi=f'put:{self.router_path}/item/' + '${id}',
