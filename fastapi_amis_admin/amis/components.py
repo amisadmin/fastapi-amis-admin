@@ -446,8 +446,8 @@ class Form(AmisNode):
     initAsyncApi: API = None  # Form 用来获取初始数据的 api,与 initApi 不同的是，会一直轮询请求该接口，直到返回 finished 属性为 true 才 结束。
     initFetch: bool = None  # 设置了 initApi 或者 initAsyncApi 后，默认会开始就发请求，设置为 false 后就不会起始就请求接口
     initFetchOn: str = None  # 用表达式来配置
-    initFinishedField: Optional[
-        str] = None  # 设置了 initAsyncApi 后，默认会从返回数据的 data.finished 来判断是否完成，也可以设置成其他的 xxx，就会从 data.xxx 中获取
+    initFinishedField: Optional[str] = None  # 设置了 initAsyncApi 后，默认会从返回数据的 data.finished 来判断是否完成，
+    # 也可以设置成其他的 xxx，就会从 data.xxx 中获取
     initCheckInterval: int = None  # 设置了 initAsyncApi 以后，默认拉取的时间间隔
     asyncApi: API = None  # 设置此属性后，表单提交发送保存接口后，还会继续轮询请求该接口，直到返回 finished 属性为 true 才 结束。
     checkInterval: int = None  # 轮询请求的时间间隔，默认为 3 秒。设置 asyncApi 才有效
@@ -737,6 +737,21 @@ class InputTable(FormItem):
     columns: list = None  # "[]"  # 列信息
     # columns[x].quickEdit: boolean|object = None  # 配合 editable 为 true 一起使用
     # columns[x].quickEditOnUpdate: boolean|object = None  # 可以用来区分新建模式和更新模式的编辑配置
+
+
+class InputGroup(FormItem):
+    """输入框组合"""
+    type: str = 'input-group'
+    className: str = None  # CSS 类名
+    body: List[FormItem] = None  # 表单项集合
+
+
+class Group(InputGroup):
+    """表单项组"""
+    type: str = 'group'
+    mode: DisplayModeEnum = None  # 展示默认，同 Form 中的模式
+    gap: str = None  # 表单项之间的间距，可选：xs、sm、normal
+    direction: str = None  # "horizontal"  # 可以配置水平展示还是垂直展示。对应的配置项分别是：vertical、horizontal
 
 
 class InputImage(FormItem):
