@@ -376,10 +376,11 @@ class BaseModelAdmin(SQLModelCrud):
         picker = Picker(name=modelfield.alias, label=label, labelField='name', valueField='id',
                         required=(modelfield.required and not is_filter), modalMode='dialog', inline=is_filter,
                         size='full', labelRemark=remark, pickerSchema='${body}', source='${body.api}')
-        return Service(schemaApi=AmisAPI(method='post', url=url, data={}, cache=300000, responseData=dict(controls=[picker])))
+        return Service(name=modelfield.alias,
+                       schemaApi=AmisAPI(method='post', url=url, data={}, cache=300000, responseData=dict(controls=[picker])))
 
     async def get_form_item(self, request: Request, modelfield: ModelField,
-                            action: CrudEnum) -> Union[FormItem, SchemaNode]:
+                            action: CrudEnum) -> Union[FormItem, SchemaNode, None]:
         is_filter = action == CrudEnum.list
         return (await self.get_form_item_on_foreign_key(request, modelfield, is_filter=is_filter)
                 or AmisParser(modelfield).as_form_item(is_filter=is_filter))
