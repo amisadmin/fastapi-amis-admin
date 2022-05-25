@@ -165,13 +165,13 @@ class SQLModelCrud(BaseCrud, SQLModelSelector):
         SQLModelSelector.__init__(self, model, fields)
         BaseCrud.__init__(self, self.model, router)
         if not self.schema_list:
-            modelfields = list(filter(None, [self.parser.get_modelfield(insfield, deepcopy=True) for insfield in
-                                             self._list_fields_ins.values()]))
-            self.schema_list = schema_create_by_modelfield(schema_name=self.schema_name_prefix + 'List',
-                                                           modelfields=modelfields, set_none=True)
+            modelfields = list(filter(None, [self.parser.get_modelfield(insfield, deepcopy=True)
+                                             for insfield in self._list_fields_ins.values()]))
+            self.schema_list = schema_create_by_modelfield(
+                schema_name=f'{self.schema_name_prefix}List', modelfields=modelfields, set_none=True)
         if not self.schema_filter:
-            modelfields = list(filter(None, [self.parser.get_modelfield(insfield, deepcopy=True) for insfield in
-                                             self._list_fields_ins.values()]))
+            modelfields = list(filter(None, [self.parser.get_modelfield(insfield, deepcopy=True)
+                                             for insfield in self._list_fields_ins.values()]))
             # todo perfect
             for modelfield in modelfields:
                 if not issubclass(modelfield.type_, (Enum, bool)) and issubclass(modelfield.type_, (
@@ -179,15 +179,17 @@ class SQLModelCrud(BaseCrud, SQLModelSelector):
                     modelfield.type_ = str
                     modelfield.outer_type_ = str
                     modelfield.validators = []
-            self.schema_filter = schema_create_by_modelfield(schema_name=self.schema_name_prefix + 'Filter',
-                                                             modelfields=modelfields, set_none=True)
+            self.schema_filter = schema_create_by_modelfield(
+                schema_name=f'{self.schema_name_prefix}Filter', modelfields=modelfields, set_none=True)
         self.schema_read = self.schema_read or self.schema_list
-        if not self.schema_update and self.readonly_fields:
+        if self.readonly_fields:
             exclude = {self.parser.get_modelfield(ins).name for ins in
                        self.parser.filter_insfield(self.readonly_fields)}
             exclude.add(self.pk_name)
-            self.schema_update = schema_create_by_schema(self.schema_model, self.schema_name_prefix + 'Update',
-                                                         exclude=exclude, set_none=True)
+            self.schema_update = self.schema_update or schema_create_by_schema(
+                self.schema_model, f'{self.schema_name_prefix}Update', exclude=exclude, set_none=True)
+            self.schema_create = self.schema_create or schema_create_by_schema(
+                self.schema_model, f'{self.schema_name_prefix}Create', exclude=exclude)
 
     @property
     def schema_name_prefix(self):
