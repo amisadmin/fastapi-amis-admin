@@ -1,4 +1,4 @@
-__version__ = "0.0.19"
+__version__ = "0.1.0"
 
 from .components import *
 from .constants import *
