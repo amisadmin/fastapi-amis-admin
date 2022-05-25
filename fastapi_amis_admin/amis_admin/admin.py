@@ -18,7 +18,7 @@ from starlette.templating import Jinja2Templates
 
 import fastapi_amis_admin
 from fastapi_amis_admin.amis.components import Page, TableCRUD, Action, ActionType, Dialog, Form, FormItem, Picker, \
-    Remark, Service, Iframe, PageSchema, TableColumn, ColumnOperation, App, Tpl
+    Remark, Service, Iframe, PageSchema, TableColumn, ColumnOperation, App, Tpl, InputExcel, InputTable
 from fastapi_amis_admin.amis.constants import LevelEnum, DisplayModeEnum, SizeEnum
 from fastapi_amis_admin.amis.types import BaseAmisApiOut, BaseAmisModel, AmisAPI, SchemaNode
 from fastapi_amis_admin.amis_admin.parser import AmisParser
@@ -411,15 +411,27 @@ class BaseModelAdmin(SQLModelCrud):
         )
 
     async def get_create_form(self, request: Request, bulk: bool = False) -> Form:
-        api = f'post:{self.router_path}/item'
         fields = [field for field in self.schema_create.__fields__.values() if field.name != self.pk_name]
+        if not bulk:
+            return Form(
+                api=f'post:{self.router_path}/item',
+                name=CrudEnum.create,
+                body=await self._conv_modelfields_to_formitems(request, fields, CrudEnum.create),
+            )
+        columns, keys = [], {}
+        for field in fields:
+            column = await self.get_list_column(request, self.parser.get_modelfield(field, deepcopy=True))
+            keys[column.name] = '${' + column.label + '}'
+            column.name = column.label
+            columns.append(column)
         return Form(
-            api=api,
-            name=CrudEnum.create,
-            body=await self._conv_modelfields_to_formitems(
-                request, fields, CrudEnum.create
-            ),
-            submitText=None,
+            api=AmisAPI(method='post', url=f'{self.router_path}/item',
+                        data={'&': {'$excel': keys}}),
+            mode=DisplayModeEnum.normal,
+            body=[InputExcel(name='excel'),
+                  InputTable(name='excel', showIndex=True, columns=columns,
+                             addable=True, copyable=True, editable=True, removable=True, ),
+                  ],
         )
 
     async def get_update_form(self, request: Request, bulk: bool = False) -> Form:
@@ -440,16 +452,29 @@ class BaseModelAdmin(SQLModelCrud):
         )
 
     async def get_create_action(self, request: Request, bulk: bool = False) -> Optional[Action]:
+        if not await self.has_create_permission(request, None):
+            return None
+        if not bulk:
+            return ActionType.Dialog(
+                icon='fa fa-plus pull-left',
+                label=_('Create'),
+                level=LevelEnum.primary,
+                dialog=Dialog(
+                    title=_('Create'),
+                    size=SizeEnum.lg,
+                    body=await self.get_create_form(request, bulk=bulk),
+                ),
+            )
         return ActionType.Dialog(
             icon='fa fa-plus pull-left',
-            label=_('Create'),
+            label=_('Bulk Create'),
             level=LevelEnum.primary,
             dialog=Dialog(
-                title=_('Create'),
-                size=SizeEnum.lg,
+                title=_('Bulk Create'),
+                size=SizeEnum.full,
                 body=await self.get_create_form(request, bulk=bulk),
             ),
-        ) if await self.has_create_permission(request, None) else None
+        )
 
     async def get_update_action(self, request: Request, bulk: bool = False) -> Optional[Action]:
         if not await self.has_update_permission(request, None, None):
@@ -494,7 +519,8 @@ class BaseModelAdmin(SQLModelCrud):
         )
 
     async def get_actions_on_header_toolbar(self, request: Request) -> List[Action]:
-        actions = [await self.get_create_action(request, bulk=False)]
+        actions = [await self.get_create_action(request, bulk=False),
+                   await self.get_create_action(request, bulk=True)]
         return list(filter(None, actions))
 
     async def get_actions_on_item(self, request: Request) -> List[Action]:
@@ -506,7 +532,6 @@ class BaseModelAdmin(SQLModelCrud):
     async def get_actions_on_bulk(self, request: Request) -> List[Action]:
         bulkActions = [await self.get_update_action(request, bulk=True),
                        await self.get_delete_action(request, bulk=True)]
-
         return list(filter(None, bulkActions))
 
     async def _conv_modelfields_to_formitems(self, request: Request,

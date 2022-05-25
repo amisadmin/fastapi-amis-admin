@@ -297,6 +297,8 @@ class Custom(AmisNode):
 class Service(AmisNode):
     """功能型容器"""
     type: str = "service"  # 指定为 service 渲染器
+    name: str = None  # 节点 名称
+    data: dict = None  #
     className: str = None  # 外层 Dom 的类名
     body: SchemaNode = None  # 内容容器
     api: API = None  # 初始化数据域接口地址
@@ -712,9 +714,12 @@ class InputExcel(FormItem):
 class InputTable(FormItem):
     """表格"""
     type: str = 'input-table'  # 指定为 Table 渲染器
+    showIndex: bool = None  # False  # 显示序号
+    perPage: int = None  # 设置一页显示多少条数据。10
     addable: bool = None  # False  # 是否可增加一行
     editable: bool = None  # False  # 是否可编辑
     removable: bool = None  # False  # 是否可删除
+    copyable: bool = None  # False  # 是否可复制
     showAddBtn: bool = None  # True  # 是否显示添加按钮
     addApi: API = None  # 新增时提交的 API
     updateApi: API = None  # 修改时提交的 API

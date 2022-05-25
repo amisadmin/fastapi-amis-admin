@@ -58,6 +58,9 @@ msgstr "搜索"
 msgid "Create"
 msgstr "新增"
 
+msgid "Bulk Create"
+msgstr "批量新增"
+
 #: amis_admin/admin.py:459 amis_admin/admin.py:461
 msgid "Update"
 msgstr "更新"
