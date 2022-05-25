@@ -27,7 +27,8 @@ from fastapi_amis_admin.crud._sqlmodel import SQLModelCrud, SQLModelSelector
 from fastapi_amis_admin.crud.base import RouterMixin
 from fastapi_amis_admin.crud.parser import SQLModelFieldParser, SQLModelField, SQLModelListField
 from fastapi_amis_admin.crud.schema import CrudEnum, BaseApiOut, Paginator
-from fastapi_amis_admin.crud.utils import parser_item_id, schema_create_by_schema, parser_str_set_list
+from fastapi_amis_admin.crud.utils import parser_item_id, schema_create_by_schema, parser_str_set_list, \
+    schema_create_by_modelfield
 from fastapi_amis_admin.utils.db import SqlalchemyAsyncClient
 from fastapi_amis_admin.utils.functools import cached_property
 from fastapi_amis_admin.utils.translation import i18n as _
@@ -251,6 +252,7 @@ class BaseModelAdmin(SQLModelCrud):
     link_model_forms: List[LinkModelForm] = []
     bulk_edit_fields: List[Union[SQLModelListField, FormItem]] = []  # 批量编辑字段
     search_fields: List[SQLModelField] = []  # 模糊搜索字段
+    create_fields: List[InstrumentedAttribute] = []  # 新增数据字段
 
     def __init__(self, app: "AdminApp"):
         assert self.model, 'model is None'
@@ -263,6 +265,10 @@ class BaseModelAdmin(SQLModelCrud):
         self.fields = self.fields or [self.model]
         self.fields.extend(list_display_insfield)
         super().__init__(self.model, self.session_factory)
+        if self.create_fields and not self.schema_create:
+            modelfields = list(filter(None, [self.parser.get_modelfield(insfield, deepcopy=True)
+                                             for insfield in self.create_fields]))
+            self.schema_create = schema_create_by_modelfield(f'{self.schema_name_prefix}Create', modelfields)
 
     @cached_property
     def router_path(self) -> str:
