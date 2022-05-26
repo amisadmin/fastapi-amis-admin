@@ -42,7 +42,11 @@ class BaseCrud(RouterMixin):
     pk_name: str = 'id'
     list_per_page_max: int = None
 
-    def __init__(self, schema_model: Type[BaseModel], router: APIRouter = None):
+    def __init__(
+            self,
+            schema_model: Type[BaseModel],
+            router: APIRouter = None
+    ):
         self.paginator: Type[Paginator] = Paginator
         self.schema_model = schema_model or self.schema_model
         assert self.schema_model, 'schema_model is None'
@@ -57,19 +61,20 @@ class BaseCrud(RouterMixin):
     def schema_name_prefix(self):
         return self.__class__.__name__
 
-    def register_crud(self,
-                      schema_list: Type[BaseModel] = None,
-                      schema_filter: Type[BaseModel] = None,
-                      schema_create: Type[BaseModel] = None,
-                      schema_read: Type[BaseModel] = None,
-                      schema_update: Type[BaseModel] = None,
-                      list_max_per_page: int = None,
-                      depends_list: List[Depends] = None,
-                      depends_read: List[Depends] = None,
-                      depends_create: List[Depends] = None,
-                      depends_update: List[Depends] = None,
-                      depends_delete: List[Depends] = None
-                      ) -> "BaseCrud":
+    def register_crud(
+            self,
+            schema_list: Type[BaseModel] = None,
+            schema_filter: Type[BaseModel] = None,
+            schema_create: Type[BaseModel] = None,
+            schema_read: Type[BaseModel] = None,
+            schema_update: Type[BaseModel] = None,
+            list_max_per_page: int = None,
+            depends_list: List[Depends] = None,
+            depends_read: List[Depends] = None,
+            depends_create: List[Depends] = None,
+            depends_update: List[Depends] = None,
+            depends_delete: List[Depends] = None
+    ) -> "BaseCrud":
         self.schema_list = schema_list or self.schema_list or self.schema_model
         self.schema_filter = (
                 schema_filter
@@ -86,12 +91,14 @@ class BaseCrud(RouterMixin):
         )
         self.list_per_page_max = list_max_per_page or self.list_per_page_max
         self.paginator = paginator_factory(perPage_max=self.list_per_page_max)
-        self.router.add_api_route("/list",
-                                  self.route_list,
-                                  methods=["POST"],
-                                  response_model=BaseApiOut[ItemListSchema[self.schema_list]],
-                                  dependencies=depends_list,
-                                  name=CrudEnum.list.value)
+        self.router.add_api_route(
+            "/list",
+            self.route_list,
+            methods=["POST"],
+            response_model=BaseApiOut[ItemListSchema[self.schema_list]],
+            dependencies=depends_list,
+            name=CrudEnum.list.value
+        )
         self.router.add_api_route(
             "/item/{item_id}",
             self.route_read,
@@ -146,21 +153,46 @@ class BaseCrud(RouterMixin):
     def route_delete(self) -> Callable[..., Any]:
         raise NotImplementedError
 
-    async def has_list_permission(self, request: Request, paginator: Optional[Paginator], filter: Optional[BaseModel],
-                                  **kwargs) -> bool:
+    async def has_list_permission(
+            self,
+            request: Request,
+            paginator: Optional[Paginator],
+            filter: Optional[BaseModel],
+            **kwargs
+    ) -> bool:
         return True
 
-    async def has_create_permission(self, request: Request, obj: Optional[BaseModel], **kwargs) -> bool:
+    async def has_create_permission(
+            self,
+            request: Request,
+            obj: Optional[BaseModel],
+            **kwargs
+    ) -> bool:
         return True
 
-    async def has_read_permission(self, request: Request, item_id: Optional[List[str]], **kwargs) -> bool:
+    async def has_read_permission(
+            self,
+            request: Request,
+            item_id: Optional[List[str]],
+            **kwargs
+    ) -> bool:
         return True
 
-    async def has_update_permission(self, request: Request, item_id: Optional[List[str]], obj: Optional[BaseModel],
-                                    **kwargs) -> bool:
+    async def has_update_permission(
+            self,
+            request: Request,
+            item_id: Optional[List[str]],
+            obj: Optional[BaseModel],
+            **kwargs
+    ) -> bool:
         return True
 
-    async def has_delete_permission(self, request: Request, item_id: Optional[List[str]], **kwargs) -> bool:
+    async def has_delete_permission(
+            self,
+            request: Request,
+            item_id: Optional[List[str]],
+            **kwargs
+    ) -> bool:
         return True
 
     def error_data_handle(self, request: Request):
@@ -168,7 +200,11 @@ class BaseCrud(RouterMixin):
 
     def error_execute_sql(self, request: Request, error: Exception):
         if isinstance(error, IntegrityError):
-            raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-                                detail="Key already exists") from error
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                            detail=f"Error Execute SQL：{error}") from error
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail="Key already exists"
+            ) from error
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error Execute SQL：{error}"
+        ) from error

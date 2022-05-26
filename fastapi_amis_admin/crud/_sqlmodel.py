@@ -52,7 +52,11 @@ class SQLModelSelector:
     link_models: Dict[str, Tuple[Type[Table], Column, Column]] = {}
     pk_name: str = 'id'
 
-    def __init__(self, model: Type[SQLModel] = None, fields: List[SQLModelListField] = None) -> None:
+    def __init__(
+            self,
+            model: Type[SQLModel] = None,
+            fields: List[SQLModelListField] = None
+    ) -> None:
         self.model = model or self.model
         assert self.model, 'model is None'
         self.pk_name: str = self.pk_name or self.model.__table__.primary_key.columns.keys()[0]
@@ -61,8 +65,8 @@ class SQLModelSelector:
         self.fields = fields or self.fields or [self.model]
         self.fields = list(filter(lambda x: x not in self.parser.filter_insfield(self.exclude),
                                   self.parser.filter_insfield(self.fields)))
-        self._list_fields_ins: Dict[str, InstrumentedAttribute] = {self.parser.get_name(insfield): insfield for insfield
-                                                                   in self.fields}
+        self._list_fields_ins: Dict[str, InstrumentedAttribute] = {self.parser.get_name(insfield): insfield
+                                                                   for insfield in self.fields}
         assert self._list_fields_ins, 'fields is None'
 
     async def get_select(self, request: Request) -> Select:
@@ -81,8 +85,10 @@ class SQLModelSelector:
     @property
     def _select_maker(self):
         if self.link_models:
-            def select_maker(stmt: Select = Depends(self.get_select),
-                             link_clause=Depends(self.get_link_clause)) -> Select:
+            def select_maker(
+                    stmt: Select = Depends(self.get_select),
+                    link_clause=Depends(self.get_link_clause)
+            ) -> Select:
                 if link_clause is not None:
                     stmt = stmt.where(link_clause)
                 return stmt
@@ -157,9 +163,13 @@ class SQLModelCrud(BaseCrud, SQLModelSelector):
     session_factory: Callable[..., AsyncGenerator[AsyncSession, Any]] = None
     readonly_fields: List[SQLModelListField] = []  # 只读字段
 
-    def __init__(self, model: Type[SQLModel], session_factory: Callable[..., AsyncGenerator[AsyncSession, Any]],
-                 fields: List[SQLModelListField] = None,
-                 router: APIRouter = None) -> None:
+    def __init__(
+            self,
+            model: Type[SQLModel],
+            session_factory: Callable[..., AsyncGenerator[AsyncSession, Any]],
+            fields: List[SQLModelListField] = None,
+            router: APIRouter = None
+    ) -> None:
         self.session_factory = session_factory or self.session_factory
         assert self.session_factory, 'session_factory is None'
         SQLModelSelector.__init__(self, model, fields)
@@ -244,10 +254,11 @@ class SQLModelCrud(BaseCrud, SQLModelSelector):
 
     @property
     def route_create(self) -> Callable:
-        async def route(request: Request,
-                        data: Union[self.schema_create, List[self.schema_create]] = Body(...),  # type: ignore
-                        session: AsyncSession = Depends(self.session_factory)
-                        ) -> BaseApiOut[self.model]:  # type: ignore
+        async def route(
+                request: Request,
+                data: Union[self.schema_create, List[self.schema_create]] = Body(...),  # type: ignore
+                session: AsyncSession = Depends(self.session_factory)
+        ) -> BaseApiOut[self.model]:  # type: ignore
             if not await self.has_create_permission(request, data):
                 return self.error_no_router_permission(request)
             is_bulk = True
@@ -298,11 +309,12 @@ class SQLModelCrud(BaseCrud, SQLModelSelector):
 
     @property
     def route_update(self) -> Callable:
-        async def route(request: Request,
-                        item_id: List[str] = Depends(parser_item_id),
-                        data: self.schema_update = Body(...),  # type: ignore
-                        session: AsyncSession = Depends(self.session_factory)
-                        ):
+        async def route(
+                request: Request,
+                item_id: List[str] = Depends(parser_item_id),
+                data: self.schema_update = Body(...),  # type: ignore
+                session: AsyncSession = Depends(self.session_factory)
+        ):
             if not await self.has_update_permission(request, item_id, data):
                 return self.error_no_router_permission(request)
             stmt = update(self.model).where(self.pk.in_(list(map(self.parser.get_python_type_parse(self.pk), item_id))))

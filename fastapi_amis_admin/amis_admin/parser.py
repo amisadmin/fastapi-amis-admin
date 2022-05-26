@@ -24,7 +24,7 @@ class AmisParser():
         return Remark(content=self.modelfield.field_info.description) if self.modelfield.field_info.description else None
 
     def as_form_item(self, set_deafult: bool = False, is_filter: bool = False) -> FormItem:
-        # sourcery no-metrics
+        # sourcery skip: low-code-quality
         kwargs = {}
         formitem = self.modelfield.field_info.extra.get(['amis_form_item', 'amis_filter_item'][is_filter])
         if formitem is not None:

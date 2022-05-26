@@ -23,8 +23,7 @@ from fastapi_amis_admin.amis.constants import LevelEnum, DisplayModeEnum, SizeEn
 from fastapi_amis_admin.amis.types import BaseAmisApiOut, BaseAmisModel, AmisAPI, SchemaNode
 from fastapi_amis_admin.amis_admin.parser import AmisParser
 from fastapi_amis_admin.amis_admin.settings import Settings
-from fastapi_amis_admin.crud._sqlmodel import SQLModelCrud, SQLModelSelector
-from fastapi_amis_admin.crud.base import RouterMixin
+from fastapi_amis_admin.crud import SQLModelCrud, SQLModelSelector, RouterMixin
 from fastapi_amis_admin.crud.parser import SQLModelFieldParser, SQLModelField, SQLModelListField
 from fastapi_amis_admin.crud.schema import CrudEnum, BaseApiOut, Paginator
 from fastapi_amis_admin.crud.utils import parser_item_id, schema_create_by_schema, parser_str_set_list, \
@@ -47,13 +46,15 @@ class LinkModelForm:
     display_admin_cls: Type["ModelAdmin"]
     session_factory: Callable[..., Generator[AsyncSession, Any, None]] = None
 
-    def __init__(self,
-                 pk_admin: "BaseModelAdmin",
-                 display_admin_cls: Type["ModelAdmin"],
-                 link_model: Union[SQLModel, Table],
-                 link_col: Column,
-                 item_col: Column,
-                 session_factory: Callable[..., Generator[AsyncSession, Any, None]] = None):
+    def __init__(
+            self,
+            pk_admin: "BaseModelAdmin",
+            display_admin_cls: Type["ModelAdmin"],
+            link_model: Union[SQLModel, Table],
+            link_col: Column,
+            item_col: Column,
+            session_factory: Callable[..., Generator[AsyncSession, Any, None]] = None
+    ):
         self.link_model = link_model
         self.pk_admin = pk_admin
         self.display_admin_cls = display_admin_cls or self.display_admin_cls
@@ -69,10 +70,11 @@ class LinkModelForm:
         self.path = f'/{self.display_admin_cls.model.__name__.lower()}'
 
     @classmethod
-    def bind_model_admin(cls,
-                         pk_admin: "BaseModelAdmin",
-                         insfield: InstrumentedAttribute
-                         ) -> Optional["LinkModelForm"]:
+    def bind_model_admin(
+            cls,
+            pk_admin: "BaseModelAdmin",
+            insfield: InstrumentedAttribute
+    ) -> Optional["LinkModelForm"]:
         if not isinstance(insfield.prop, RelationshipProperty):
             return None
         table = insfield.prop.secondary
@@ -109,7 +111,7 @@ class LinkModelForm:
                 item_id: List[str] = Depends(parser_item_id),
                 link_id: str = Query(..., min_length=1, title='link_id', example='1,2,3',
                                      description='link model Primary key or list of link model primary keys'),
-                db: AsyncSession = Depends(self.session_factory)
+                session: AsyncSession = Depends(self.session_factory)
         ):
             if not await self.pk_admin.has_update_permission(request, item_id, None):
                 return self.pk_admin.error_no_router_permission(request)
@@ -119,9 +121,9 @@ class LinkModelForm:
             ).where(
                 self.item_col.in_(list(map(self.pk_admin.parser.get_python_type_parse(self.item_col), item_id)))
             )
-            result = await db.execute(stmt)
+            result = await session.execute(stmt)
             if result.rowcount:  # type: ignore
-                await db.commit()
+                await session.commit()
             return BaseApiOut(data=result.rowcount)  # type: ignore
 
         return route
@@ -363,7 +365,8 @@ class BaseModelAdmin(SQLModelCrud):
         return table
 
     async def get_form_item_on_foreign_key(
-            self, request: Request,
+            self,
+            request: Request,
             modelfield: ModelField,
             is_filter: bool = False
     ) -> Union[Service, SchemaNode, None]:
@@ -385,15 +388,23 @@ class BaseModelAdmin(SQLModelCrud):
         return Service(name=modelfield.alias,
                        schemaApi=AmisAPI(method='post', url=url, data={}, cache=300000, responseData=dict(controls=[picker])))
 
-    async def get_form_item(self, request: Request, modelfield: ModelField,
-                            action: CrudEnum) -> Union[FormItem, SchemaNode, None]:
+    async def get_form_item(
+            self,
+            request: Request,
+            modelfield: ModelField,
+            action: CrudEnum
+    ) -> Union[FormItem, SchemaNode, None]:
         is_filter = action == CrudEnum.list
         return (await self.get_form_item_on_foreign_key(request, modelfield, is_filter=is_filter)
                 or AmisParser(modelfield).as_form_item(is_filter=is_filter))
 
     async def get_list_filter_form(self, request: Request) -> Form:
-        body = await self._conv_modelfields_to_formitems(request, await self.get_list_filter(request),
-                                                         CrudEnum.list)
+        body = await self._conv_modelfields_to_formitems(
+            request,
+            await self.get_list_filter(request),
+
+            CrudEnum.list
+        )
         return Form(
             type='',
             title=_('Filter'),
@@ -540,9 +551,12 @@ class BaseModelAdmin(SQLModelCrud):
                        await self.get_delete_action(request, bulk=True)]
         return list(filter(None, bulkActions))
 
-    async def _conv_modelfields_to_formitems(self, request: Request,
-                                             fields: Iterable[Union[SQLModelListField, ModelField, FormItem]],
-                                             action: CrudEnum = None) -> List[FormItem]:
+    async def _conv_modelfields_to_formitems(
+            self,
+            request: Request,
+            fields: Iterable[Union[SQLModelListField, ModelField, FormItem]],
+            action: CrudEnum = None
+    ) -> List[FormItem]:
         items = []
         for field in fields:
             if isinstance(field, FormItem):
@@ -658,8 +672,11 @@ class PageAdmin(PageSchemaAdmin, RouterAdmin):
 
     def error_no_page_permission(self, request: Request):
         raise HTTPException(
-            status_code=status.HTTP_307_TEMPORARY_REDIRECT, detail='No page permissions',
-            headers={'location': f'{self.app.site.router_path}/auth/form/login?redirect={request.url}'},
+            status_code=status.HTTP_307_TEMPORARY_REDIRECT,
+            detail='No page permissions',
+            headers={
+                'location': f'{self.app.site.router_path}/auth/form/login?redirect={request.url}',
+            },
         )
 
     async def get_page(self, request: Request) -> Page:
@@ -754,7 +771,10 @@ class BaseFormAdmin(PageAdmin):
         page.body = await self.get_form(request)
         return page
 
-    async def get_form_item(self, request: Request, modelfield: ModelField) -> Union[FormItem, SchemaNode]:
+    async def get_form_item(self,
+                            request: Request,
+                            modelfield: ModelField
+                            ) -> Union[FormItem, SchemaNode]:
         return AmisParser(modelfield).as_form_item()
 
     async def get_form(self, request: Request) -> Form:
@@ -772,16 +792,22 @@ class BaseFormAdmin(PageAdmin):
 
     def register_router(self):
         super().register_router()
-        self.router.add_api_route(self.form_path, self.route_submit, methods=["POST"],
-                                  response_model=BaseApiOut[self.schema_submit_out],
-                                  dependencies=[Depends(self.page_permission_depend)])
+        self.router.add_api_route(
+            self.form_path,
+            self.route_submit,
+            methods=["POST"],
+            response_model=BaseApiOut[self.schema_submit_out],
+            dependencies=[Depends(self.page_permission_depend)],
+        )
         if self.form_init:
-            self.schema_init_out = self.schema_init_out or schema_create_by_schema(self.schema,
-                                                                                   self.__class__.__name__ + 'InitOut',
-                                                                                   set_none=True)
-            self.router.add_api_route(self.form_path, self.route_init, methods=["GET"],
-                                      response_model=BaseApiOut[self.schema_init_out],
-                                      dependencies=[Depends(self.page_permission_depend)])
+            self.schema_init_out = self.schema_init_out or schema_create_by_schema(
+                self.schema, f'{self.__class__.__name__}InitOut', set_none=True
+            )
+            self.router.add_api_route(
+                self.form_path, self.route_init, methods=["GET"],
+                response_model=BaseApiOut[self.schema_init_out],
+                dependencies=[Depends(self.page_permission_depend)],
+            )
         return self
 
 
@@ -795,7 +821,12 @@ class FormAdmin(BaseFormAdmin):
 
         return route
 
-    async def handle(self, request: Request, data: BaseModel, **kwargs) -> BaseApiOut[Any]:
+    async def handle(
+            self,
+            request: Request,
+            data: BaseModel,
+            **kwargs
+    ) -> BaseApiOut[Any]:
         return BaseApiOut(data=data)
 
     async def get_init_data(self, request: Request, **kwargs) -> BaseApiOut[Any]:
@@ -844,26 +875,46 @@ class ModelAdmin(BaseModelAdmin, PageAdmin):
         page.body = await self.get_list_table(request)
         return page
 
-    async def has_list_permission(self, request: Request,
-                                  paginator: Paginator,
-                                  filter: BaseModel = None,  # type self.schema_filter
-                                  **kwargs) -> bool:
+    async def has_list_permission(
+            self,
+            request: Request,
+            paginator: Paginator,
+            filter: BaseModel = None,  # type self.schema_filter
+            **kwargs
+    ) -> bool:
         return await self.has_page_permission(request)
 
-    async def has_create_permission(self, request: Request,
-                                    data: BaseModel,  # type self.schema_create
-                                    **kwargs) -> bool:
+    async def has_create_permission(
+            self,
+            request: Request,
+            data: BaseModel,  # type self.schema_create
+            **kwargs
+    ) -> bool:
         return await self.has_page_permission(request)
 
-    async def has_read_permission(self, request: Request, item_id: List[str], **kwargs) -> bool:
+    async def has_read_permission(
+            self,
+            request: Request,
+            item_id: List[str],
+            **kwargs
+    ) -> bool:
         return await self.has_page_permission(request)
 
-    async def has_update_permission(self, request: Request, item_id: List[str],
-                                    data: BaseModel,  # type self.schema_update
-                                    **kwargs) -> bool:
+    async def has_update_permission(
+            self,
+            request: Request,
+            item_id: List[str],
+            data: BaseModel,  # type self.schema_update
+            **kwargs
+    ) -> bool:
         return await self.has_page_permission(request)
 
-    async def has_delete_permission(self, request: Request, item_id: List[str], **kwargs) -> bool:
+    async def has_delete_permission(
+            self,
+            request: Request,
+            item_id: List[str],
+            **kwargs
+    ) -> bool:
         return await self.has_page_permission(request)
 
 
@@ -875,7 +926,11 @@ class BaseModelAction:
         self.admin = admin
         assert self.admin, 'admin is None'
 
-    async def fetch_item_scalars(self, session: AsyncSession, item_id: List[str]) -> ScalarResult:
+    async def fetch_item_scalars(
+            self,
+            session: AsyncSession,
+            item_id: List[str]
+    ) -> ScalarResult:
         result = await session.execute(select(self.admin.model).where(self.admin.pk.in_(item_id)))
         return result.scalars()
 
@@ -895,26 +950,40 @@ class ModelAction(BaseFormAdmin, BaseModelAction):
     async def get_action(self, request: Request, **kwargs) -> Action:
         action = self.action or ActionType.Dialog(label=_('Custom form actions'), dialog=Dialog())
         action.dialog.title = action.label
-        action.dialog.body = Service(schemaApi=AmisAPI(method='get',
-                                                       url=self.router_path + self.page_path + '?item_id=${IF(ids, ids, id)}',
-                                                       responseData={'&': '${body}',
-                                                                     'api.url': '${body.api.url}?item_id=${api.query.item_id}',
-                                                                     'submitText': ''}))
+        action.dialog.body = Service(
+            schemaApi=AmisAPI(
+                method='get',
+                url=self.router_path + self.page_path + '?item_id=${IF(ids, ids, id)}',
+                responseData={
+                    '&': '${body}',
+                    'api.url': '${body.api.url}?item_id=${api.query.item_id}',
+                    'submitText': '',
+                },
+            )
+        )
         return action
 
-    async def handle(self, request: Request, item_id: List[str], data: Optional[BaseModel],
-                     session: AsyncSession, **kwargs) -> BaseApiOut[Any]:
+    async def handle(
+            self,
+            request: Request,
+            item_id: List[str],
+            data: Optional[BaseModel],
+            session: AsyncSession,
+            **kwargs
+    ) -> BaseApiOut[Any]:
         return BaseApiOut(data=data)
 
     @property
     def route_submit(self):
         default = ... if self.schema else None
 
-        async def route(request: Request, data: self.schema = Body(default=default),  # type:ignore
-                        item_id: str = Query(None, title='item_id', example='1,2,3',
-                                             description='Primary key or list of primary keys'),
-                        session: AsyncSession = Depends(self.admin.session_factory),
-                        ):
+        async def route(
+                request: Request,
+                data: self.schema = Body(default=default),  # type:ignore
+                item_id: str = Query(None, title='item_id', example='1,2,3',
+                                     description='Primary key or list of primary keys'),
+                session: AsyncSession = Depends(self.admin.session_factory),
+        ):
             return await self.handle(request, parser_str_set_list(set_str=item_id), data, session)
 
         return route
@@ -991,10 +1060,12 @@ class AdminApp(PageAdmin):
     async def get_page(self, request: Request) -> App:
         app = App()
         app.brandName = 'AmisAdmin'
-        app.header = Tpl(className='w-full',
-                         tpl='<div class="flex justify-between"><div></div>'
-                             f'<div><a href="{fastapi_amis_admin.__url__}" target="_blank" '
-                             'title="Copyright"><i class="fa fa-github fa-2x"></i></a></div></div>')
+        app.header = Tpl(
+            className='w-full',
+            tpl='<div class="flex justify-between"><div></div>'
+                f'<div><a href="{fastapi_amis_admin.__url__}" target="_blank" '
+                'title="Copyright"><i class="fa fa-github fa-2x"></i></a></div></div>'
+        )
         app.footer = '<div class="p-2 text-center bg-light">Copyright © 2021 - 2022  ' \
                      f'<a href="{fastapi_amis_admin.__url__}" target="_blank" ' \
                      'class="link-secondary">fastapi-amis-admin</a>. All rights reserved. ' \

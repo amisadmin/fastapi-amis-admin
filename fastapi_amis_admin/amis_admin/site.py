@@ -44,13 +44,16 @@ class HomeAdmin(PageAdmin):
 
     async def get_page(self, request: Request) -> Page:
         page = await super().get_page(request)
-        page.body = Property(title='Information', items=[
-            Property.Item(label='system', content=platform.system()),
-            Property.Item(label='python', content=platform.python_version()),
-            Property.Item(label='program', content='fastapi-amis-admin'),
-            Property.Item(label='version', content=fastapi_amis_admin.__version__),
-            Property.Item(label='license', content='Apache2.0'),
-        ])
+        page.body = Property(
+            title='Information',
+            items=[
+                Property.Item(label='system', content=platform.system()),
+                Property.Item(label='python', content=platform.python_version()),
+                Property.Item(label='program', content='fastapi-amis-admin'),
+                Property.Item(label='version', content=fastapi_amis_admin.__version__),
+                Property.Item(label='license', content='Apache2.0'),
+            ]
+        )
         return page
 
 
@@ -89,8 +92,10 @@ class FileAdmin(RouterAdmin):
                     return BaseApiOut(status=-2, msg='The file size exceeds the limit')
                 async with aiofiles.open(file_path, "wb") as f:
                     await f.write(res)
-                return BaseApiOut(data=self.UploadOutSchema(filename=filename,
-                                                            url=self.static_path + '/' + filename))
+                return BaseApiOut(
+                    data=self.UploadOutSchema(filename=filename, url=f'{self.static_path}/{filename}'),
+                )
+
             except Exception as e:
                 return BaseApiOut(status=-1, msg=str(e))
 
