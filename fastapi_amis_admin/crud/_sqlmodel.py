@@ -206,7 +206,7 @@ class SQLModelCrud(BaseCrud, SQLModelSelector):
 
     async def on_create_pre(self, request: Request, obj: BaseModel, **kwargs) -> Dict[str, Any]:
         data_dict = obj.dict()  # exclude=set(self.pk)
-        if not data_dict.get(self.pk_name):
+        if self.pk_name in data_dict and not data_dict.get(self.pk_name):
             del data_dict[self.pk_name]
         return data_dict
 
