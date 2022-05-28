@@ -41,8 +41,8 @@ dependencies = [
     "python-multipart>=0.0.5",
     "SQLAlchemy<=1.4.35",
     "aiofiles",
+    "fastapi-amis-admin-cli",
 ]
-
 
 
 [project.urls]
@@ -51,6 +51,9 @@ Source = "https://github.com/amisadmin/fastapi_amis_admin"
 FastAPI-User-Auth = "https://github.com/amisadmin/fastapi_user_auth"
 
 [project.optional-dependencies]
+standard = [
+    "uvicorn[standard] >=0.12.0,<0.16.0",
+]
 test = [
     "pytest >=6.2.4,<7.0.0",
     "aiosqlite",
@@ -60,7 +63,15 @@ dev = [
     "aiosqlite",
     "uvicorn[standard] >=0.12.0,<0.16.0",
 ]
+auth = [
+    "fastapi-user-auth",
+]
+job = [
+    "fastapi-scheduler",
+]
 all = [
     "jinja2 >=2.11.2,<4.0.0",
     "uvicorn[standard] >=0.12.0,<0.16.0",
+    "fastapi-scheduler",
+    "fastapi-user-auth",
 ]
