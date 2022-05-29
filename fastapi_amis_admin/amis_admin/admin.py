@@ -632,7 +632,7 @@ class IframeAdmin(PageSchemaAdmin):
     def get_page_schema(self) -> Optional[PageSchema]:
         if super().get_page_schema():
             iframe = self.iframe or Iframe(src=self.src)
-            self.page_schema.url = re.sub(r"^https?://", "", iframe.src)
+            self.page_schema.url = re.sub(r"^https?:", "", iframe.src)
             self.page_schema.schema_ = Page(body=iframe)
         return self.page_schema
 
