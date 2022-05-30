@@ -81,7 +81,9 @@ nav:
           - tutorials/basic/i18n.md
           - tutorials/basic/_more.md
       - 高级教程:
+          - tutorials/advanced/cli.md
           - tutorials/advanced/permission.md
+          - tutorials/advanced/user-auth.md
           - tutorials/advanced/scheduler.md
           - tutorials/advanced/AdminApp.md
           - tutorials/advanced/structure.md

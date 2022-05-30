@@ -200,6 +200,22 @@ if __name__ == '__main__':
     uvicorn.run(app, debug=True)
 ```
 
+## Working with Command
+
+```bash
+# View help
+faa --help
+
+# Initialize a `FastAPI-Amis-Admin` project
+faa new project_name --init
+
+# Initialize a `FastAPI-Amis-Admin` application
+faa new app_name
+
+# Fast running project
+faa run
+```
+
 ## Preview
 
 - Open `http://127.0.0.1:8000/admin/` in your browser:
