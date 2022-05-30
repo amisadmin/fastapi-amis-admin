@@ -200,11 +200,11 @@ if __name__ == '__main__':
 
 - Open `http://127.0.0.1:8000/admin/` in your browser:
 
-![ModelAdmin](https://raw.githubusercontent.com/amisadmin/fastapi_amis_admin_demo/master/upload/img/ModelAdmin.png)
+![ModelAdmin](https://s2.loli.net/2022/03/20/ItgFYGUONm1jCz5.png)
 
 - Open `http://127.0.0.1:8000/admin/docs` in your browser:
 
-![Docs](https://raw.githubusercontent.com/amisadmin/fastapi_amis_admin_demo/master/upload/img/Docs.png)
+![Docs](https://s2.loli.net/2022/03/20/1GcCiPdmXayxrbH.png)
 
 ## 相关项目
 

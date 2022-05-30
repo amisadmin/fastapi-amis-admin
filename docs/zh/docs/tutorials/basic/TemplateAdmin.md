@@ -33,4 +33,4 @@ class SimpleTemplateAdmin(admin.TemplateAdmin):
 
 - [TemplateAdmin](/amis_admin/TemplateAdmin/)
 
-- [fastapi_amis_admin_demo/admin.py at master · amisadmin/fastapi_amis_admin_demo (github.com)](https://github.com/amisadmin/fastapi_amis_admin_demo/blob/master/apps/demo/admin.py)
+- [fastapi_amis_admin_demo](https://github.com/amisadmin/fastapi_amis_admin_demo/)

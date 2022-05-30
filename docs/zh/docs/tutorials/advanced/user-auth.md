@@ -165,13 +165,13 @@ class ArticleAdmin(admin.ModelAdmin):
 
 - Open `http://127.0.0.1:8000/admin/auth/form/login` in your browser:
 
-![Login](https://raw.githubusercontent.com/amisadmin/fastapi_amis_admin_demo/master/upload/img/fastapi-user-auth-login.png)
+![Login](https://s2.loli.net/2022/03/20/SZy6sjaVlBT8gin.png)
 
 - Open `http://127.0.0.1:8000/admin/` in your browser:
 
-![Admin](https://raw.githubusercontent.com/amisadmin/fastapi_amis_admin_demo/master/upload/img/fastapi-user-auth-admin.png)
+![ModelAdmin](https://s2.loli.net/2022/03/20/ItgFYGUONm1jCz5.png)
 
 - Open `http://127.0.0.1:8000/admin/docs` in your browser:
 
-![Docs](https://raw.githubusercontent.com/amisadmin/fastapi_amis_admin_demo/master/upload/img/fastapi-user-auth-docs.png)
+![Docs](https://s2.loli.net/2022/03/20/1GcCiPdmXayxrbH.png)
 
