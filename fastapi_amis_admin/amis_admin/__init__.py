@@ -17,6 +17,8 @@ from .admin import (
     RouterAdmin,
     TemplateAdmin,
 )
+from .parser import AmisParser
+from .settings import Settings
 from .site import (
     AdminSite,
     DocsAdmin,

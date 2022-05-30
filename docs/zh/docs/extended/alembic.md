@@ -31,7 +31,7 @@ target_metadata = SQLModel.metadata
 
 ```ini
 # 修改成项目的异步数据库连接
-sqlalchemy.url = sqlite+aiosqlite:///admisadmin.db
+sqlalchemy.url = sqlite+aiosqlite:///amisadmin.db
 ```
 
 ## 生成迁移文件

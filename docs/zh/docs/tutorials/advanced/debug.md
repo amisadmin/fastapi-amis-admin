@@ -7,13 +7,13 @@
 1.通过`Settings`对象中的`debug`属性进行全局调试配置
 
 ```python
-site = AdminSite(settings=Settings(debug=False, database_url_async='sqlite+aiosqlite:///admisadmin.db'))
+site = AdminSite(settings=Settings(debug=False, database_url_async='sqlite+aiosqlite:///amisadmin.db'))
 ```
 
 2.自定义`FastAPI`对象,并且关闭`debug`
 
 ```python
-site = AdminSite(settings=Settings(debug=False, database_url_async='sqlite+aiosqlite:///admisadmin.db'),
+site = AdminSite(settings=Settings(debug=False, database_url_async='sqlite+aiosqlite:///amisadmin.db'),
                  fastapi=FastAPI(debug=False))
 ```
 
@@ -21,7 +21,7 @@ site = AdminSite(settings=Settings(debug=False, database_url_async='sqlite+aiosq
 
 ```python
 site = AdminSite(settings=Settings(debug=False),
-                 engine=create_async_engine('sqlite+aiosqlite:///admisadmin.db', echo=False, future=True))
+                 engine=create_async_engine('sqlite+aiosqlite:///amisadmin.db', echo=False, future=True))
 ```
 
 ## ApiDocs

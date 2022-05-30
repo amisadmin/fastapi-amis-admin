@@ -31,7 +31,7 @@ from fastapi_amis_admin.amis_admin.site import AdminSite
 
 site = AdminSite(
     # 基本配置
-    settings=Settings(debug=True, database_url_async='sqlite+aiosqlite:///admisadmin.db'),
+    settings=Settings(debug=True, database_url_async='sqlite+aiosqlite:///amisadmin.db'),
     # fastapi相关配置
     fastapi=FastAPI(debug=True, docs_url='/admin_docs', redoc_url='/admin_redoc')
 )
@@ -69,7 +69,7 @@ class NewAdminSite(AdminSite):
 
 
 # 通过自定义管理站点类创建后台管理系统实例
-site = NewAdminSite(settings=Settings(debug=True, database_url_async='sqlite+aiosqlite:///admisadmin.db'))
+site = NewAdminSite(settings=Settings(debug=True, database_url_async='sqlite+aiosqlite:///amisadmin.db'))
 ```
 
 - 通过修改`template_name`字段,你可以自定义后台界面模板. 例如: 修改静态资源链接以加快网络访问速度, 修改后台展示样式.

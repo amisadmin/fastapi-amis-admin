@@ -92,7 +92,7 @@ from fastapi_amis_admin.amis_admin.site import AdminSite
 app = FastAPI()
 
 # create AdminSite instance
-site = AdminSite(settings=Settings(database_url_async='sqlite+aiosqlite:///admisadmin.db'))
+site = AdminSite(settings=Settings(database_url_async='sqlite+aiosqlite:///amisadmin.db'))
 
 # mount AdminSite instance
 site.mount_app(app)
@@ -117,7 +117,7 @@ from fastapi_amis_admin.models.fields import Field
 app = FastAPI()
 
 # create AdminSite instance
-site = AdminSite(settings=Settings(database_url_async='sqlite+aiosqlite:///admisadmin.db'))
+site = AdminSite(settings=Settings(database_url_async='sqlite+aiosqlite:///amisadmin.db'))
 
 
 # Create an SQLModel, see document for details: https://sqlmodel.tiangolo.com/
@@ -169,7 +169,7 @@ from fastapi_amis_admin.models.fields import Field
 app = FastAPI()
 
 # create AdminSite instance
-site = AdminSite(settings=Settings(database_url_async='sqlite+aiosqlite:///admisadmin.db'))
+site = AdminSite(settings=Settings(database_url_async='sqlite+aiosqlite:///amisadmin.db'))
 
 
 # register FormAdmin

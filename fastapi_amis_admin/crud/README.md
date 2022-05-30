@@ -32,7 +32,7 @@ class Article(SQLModel, table=True):
 
 
 # 2.创建 AsyncSession
-database_url = 'sqlite+aiosqlite:///admisadmin.db'
+database_url = 'sqlite+aiosqlite:///amisadmin.db'
 engine: AsyncEngine = create_async_engine(database_url, future=True, pool_recycle=1200)
 session_maker: sessionmaker = sessionmaker(engine, class_=AsyncSession,
                                            expire_on_commit=False, autocommit=False, autoflush=False)

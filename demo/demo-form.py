@@ -15,7 +15,7 @@ from fastapi_amis_admin.models.fields import Field
 app = FastAPI()
 
 # 创建AdminSite实例
-site = AdminSite(settings=Settings(database_url_async='sqlite+aiosqlite:///admisadmin.db', language='zh_CN'))
+site = AdminSite(settings=Settings(database_url_async='sqlite+aiosqlite:///amisadmin.db', language='zh_CN'))
 
 
 # 注册FormAdmin

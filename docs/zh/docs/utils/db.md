@@ -13,7 +13,7 @@
 
 ```python
 from sqlalchemy.ext.asyncio import create_async_engine
-engine = create_async_engine("sqlite+aiosqlite:///admisadmin.db", future=True)
+engine = create_async_engine("sqlite+aiosqlite:///amisadmin.db", future=True)
 # engine = create_async_engine("mysql+aiomysql://amisadmin:amisadmin@127.0.0.1:3306/amisadmin?charset=utf8mb4", future=True)
 # engine = create_async_engine("postgresql+asyncpg://user:pass@host/dbname", future=True)
 ```
@@ -50,7 +50,7 @@ async def session_factory(self) -> AsyncGenerator[AsyncSession, Any]:
 
 ```python
 from sqlalchemy import create_engine
-engine = create_engine("sqlite+pysqlite:///admisadmin.db", echo=True, future=True)
+engine = create_engine("sqlite+pysqlite:///amisadmin.db", echo=True, future=True)
 # engine = create_async_engine("mysql+pymysql://amisadmin:amisadmin@127.0.0.1:3306/amisadmin?charset=utf8mb4", future=True)
 # engine = create_async_engine("postgresql+psycopg2://user:pass@host/dbname", future=True)
 

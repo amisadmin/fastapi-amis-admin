@@ -88,7 +88,7 @@ from fastapi_amis_admin.amis_admin.site import AdminSite
 app = FastAPI()
 
 # 创建AdminSite实例
-site = AdminSite(settings=Settings(database_url_async='sqlite+aiosqlite:///admisadmin.db'))
+site = AdminSite(settings=Settings(database_url_async='sqlite+aiosqlite:///amisadmin.db'))
 
 # 挂载后台管理系统
 site.mount_app(app)
@@ -113,7 +113,7 @@ from fastapi_amis_admin.models.fields import Field
 app = FastAPI()
 
 # 创建AdminSite实例
-site = AdminSite(settings=Settings(database_url_async='sqlite+aiosqlite:///admisadmin.db'))
+site = AdminSite(settings=Settings(database_url_async='sqlite+aiosqlite:///amisadmin.db'))
 
 
 # 先创建一个SQLModel模型,详细请参考: https://sqlmodel.tiangolo.com/
@@ -165,7 +165,7 @@ from fastapi_amis_admin.models.fields import Field
 app = FastAPI()
 
 # 创建AdminSite实例
-site = AdminSite(settings=Settings(database_url_async='sqlite+aiosqlite:///admisadmin.db'))
+site = AdminSite(settings=Settings(database_url_async='sqlite+aiosqlite:///amisadmin.db'))
 
 
 # 注册FormAdmin

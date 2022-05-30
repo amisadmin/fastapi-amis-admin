@@ -125,7 +125,7 @@ async def verify_token(x_token: str = Header(...)):
     if x_token != "fake-super-secret-token":
         raise HTTPException(status_code=400, detail="X-Token header invalid")
 
-site = AdminSite(settings=Settings(debug=True, database_url_async='sqlite+aiosqlite:///admisadmin.db'),
+site = AdminSite(settings=Settings(debug=True, database_url_async='sqlite+aiosqlite:///amisadmin.db'),
                  fastapi=FastAPI(dependencies=[Depends(verify_token)]))
 
 ```
@@ -155,7 +155,7 @@ app = FastAPI()
 
 # 创建AdminSite实例
 site = AuthAdminSite(
-    settings=Settings(database_url_async='sqlite+aiosqlite:///admisadmin.db')
+    settings=Settings(database_url_async='sqlite+aiosqlite:///amisadmin.db')
 )
 auth = site.auth
 # 挂载后台管理系统

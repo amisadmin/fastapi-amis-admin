@@ -10,7 +10,7 @@ from fastapi_amis_admin.models.fields import Field
 app = FastAPI()
 
 # 创建AdminSite实例
-site = AdminSite(settings=Settings(database_url_async='sqlite+aiosqlite:///admisadmin.db'))
+site = AdminSite(settings=Settings(database_url_async='sqlite+aiosqlite:///amisadmin.db'))
 
 
 # 先创建一个SQLModel模型,详细请参考: https://sqlmodel.tiangolo.com/
