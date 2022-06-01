@@ -10,7 +10,7 @@ alembic init -t async migrations
 
 ## 修改配置文件
 
-- env文件路径: `project/migrations/env.py`
+- env文件路径: `backend/migrations/env.py`
 
 ```python
 # 导入SQLModel
@@ -27,7 +27,7 @@ target_metadata = SQLModel.metadata
 
 ```
 
-- ini文件路径: `project/alembic.ini`
+- ini文件路径: `backend/alembic.ini`
 
 ```ini
 # 修改成项目的异步数据库连接
@@ -39,7 +39,7 @@ sqlalchemy.url = sqlite+aiosqlite:///amisadmin.db
 - 执行命令, 生成sqlModel 初始化迁移文件
 
 ```bash
-alembic revision --autogenerate -m "init"
+alembic revision --autogenerate
 ```
 
 ## 更新数据库
@@ -55,8 +55,7 @@ alembic upgrade head
 
 ```bash
 - 执行命令, 生成sqlModel 更新迁移文件
-- "add year" 修改备注,每次命名不能重复!
-alembic revision --autogenerate -m "add year"  
+alembic revision --autogenerate
 
 - 执行命令, 更新数据库: alembic_version
 alembic upgrade head
