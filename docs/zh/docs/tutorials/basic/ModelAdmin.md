@@ -11,6 +11,7 @@ class Category(SQLModel, table=True):
     name: str = Field(title='CategoryName')
     description: str = Field(default='', title='Description')
 
+
 # 注册ModelAdmin
 @site.register_admin
 class CategoryAdmin(admin.ModelAdmin):
@@ -43,8 +44,7 @@ class Article(SQLModel, table=True):
     content: str = Field(title='ArticleContent')
     # 关联Category模型,模型定义参考[示例-1]
     category_id: Optional[int] = Field(default=None, foreign_key="category.id", title='CategoryId')
-    category: Optional[Category] = Relationship(back_populates="articles")
-
+    # category: Optional[Category] = Relationship(back_populates="articles")
 
 
 @site.register_admin
@@ -55,11 +55,11 @@ class ArticleAdmin(admin.ModelAdmin):
     list_display = [Article.id, Article.title, Article.description, Article.status, Category.name]
     # 设置模糊搜索字段
     search_fields = [Article.title, Category.name]
-	# 自定义基础选择器
+
+    # 自定义基础选择器
     async def get_select(self, request: Request) -> Select:
         stmt = await super().get_select(request)
-        stmt.join(Category, Article.category_id == Category.id, isouter=True)
-        return stmt
+        return stmt.outerjoin(Category, Article.category_id == Category.id)
 ```
 
 示例2相比于示例1显得更为复杂. 但是如果你熟悉`Django-Admin`你会发现他们非常的相似,是的. `fastapi_amis_admin`启发自`Django-Admin`,所以很多功能的设计都与之类似, 并且`fastapi_amis_admin`
@@ -98,6 +98,7 @@ class ArticleAdmin(admin.ModelAdmin):
 |     自定义批量查询只读字段     |         `readonly_fields`          |                                             |
 |   自定义批量查询每页的数据量   |          `list_per_page`           |                                             |
 |  自定义批量查询模糊搜索的字段  |          `search_fields`           |                                             |
+|      自定义新增模型的字段      |          `create_fields`           |                                             |
 |    自定义支持批量编辑的字段    |         `bulk_edit_fields`         |                                             |
 |     自定义新增模型数据表单     |         `get_create_form`          |                                             |
 |     自定义更新模型数据表单     |         `get_update_form`          |                                             |
@@ -119,13 +120,17 @@ class ArticleAdmin(admin.ModelAdmin):
 ## 更多用法
 
 `ModelAdmin`的用法非常灵活,这里仅仅展示了最为基本的用法,你可以阅读[API文档](/amis_admin/ModelAdmin/)
-或参考[demo程序](https://github.com/amisadmin/fastapi_amis_admin_demo/blob/master/apps/blog/admin.py)了解更为详细的用法.后续将会陆续补充具体的应用场景示例.
+或参考[demo程序](https://github.com/amisadmin/fastapi_amis_admin_demo/)了解更为详细的用法.后续将会陆续补充具体的应用场景示例.
 如果你有较好的应用示例或教程文档,可以通过github提交,非常感谢你的支持!`fastapi_amis_admin`将会做的更好!
 
-- [amisadmin/fastapi_amis_admin_demo (github.com)](https://github.com/amisadmin/fastapi_amis_admin_demo)
+- [FastAPI-Amis-Admin-Demo](https://github.com/amisadmin/fastapi_amis_admin_demo)
+
+- [FastAPI-User-Auth-Demo](https://github.com/amisadmin/fastapi_user_auth_demo)
+
 - [ModelAdmin - FastAPI-Amis-Admin](/amis_admin/ModelAdmin/)
 
 - [SQLModelCrud - FastAPI-Amis-Admin](/fastapi_amis_admin/crud/SQLModelCrud/)
+
 - [Table 表格 (gitee.io)](https://baidu.gitee.io/amis/zh-CN/components/table)
 
 !!! note annotate "关于fastapi_amis_admin与django-admin"
