@@ -86,36 +86,37 @@ class ArticleAdmin(admin.ModelAdmin):
 
 目前`fastapi-amis-admin`中的模型管理类`ModelAdmin`已支持功能包括但不限于以下列表.
 
-|              功能              |           相关字段或方法           |                    备注                     |
-| :----------------------------: | :--------------------------------: | :-----------------------------------------: |
-|       自定义批量查询字段       |        `fields`, `exclude`         |                                             |
-|     自定义批量查询展示字段     | `list_display`, `get_list_display` |  支持展示类型为图片,音频,视频,列表,`Json`   |
-|     自定义批量查询过滤表单     |           `list_filter`            | 支持文本精准/模糊匹配,时间范围过滤,多选过滤 |
-|     自定义批量查询排序字段     |             `ordering`             |                                             |
-|         自定义模型主键         |             `pk_name`              |                                             |
-|      自定义批量查询选择器      |            `get_select`            |         支持`Jion`其他数据库表模型          |
-|        自定义模型数据库        |         `session_factory`          |                                             |
-|     自定义批量查询只读字段     |         `readonly_fields`          |                                             |
-|   自定义批量查询每页的数据量   |          `list_per_page`           |                                             |
-|  自定义批量查询模糊搜索的字段  |          `search_fields`           |                                             |
-|      自定义新增模型的字段      |          `create_fields`           |                                             |
-|    自定义支持批量编辑的字段    |         `bulk_edit_fields`         |                                             |
-|     自定义新增模型数据表单     |         `get_create_form`          |                                             |
-|     自定义更新模型数据表单     |         `get_update_form`          |                                             |
-|   自定义新增模型数据执行动作   |        `get_create_action`         |                                             |
-|   自定义更新模型数据执行动作   |        `get_update_action`         |                                             |
-|   自定义删除模型数据执行动作   |        `get_delete_action`         |                                             |
-|   自定义批量查询数据返回协议   |           `schema_list`            |                                             |
+|       功能        |              相关字段或方法               |                    备注                     |
+|:---------------:|:----------------------------------:| :-----------------------------------------: |
+|    自定义批量查询字段    |        `fields`, `exclude`         |                                             |
+|   自定义批量查询展示字段   | `list_display`, `get_list_display` |  支持展示类型为图片,音频,视频,列表,`Json`   |
+|   自定义批量查询过滤表单   |           `list_filter`            | 支持文本精准/模糊匹配,时间范围过滤,多选过滤 |
+|   自定义批量查询排序字段   |             `ordering`             |                                             |
+|     自定义模型主键     |             `pk_name`              |                                             |
+|   自定义批量查询选择器    |            `get_select`            |         支持`Jion`其他数据库表模型          |
+|    自定义模型数据库     |         `session_factory`          |                                             |
+|   自定义批量查询只读字段   |         `readonly_fields`          |                                             |
+|  自定义批量查询每页的数据量  |          `list_per_page`           |                                             |
+| 自定义批量查询模糊搜索的字段  |          `search_fields`           |                                             |
+|   自定义新增模型的字段    |          `create_fields`           |                                             |
+|    自定义支持编辑的字段   |        `update_fields`             |                                             |
+|  自定义支持批量编辑的字段   |        `bulk_update_fields`        |                                             |
+|   自定义新增模型数据表单   |         `get_create_form`          |                                             |
+|   自定义更新模型数据表单   |         `get_update_form`          |                                             |
+|  自定义新增模型数据执行动作  |        `get_create_action`         |                                             |
+|  自定义更新模型数据执行动作  |        `get_update_action`         |                                             |
+|  自定义删除模型数据执行动作  |        `get_delete_action`         |                                             |
+|  自定义批量查询数据返回协议  |           `schema_list`            |                                             |
 | 自定义批量查询数据过滤提交协议 |          `schema_filter`           |                                             |
-|     自定义创建数据提交协议     |          `schema_create`           |                                             |
-|     自定义读取数据返回协议     |           `schema_read`            |                                             |
-|     自定义更新数据提交协议     |          `schema_update`           |                                             |
-|       自定义批量查询权限       |       `has_list_permission`        |                                             |
-|       自定义单项查询权限       |       `has_read_permission`        |                                             |
-|       自定义创建数据权限       |      `has_create_permission`       |                                             |
-|       自定义更新数据权限       |      `has_update_permission`       |                                             |
-|       自定义删除数据权限       |      `has_delete_permission`       |                                             |
-|                                |                                    |                                             |
+|   自定义创建数据提交协议   |          `schema_create`           |                                             |
+|   自定义读取数据返回协议   |           `schema_read`            |                                             |
+|   自定义更新数据提交协议   |          `schema_update`           |                                             |
+|    自定义批量查询权限    |       `has_list_permission`        |                                             |
+|    自定义单项查询权限    |       `has_read_permission`        |                                             |
+|    自定义创建数据权限    |      `has_create_permission`       |                                             |
+|    自定义更新数据权限    |      `has_update_permission`       |                                             |
+|    自定义删除数据权限    |      `has_delete_permission`       |                                             |
+|                 |                                    |                                             |
 
 ## 更多用法
 

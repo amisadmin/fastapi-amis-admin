@@ -252,7 +252,7 @@ class BaseModelAdmin(SQLModelCrud):
     list_per_page: int = 10  # 每页数据量
     link_model_fields: List[InstrumentedAttribute] = []  # 内联字段
     link_model_forms: List[LinkModelForm] = []
-    bulk_edit_fields: List[Union[SQLModelListField, FormItem]] = []  # 批量编辑字段
+    bulk_update_fields: List[Union[SQLModelListField, FormItem]] = []  # 批量编辑字段
     search_fields: List[SQLModelField] = []  # 模糊搜索字段
     create_fields: List[InstrumentedAttribute] = []  # 新增数据字段
 
@@ -457,7 +457,7 @@ class BaseModelAdmin(SQLModelCrud):
             fields = self.schema_update.__fields__.values()
         else:
             api = f'put:{self.router_path}/item/' + '${ids|raw}'
-            fields = self.bulk_edit_fields
+            fields = self.bulk_update_fields
         return Form(
             api=api,
             name=CrudEnum.update,
@@ -508,7 +508,7 @@ class BaseModelAdmin(SQLModelCrud):
                 ),
             )
 
-        elif self.bulk_edit_fields:
+        elif self.bulk_update_fields:
             return ActionType.Dialog(
                 label=_('Bulk Update'),
                 dialog=Dialog(

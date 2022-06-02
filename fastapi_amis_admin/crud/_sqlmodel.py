@@ -162,6 +162,7 @@ class SQLModelSelector:
 class SQLModelCrud(BaseCrud, SQLModelSelector):
     session_factory: Callable[..., AsyncGenerator[AsyncSession, Any]] = None
     readonly_fields: List[SQLModelListField] = []  # 只读字段
+    update_fields: List[SQLModelListField] = []  # 可编辑字段
 
     def __init__(
             self,
@@ -178,7 +179,10 @@ class SQLModelCrud(BaseCrud, SQLModelSelector):
             modelfields = list(filter(None, [self.parser.get_modelfield(insfield, deepcopy=True)
                                              for insfield in self._list_fields_ins.values()]))
             self.schema_list = schema_create_by_modelfield(
-                schema_name=f'{self.schema_name_prefix}List', modelfields=modelfields, set_none=True)
+                schema_name=f'{self.schema_name_prefix}List',
+                modelfields=modelfields,
+                set_none=True
+            )
         if not self.schema_filter:
             modelfields = list(filter(None, [self.parser.get_modelfield(insfield, deepcopy=True)
                                              for insfield in self._list_fields_ins.values()]))
@@ -190,13 +194,23 @@ class SQLModelCrud(BaseCrud, SQLModelSelector):
                     modelfield.outer_type_ = str
                     modelfield.validators = []
             self.schema_filter = schema_create_by_modelfield(
-                schema_name=f'{self.schema_name_prefix}Filter', modelfields=modelfields, set_none=True)
+                schema_name=f'{self.schema_name_prefix}Filter',
+                modelfields=modelfields,
+                set_none=True
+            )
         self.schema_read = self.schema_read or self.schema_list
-        if self.readonly_fields and not self.schema_update:
-            exclude = {self.parser.get_modelfield(ins).name for ins in
-                       self.parser.filter_insfield(self.readonly_fields)}
-            self.schema_update = schema_create_by_schema(self.schema_model, f'{self.schema_name_prefix}Update',
-                                                         exclude={*exclude, self.pk_name}, set_none=True)
+        if not self.schema_update and (self.readonly_fields or self.update_fields):
+            include = {self.parser.get_modelfield(ins).name
+                       for ins in self.parser.filter_insfield(self.update_fields)} - {self.pk_name}
+            exclude = {self.parser.get_modelfield(ins).name
+                       for ins in self.parser.filter_insfield(self.readonly_fields)} | {self.pk_name}
+            self.schema_update = schema_create_by_schema(
+                schema_cls=self.schema_model,
+                schema_name=f'{self.schema_name_prefix}Update',
+                include=include,
+                exclude=exclude,
+                set_none=True
+            )
 
     @property
     def schema_name_prefix(self):

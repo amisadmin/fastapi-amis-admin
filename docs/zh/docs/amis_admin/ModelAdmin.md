@@ -31,7 +31,11 @@
 
 - 表格中支持文本模糊搜索的字段列表,默认为:[]
 
-#### bulk_edit_fields
+#### update_fields
+
+- 表格中支持编辑的字段列表,默认为:[]
+
+#### bulk_update_fields
 
 - 表格中支持批量编辑的字段列表,默认为:[]
 
@@ -50,8 +54,8 @@
 - 返回表格列表显示的字段列表.
 
 ```python
-async def get_list_display(self, 
-                     request: Request) -> List[Union[SQLModelListField, TableCRUD.Column]]
+async def get_list_display(self,
+                           request: Request) -> List[Union[SQLModelListField, TableCRUD.Column]]
 ```
 
 #### get_list_filter
@@ -69,8 +73,8 @@ async def get_list_filter(self, request: Request) -> List[Union[SQLModelListFiel
 - 参考: [Table 表格](https://baidu.gitee.io/amis/zh-CN/components/table#列配置属性表)
 
 ```python
-async def get_list_column(self, request: Request, 
-                    modelfield: ModelField) -> TableColumn
+async def get_list_column(self, request: Request,
+                          modelfield: ModelField) -> TableColumn
 ```
 
 #### get_list_columns
@@ -107,9 +111,9 @@ async def get_list_table(self, request: Request) -> TableCRUD
 - 参考: [FormItem 普通表单项 (gitee.io)](https://baidu.gitee.io/amis/zh-CN/components/form/formitem)
 
 ```python
-async def get_form_item(self, request: Request, 
-                  modelfield: ModelField, 
-                  action: CrudEnum) -> Union[FormItem, SchemaNode]
+async def get_form_item(self, request: Request,
+                        modelfield: ModelField,
+                        action: CrudEnum) -> Union[FormItem, SchemaNode]
 ```
 
 #### get_form_item_on_foreign_key
@@ -117,8 +121,8 @@ async def get_form_item(self, request: Request,
 - 返回页面表单`foreign_key`字段的`amis` `FormItem`对象.
 
 ```python
-async def get_form_item_on_foreign_key(self, 
-                                 modelfield: ModelField) -> Union[Service, SchemaNode]
+async def get_form_item_on_foreign_key(self,
+                                       modelfield: ModelField) -> Union[Service, SchemaNode]
 ```
 
 #### get_link_model_forms
