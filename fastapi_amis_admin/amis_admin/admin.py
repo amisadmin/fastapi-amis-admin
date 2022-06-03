@@ -582,12 +582,14 @@ class BaseAdmin:
 
 
 class PageSchemaAdmin(BaseAdmin):
-    group_schema: Union[PageSchema, str] = PageSchema()
+    group_schema: Union[PageSchema, str] = None
     page_schema: Union[PageSchema, str] = PageSchema()
 
     def __init__(self, app: "AdminApp"):
         super().__init__(app)
         self.page_schema = self.get_page_schema()
+        if self.page_schema:
+            self.page_schema.url = self.page_schema.url.replace(self.site.settings.site_url, '')
         self.group_schema = self.get_group_schema()
 
     async def has_page_permission(self, request: Request) -> bool:
@@ -632,7 +634,10 @@ class IframeAdmin(PageSchemaAdmin):
     def get_page_schema(self) -> Optional[PageSchema]:
         if super().get_page_schema():
             iframe = self.iframe or Iframe(src=self.src)
-            self.page_schema.url = re.sub(r"^https?:", "", iframe.src)
+            if iframe.src.startswith(self.site.settings.site_url):
+                self.page_schema.url = iframe.src
+            else:
+                self.page_schema.url = re.sub(r"^https?:", "", iframe.src)
             self.page_schema.schema_ = Page(body=iframe)
         return self.page_schema
 
