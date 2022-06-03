@@ -172,7 +172,7 @@ class Horizontal(AmisNode):
 class Action(AmisNode):
     """行为按钮"""
     type: str = "button"  # 指定为 Page 渲染器。 button  action
-    actionType: str  # 【必填】这是 action 最核心的配置，来指定该 action 的作用类型，支持：ajax、link、url、drawer、dialog、confirm、cancel、prev、next、copy、close。
+    actionType: str = None  # 【必填】这是 action 最核心的配置，来指定该 action 的作用类型，支持：ajax、link、url、drawer、dialog、confirm、cancel、prev、next、copy、close。
     label: str = None  # 按钮文本。可用 ${xxx} 取值。
     level: LevelEnum = None  # 按钮样式，支持：link、primary、secondary、info、success、warning、danger、light、dark、default。
     size: str = None  # 按钮大小，支持：xs、sm、md、lg。
@@ -193,6 +193,7 @@ class Action(AmisNode):
         bool, str] = None  # 当action配置在dialog或drawer的actions中时，配置为true指定此次操作完后关闭当前dialog或drawer。当值为字符串，并且是祖先层弹框的名字的时候，会把祖先弹框关闭掉。
     required: List[str] = None  # 配置字符串数组，指定在form中进行操作之前，需要指定的字段名的表单项通过验证
     # primary:bool=None
+    onClick: str = None  # 自定义点击事件 通过字符串形式的 onClick 来定义点击事件，这个字符串会转成 JavaScript 函数
 
 
 class ActionType:
@@ -414,6 +415,7 @@ class FormItem(AmisNode):
     requiredOn: Expression = None  # 过表达式来配置当前表单项是否为必填。
     validations: Union[Validation, Expression] = None  # 表单项值格式验证，支持设置多个，多个规则用英文逗号隔开。
     validateApi: Expression = None  # 表单校验接口
+    copyable: Union[bool, dict] = None  # 是否可复制  boolean 或 {icon: string, content:string}
 
 
 class Form(AmisNode):
@@ -719,7 +721,6 @@ class InputTable(FormItem):
     addable: bool = None  # False  # 是否可增加一行
     editable: bool = None  # False  # 是否可编辑
     removable: bool = None  # False  # 是否可删除
-    copyable: bool = None  # False  # 是否可复制
     showAddBtn: bool = None  # True  # 是否显示添加按钮
     addApi: API = None  # 新增时提交的 API
     updateApi: API = None  # 修改时提交的 API
@@ -1257,6 +1258,7 @@ class CRUD(AmisNode):
     alwaysShowPagination: bool = None  # 是否总是显示分页
     affixHeader: bool = None  # True  # 是否固定表头(table 下)
     autoGenerateFilter: bool = None  # 是否开启查询区域，开启后会根据列元素的 searchable 属性值，自动生成查询条件表单
+    itemAction: Action = None  # 实现点击某一行后进行自定义操作，支持 action 里的所有配置，比如弹框、刷新其它组件等。
 
 
 class TableColumn(AmisNode):
@@ -1267,7 +1269,7 @@ class TableColumn(AmisNode):
     name: str = None  # 通过名称关联数据
     tpl: Template = None  # 模板
     fixed: str = None  # 是否固定当前列 left|right|none
-    popOver: bool = None  # 弹出框
+    popOver: Union[bool, dict] = None  # 弹出框
     quickEdit: Union[bool, dict] = None  # 快速编辑
     copyable: Union[bool, dict] = None  # 是否可复制  boolean 或 {icon: string, content:string}
     sortable: bool = None  # False  # 是否可排序
@@ -1314,7 +1316,7 @@ class Table(AmisNode):
     itemActions: List[Action] = None  # 悬浮行操作按钮组
     itemCheckableOn: Expression = None  # 配置当前行是否可勾选的条件，要用 表达式
     itemDraggableOn: Expression = None  # 配置当前行是否可拖拽的条件，要用 表达式
-    checkOnItemClick: bool = False  # 点击数据行是否可以勾选当前行
+    checkOnItemClick: bool = None  # False  # 点击数据行是否可以勾选当前行
     rowClassName: str = None  # 给行添加 CSS 类名
     rowClassNameExpr: Template = None  # 通过模板给行添加 CSS 类名
     prefixRow: list = None  # 顶部总结行
