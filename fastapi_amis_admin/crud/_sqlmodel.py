@@ -146,6 +146,8 @@ class SQLModelSelector:
                     if len(value) < 2:
                         return None, None
                     return operator, tuple(map(python_type_parse, value))
+        elif isinstance(value, bool):
+            return operator, (value,)
         return operator, (python_type_parse(value),)
 
     def calc_filter_clause(self, data: Dict[str, Any]) -> List[BinaryExpression]:
