@@ -119,6 +119,7 @@ class AmisParser():
             pass
         elif issubclass(self.modelfield.type_, bool):
             kwargs['type'] = 'switch'
+            kwargs['filterable'] = {"options": [{"label": "是", "value": True}, {"label": "否", "value": False}]}
         elif issubclass(self.modelfield.type_, datetime.datetime):
             kwargs['type'] = 'datetime'
         elif issubclass(self.modelfield.type_, datetime.date):
@@ -127,6 +128,7 @@ class AmisParser():
             kwargs['type'] = 'time'
         elif issubclass(self.modelfield.type_, Choices):
             kwargs['type'] = 'mapping'
+            kwargs['filterable'] = {"options": [{"label": v, "value": k} for k, v in self.modelfield.type_.choices]}
             kwargs['map'] = {k: f"<span class='label label-{l}'>{v}</span>"
                              for (k, v), l in zip(self.modelfield.type_.choices, cyclic_generator(LabelEnum))}
         column = column or TableColumn(**kwargs)
@@ -134,6 +136,10 @@ class AmisParser():
         column.label = column.label or self.label
         column.remark = column.remark or self.remark
         column.sortable = True
+        if column.type in ['text', None]:
+            column.searchable = True
+        elif column.type in ['switch', 'mapping']:
+            column.sortable = False
         if quick_edit:
             column.quickEdit = self.as_form_item().dict(exclude_none=True, by_alias=True, exclude={'name', 'label'})
             column.quickEdit.update({"saveImmediately": True})
