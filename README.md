@@ -202,6 +202,9 @@ if __name__ == '__main__':
 ## 使用命令行
 
 ```bash
+# 安装命令行拓展
+pip install fastapi_amis_admin[cli]
+
 # 查看帮助
 faa --help
 

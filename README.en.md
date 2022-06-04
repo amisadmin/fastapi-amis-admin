@@ -203,6 +203,9 @@ if __name__ == '__main__':
 ## Working with Command
 
 ```bash
+# Install command line extension
+pip install fastapi_amis_admin[cli]
+
 # View help
 faa --help
 

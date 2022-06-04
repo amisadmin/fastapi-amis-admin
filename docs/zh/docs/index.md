@@ -196,6 +196,25 @@ if __name__ == '__main__':
     uvicorn.run(app, debug=True)
 ```
 
+## 使用命令行
+
+```bash
+# 安装命令行拓展
+pip install fastapi_amis_admin[cli]
+
+# 查看帮助
+faa --help
+
+# 初始化一个`FastAPI-Amis-Admin`项目
+faa new project_name --init
+
+# 初始化一个`FastAPI-Amis-Admin`应用
+faa new app_name
+
+# 快速运行项目
+faa run
+```
+
 ## 界面预览
 
 - Open `http://127.0.0.1:8000/admin/` in your browser:
