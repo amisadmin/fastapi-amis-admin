@@ -588,7 +588,7 @@ class PageSchemaAdmin(BaseAdmin):
     def __init__(self, app: "AdminApp"):
         super().__init__(app)
         self.page_schema = self.get_page_schema()
-        if self.page_schema:
+        if self.page_schema and self.page_schema.url:
             self.page_schema.url = self.page_schema.url.replace(self.site.settings.site_url, '')
         self.group_schema = self.get_group_schema()
 
@@ -957,7 +957,7 @@ class ModelAction(BaseFormAdmin, BaseModelAction):
         action.dialog.title = action.label
         action.dialog.body = Service(
             schemaApi=AmisAPI(
-                method='get',
+                method='post',
                 url=self.router_path + self.page_path + '?item_id=${IF(ids, ids, id)}',
                 responseData={
                     '&': '${body}',
