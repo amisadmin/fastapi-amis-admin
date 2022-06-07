@@ -3,7 +3,7 @@ from typing import Union, List, Optional, Any, Dict
 
 from pydantic import Field
 
-from .constants import LevelEnum, DisplayModeEnum, SizeEnum
+from .constants import LevelEnum, DisplayModeEnum, SizeEnum, TabsModeEnum
 from .types import API, Expression, AmisNode, SchemaNode, Template, BaseAmisModel, OptionsNode, Tpl
 from .utils import amis_templates
 
@@ -164,7 +164,7 @@ class Tabs(AmisNode):
     mountOnEnter: bool = None  # False  # 只有在点中 tab 的时候才渲染
     unmountOnExit: bool = None  # False  # 切换 tab 的时候销毁
     scrollable: bool = None  # False  # 是否导航支持内容溢出滚动，vertical和chrome模式下不支持该属性；chrome模式默认压缩标签（属性废弃）
-    tabsMode: str = None  # 展示模式，取值可以是 line、card、radio、vertical、chrome、simple、strong、tiled、sidebar
+    tabsMode: TabsModeEnum = None  # 展示模式，取值可以是 line、card、radio、vertical、chrome、simple、strong、tiled、sidebar
     addable: bool = None  # False  # 是否支持新增
     addBtnText: str = None  # "增加"  # 新增按钮文案
     closable: bool = None  # False  # 是否支持删除

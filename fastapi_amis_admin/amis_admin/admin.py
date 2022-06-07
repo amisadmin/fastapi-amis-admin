@@ -19,7 +19,7 @@ from starlette.templating import Jinja2Templates
 import fastapi_amis_admin
 from fastapi_amis_admin.amis.components import Page, TableCRUD, Action, ActionType, Dialog, Form, FormItem, Picker, \
     Remark, Service, Iframe, PageSchema, TableColumn, ColumnOperation, App, Tpl, InputExcel, InputTable
-from fastapi_amis_admin.amis.constants import LevelEnum, DisplayModeEnum, SizeEnum
+from fastapi_amis_admin.amis.constants import LevelEnum, DisplayModeEnum, SizeEnum, TabsModeEnum
 from fastapi_amis_admin.amis.types import BaseAmisApiOut, BaseAmisModel, AmisAPI, SchemaNode
 from fastapi_amis_admin.amis_admin.parser import AmisParser
 from fastapi_amis_admin.amis_admin.settings import Settings
@@ -638,7 +638,7 @@ class IframeAdmin(PageSchemaAdmin):
                 self.page_schema.url = iframe.src
             else:
                 self.page_schema.url = re.sub(r"^https?:", "", iframe.src)
-            self.page_schema.schema_ = Page(body=iframe)
+            self.page_schema.schema_ = iframe
         return self.page_schema
 
 
@@ -995,22 +995,22 @@ class ModelAction(BaseFormAdmin, BaseModelAction):
 
 
 class AdminApp(PageAdmin):
-    group_schema: Union[PageSchema, str] = None
+    """管理应用"""
     engine: AsyncEngine = None
     page_path = '/'
+    tabs_mode: TabsModeEnum = None
 
     def __init__(self, app: "AdminApp"):
         super().__init__(app)
-        self.engine = self.engine or self.app.site.engine
+        self.engine = self.engine or self.app.engine
         assert self.engine, 'engine is None'
         self.db = SqlalchemyAsyncClient(self.engine)
         self._pages_dict: Dict[str, Tuple[PageSchema, List[Union[PageSchema, BaseAdmin]]]] = {}
         self._admins_dict: Dict[Type[BaseAdmin], Optional[BaseAdmin]] = {}
 
-    def get_page_schema(self) -> Optional[PageSchema]:
-        if super().get_page_schema():
-            self.page_schema.schemaApi = None
-        return self.page_schema
+    @property
+    def router_prefix(self):
+        return f'/{self.__class__.__name__.lower()}'
 
     def create_admin_instance(self, admin_cls: Type[_BaseAdminT]) -> _BaseAdminT:
         admin = self._admins_dict.get(admin_cls)
@@ -1062,27 +1062,6 @@ class AdminApp(PageAdmin):
     def unregister_admin(self, *admin_cls: Type[BaseAdmin]):
         [self._admins_dict.pop(cls) for cls in admin_cls if cls]
 
-    async def get_page(self, request: Request) -> App:
-        app = App()
-        app.brandName = 'AmisAdmin'
-        app.header = Tpl(
-            className='w-full',
-            tpl='<div class="flex justify-between"><div></div>'
-                f'<div><a href="{fastapi_amis_admin.__url__}" target="_blank" '
-                'title="Copyright"><i class="fa fa-github fa-2x"></i></a></div></div>'
-        )
-        app.footer = '<div class="p-2 text-center bg-light">Copyright © 2021 - 2022  ' \
-                     f'<a href="{fastapi_amis_admin.__url__}" target="_blank" ' \
-                     'class="link-secondary">fastapi-amis-admin</a>. All rights reserved. ' \
-                     f'<a target="_blank" href="{fastapi_amis_admin.__url__}" ' \
-                     f'class="link-secondary" rel="noopener">v{fastapi_amis_admin.__version__}</a></div> '
-        # app.asideBefore = '<div class="p-2 text-center">菜单前面区域</div>'
-        # app.asideAfter = f'<div class="p-2 text-center">' \
-        #                  f'<a href="{fastapi_amis_admin.__url__}"  target="_blank">fastapi-amis-admin</a></div>'
-        children = await self.get_page_schema_children(request)
-        app.pages = [{'children': children}] if children else []
-        return app
-
     async def get_page_schema_children(self, request: Request) -> List[PageSchema]:
         children = []
         for group_label, (group_schema, admins_list) in self._pages_dict.items():
@@ -1090,7 +1069,7 @@ class AdminApp(PageAdmin):
             for admin in admins_list:
                 if admin and isinstance(admin, PageSchemaAdmin):
                     if await admin.has_page_permission(request):
-                        if isinstance(admin, AdminApp):
+                        if isinstance(admin, AdminApp) and admin.tabs_mode is None:
                             sub_children = await admin.get_page_schema_children(request)
                             if sub_children:
                                 page_schema = admin.page_schema.copy(deep=True)
@@ -1111,6 +1090,43 @@ class AdminApp(PageAdmin):
         if children:
             children.sort(key=lambda p: p.sort or 0, reverse=True)
         return children
+
+    def get_page_schema(self) -> Optional[PageSchema]:
+        if super().get_page_schema() and self.tabs_mode is None:
+            self.page_schema.schemaApi = None
+        return self.page_schema
+
+    async def get_page(self, request: Request) -> Union[Page, App]:
+        if self.tabs_mode is None:
+            return await self.get_page_as_app(request)
+        return await self.get_page_as_tabs(request)
+
+    async def get_page_as_app(self, request: Request) -> App:
+        app = App()
+        app.brandName = 'AmisAdmin'
+        app.header = Tpl(
+            className='w-full',
+            tpl='<div class="flex justify-between"><div></div>'
+                f'<div><a href="{fastapi_amis_admin.__url__}" target="_blank" '
+                'title="Copyright"><i class="fa fa-github fa-2x"></i></a></div></div>'
+        )
+        app.footer = '<div class="p-2 text-center bg-light">Copyright © 2021 - 2022  ' \
+                     f'<a href="{fastapi_amis_admin.__url__}" target="_blank" ' \
+                     'class="link-secondary">fastapi-amis-admin</a>. All rights reserved. ' \
+                     f'<a target="_blank" href="{fastapi_amis_admin.__url__}" ' \
+                     f'class="link-secondary" rel="noopener">v{fastapi_amis_admin.__version__}</a></div> '
+        # app.asideBefore = '<div class="p-2 text-center">菜单前面区域</div>'
+        # app.asideAfter = f'<div class="p-2 text-center">' \
+        #                  f'<a href="{fastapi_amis_admin.__url__}"  target="_blank">fastapi-amis-admin</a></div>'
+        children = await self.get_page_schema_children(request)
+        app.pages = [{'children': children}] if children else []
+        return app
+
+    async def get_page_as_tabs(self, request: Request) -> Page:
+        page = await super(AdminApp, self).get_page(request)
+        children = await self.get_page_schema_children(request)
+        page.body = PageSchema(children=children).as_tabs_item(tabs_extra=dict(tabsMode=self.tabs_mode, mountOnEnter=True)).tab
+        return page
 
 
 class BaseAdminSite(AdminApp):

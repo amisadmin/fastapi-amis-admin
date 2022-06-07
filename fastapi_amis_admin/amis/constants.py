@@ -49,3 +49,16 @@ class StatusEnum(str, Enum):
     pending = 'pending'  # 运行中
     queue = 'queue'  # 排队中
     schedule = 'schedule'  # 调度中
+
+
+class TabsModeEnum(str, Enum):
+    """选项卡模式"""
+    line = "line"
+    card = "card"
+    radio = "radio"
+    vertical = "vertical"
+    chrome = "chrome"
+    simple = "simple"
+    strong = "strong"
+    tiled = "tiled"
+    sidebar = "sidebar"
