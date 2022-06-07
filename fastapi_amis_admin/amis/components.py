@@ -1,5 +1,5 @@
 """详细文档阅读地址: https://baidu.gitee.io/amis/zh-CN/components"""
-from typing import Union, List, Optional, Any
+from typing import Union, List, Optional, Any, Dict
 
 from pydantic import Field
 
@@ -143,16 +143,19 @@ class Tabs(AmisNode):
 
     class Item(AmisNode):
         title: str = None  # Tab 标题
-        icon: Icon = None  # Tab 的图标
+        icon: Union[str, Icon] = None  # Tab 的图标
         tab: SchemaNode = None  # 内容区
         hash: str = None  # 设置以后将跟 url 的 hash 对应
         reload: bool = None  # 设置以后内容每次都会重新渲染，对于 crud 的重新拉取很有用
         unmountOnExit: bool = None  # 每次退出都会销毁当前 tab 栏内容
         className: str = None  # "bg-white b-l b-r b-b wrapper-md"  # Tab 区域样式
+        iconPosition: str = None  # "left"  # Tab 的图标位置 left / right
+        closable: bool = None  # False  # 是否支持删除，优先级高于组件的 closable
+        disabled: bool = None  # False  # 是否禁用
 
     type: str = "tabs"  # 指定为 Tabs 渲染器
     className: str = None  # 外层 Dom 的类名
-    mode: str = None  # 展示模式，取值可以是 line、card、radio、vertical
+    mode: str = None  # 展示模式，取值可以是 line、card、radio、vertical、chrome、simple、strong、tiled、sidebar
     tabsClassName: str = None  # Tabs Dom 的类名
     tabs: List[Item] = None  # tabs 内容
     source: str = None  # tabs 关联数据，关联后可以重复生成选项卡
@@ -160,7 +163,31 @@ class Tabs(AmisNode):
     toolbarClassName: str = None  # tabs 中工具栏的类名
     mountOnEnter: bool = None  # False  # 只有在点中 tab 的时候才渲染
     unmountOnExit: bool = None  # False  # 切换 tab 的时候销毁
-    scrollable: bool = None  # False  # 是否导航支持内容溢出滚动，vertical和chrome模式下不支持该属性；chrome模式默认压缩标签
+    scrollable: bool = None  # False  # 是否导航支持内容溢出滚动，vertical和chrome模式下不支持该属性；chrome模式默认压缩标签（属性废弃）
+    tabsMode: str = None  # 展示模式，取值可以是 line、card、radio、vertical、chrome、simple、strong、tiled、sidebar
+    addable: bool = None  # False  # 是否支持新增
+    addBtnText: str = None  # "增加"  # 新增按钮文案
+    closable: bool = None  # False  # 是否支持删除
+    draggable: bool = None  # False  # 是否支持拖拽
+    showTip: bool = None  # False  # 是否支持提示
+    showTipClassName: str = None  # "'' "  # 提示的类
+    editable: bool = None  # False  # 收否可编辑标签名
+    sidePosition: str = None  # "left"  # sidebar 模式下，标签栏位置 left / right
+
+
+class Portlet(Tabs):
+    """门户栏目"""
+
+    class Item(Tabs.Item):
+        toolbar: SchemaNode = None  # tabs 中的工具栏，随 tab 切换而变化
+
+    type: str = "portlet"  # 指定为 Portlet 渲染器
+    contentClassName: str = None  # Tabs content Dom 的类名
+    tabs: List[Item] = None  # tabs 内容
+    style: Union[str, dict] = None  # 自定义样式
+    description: Template = None  # 标题右侧信息
+    hideHeader: bool = None  # False  # 隐藏头部
+    divider: bool = None  # False  # 去掉分隔线
 
 
 class Horizontal(AmisNode):
@@ -235,12 +262,12 @@ class ActionType:
 class PageSchema(AmisNode):
     """页面配置"""
     label: str = None  # 菜单名称。
-    icon: str = None  # 菜单图标，比如：fa fa-file.
+    icon: str = 'fa fa-flash'  # 菜单图标，比如：'fa fa-file'.
     url: str = None  # 页面路由路径，当路由命中该路径时，启用当前页面。当路径不是 / 打头时，会连接父级路径。
     # 比如：父级的路径为 folder，而此时配置 pageA, 那么当页面地址为 /folder/pageA 时才会命中此页面。
     # 当路径是 / 开头如： /crud/list 时，则不会拼接父级路径。
     # 另外还支持 /crud/view/:id 这类带参数的路由，页面中可以通过 ${params.id} 取到此值。
-    schema_: Page = Field(None, alias='schema')  # 页面的配置，具体配置请前往 Page 页面说明
+    schema_: Union[Page, "Iframe"] = Field(None, alias='schema')  # 页面的配置，具体配置请前往 Page 页面说明
     schemaApi: API = None  # 如果想通过接口拉取，请配置。返回路径为 json>data。schema 和 schemaApi 只能二选一。
     link: str = None  # 如果想配置个外部链接菜单，只需要配置 link 即可。
     redirect: str = None  # 跳转，当命中当前页面时，跳转到目标页面。
@@ -250,6 +277,27 @@ class PageSchema(AmisNode):
     className: str = None  # 菜单类名。
     children: List["PageSchema"] = None  # 子菜单
     sort: int = None  # 排序
+
+    def as_tabs_item(self, tabs_extra: Dict[str, Any] = None, item_extra: Dict[str, Any] = None):
+        if self.children:
+            tab = Tabs(
+                tabs=[item.as_tabs_item(tabs_extra, item_extra) for item in self.children]
+            ).update_from_dict(tabs_extra or {})
+        elif self.schema_:
+            tab = self.schema_
+            if isinstance(tab, Iframe):
+                tab.height = 1080
+        elif self.schemaApi:
+            tab = Service(schemaApi=self.schemaApi)
+        elif self.link:
+            tab = Page(body=Link(href=self.link, body=self.label, blank=True))
+        else:
+            tab = None
+        return Tabs.Item(
+            title=self.label,
+            icon=self.icon,
+            tab=tab,
+        ).update_from_dict(item_extra or {})
 
 
 class App(AmisNode):
@@ -1501,8 +1549,8 @@ class Iframe(AmisNode):
     frameBorder: list = None  # frameBorder
     style: dict = None  # 样式对象
     src: str = None  # iframe 地址
-    height: Union[int, str] = None  # iframe 高度
-    width: Union[int, str] = None  # iframe 宽度
+    height: Union[int, str] = None  # "100%"#  iframe 高度
+    width: Union[int, str] = None  # "100%" # iframe 宽度
 
 
 class Spinner(AmisNode):
