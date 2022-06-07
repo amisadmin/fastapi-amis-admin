@@ -8,7 +8,9 @@
 
 - `sqlalchemy`异步引擎.
 -
+
 参考: [Asynchronous I/O (asyncio) — SQLAlchemy 1.4 Documentation](https://docs.sqlalchemy.org/en/14/orm/extensions/asyncio.html?highlight=async#sqlalchemy.ext.asyncio.AsyncEngine)
+
 - 示例:
 
 ```python
@@ -44,6 +46,7 @@ async def session_factory(self) -> AsyncGenerator[AsyncSession, Any]:
 
 - `sqlalchemy`同步引擎.
 -
+
 参考: [Establishing Connectivity - the Engine — SQLAlchemy 1.4 Documentation](https://docs.sqlalchemy.org/en/14/tutorial/engine.html)
 
 - 示例:
