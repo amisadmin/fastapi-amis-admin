@@ -634,7 +634,7 @@ class IframeAdmin(PageSchemaAdmin):
     def get_page_schema(self) -> Optional[PageSchema]:
         if super().get_page_schema():
             iframe = self.iframe or Iframe(src=self.src)
-            if iframe.src.startswith(self.site.settings.site_url):
+            if self.site.settings.site_url and iframe.src.startswith(self.site.settings.site_url):
                 self.page_schema.url = iframe.src
             else:
                 self.page_schema.url = re.sub(r"^https?:", "", iframe.src)
@@ -692,7 +692,7 @@ class PageAdmin(PageSchemaAdmin, RouterAdmin):
             self.page_schema.url = f'{self.router_path}{self.page_path}'
             self.page_schema.schemaApi = AmisAPI(method='post', url=f'{self.router_path}{self.page_path}', data={}, cache=300000)
             if self.page_parser_mode == 'html':
-                self.page_schema.schema_ = Page(body=Iframe(src=self.page_schema.url))
+                self.page_schema.schema_ = Iframe(src=self.page_schema.url)
         return self.page_schema
 
     def page_parser(self, request: Request, page: Page) -> Response:
