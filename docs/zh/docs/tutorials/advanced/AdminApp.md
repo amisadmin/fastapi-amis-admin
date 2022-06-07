@@ -31,12 +31,26 @@ AdminAPP --> RouterAdmin
 
 - 每个管理应用都可以配置独立的数据库连接.
 
+## 特殊用法
+管理应用可以做为一个迷你版的管理站点,用来给管理类分组.
+
+```python
+@site.register_admin
+class DocsAdminGroup(AdminApp):
+    tabs_mode = amis.TabsModeEnum.vertical
+
+    def __init__(self, app: "AdminApp"):
+        super().__init__(app)
+        self.register_admin(HomeAdmin, DocsAdmin, ReDocsAdmin)
+```
+
 ## 更多用法
 
-目前关于`AdminApp`的教程与示例并不完善,后续可能会添加更多丰富的功能与教程,如果你仅仅是想实现特定的功能,并不想深入研究,这部分可以先行跳过.
+目前关于`AdminApp`的教程与示例并不完善,后续可能会添加更多丰富的功能与教程.
+如果你仅仅是想实现特定的功能,并不想深入研究,这部分可以先行跳过.
+此外,你也可以通过阅读示例程序或源代码进一步了解.
 
-### 相关文档
+- [`FastAPI-Amis-Admin-Demo`](https://github.com/amisadmin/fastapi_amis_admin_demo):  一个`FastAPI-Amis-Admin` 应用程序示例.
+- [`FastAPI-User-Auth-Demo`](https://github.com/amisadmin/fastapi_user_auth_demo): 一个`FastAPI-User-Auth` 应用程序示例.
 
-- [AdminApp - FastAPI-Amis-Admin](/amis_admin/AdminApp/)
 
-- [fastapi_amis_admin/site.py](https://github.com/amisadmin/fastapi_amis_admin/blob/master/fastapi_amis_admin/amis_admin/site.py)
