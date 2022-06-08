@@ -85,7 +85,7 @@ class LinkModelForm:
         item_key = None
         for key in table.foreign_keys:
             if key.column.table != pk_admin.model.__table__:  # 获取关联第三方表
-                admin = pk_admin.app.get_model_admin(key.column.table.name)
+                admin = pk_admin.app.site.get_model_admin(key.column.table.name)
                 link_key = key  # auth_group.id
             else:
                 item_key = key  # auth_user.id
@@ -158,7 +158,7 @@ class LinkModelForm:
         return route
 
     async def get_form_item(self, request: Request):
-        url = self.pk_admin.app.router_path + self.display_admin.router.url_path_for('page')
+        url = self.display_admin.app.router_path + self.display_admin.router.url_path_for('page')
         picker = Picker(
             name=self.display_admin_cls.model.__tablename__,
             label=self.display_admin_cls.page_schema.label,
@@ -376,10 +376,10 @@ class BaseModelAdmin(SQLModelCrud):
         foreign_keys = list(column.foreign_keys) or None
         if foreign_keys is None:
             return None
-        admin = self.app.get_model_admin(foreign_keys[0].column.table.name)
+        admin = self.app.site.get_model_admin(foreign_keys[0].column.table.name)
         if not admin:
             return None
-        url = self.app.router_path + admin.router.url_path_for('page')
+        url = admin.app.router_path + admin.router.url_path_for('page')
         label = modelfield.field_info.title or modelfield.name
         remark = Remark(content=modelfield.field_info.description) if modelfield.field_info.description else None
         picker = Picker(name=modelfield.alias, label=label, labelField='name', valueField='id',
