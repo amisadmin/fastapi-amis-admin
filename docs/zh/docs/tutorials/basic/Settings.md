@@ -4,7 +4,7 @@
 
 ## 基本配置
 
-`settings`接收一个`Settings`对象,它可以配置当前站点是否开启调试,挂载路径,数据库连接等.
+`settings`接收一个`Settings`对象,它可以配置当前站点是否开启调试、挂载路径、数据库连接、CDN地址、Amis版本号等.
 
 - 参考: [Settings](/amis_admin/Settings/)
 
@@ -44,11 +44,12 @@ site = AdminSite(
 ### 示例-2
 
 ```python
-from fastapi import FastAPI,Request
+from fastapi import FastAPI, Request
 from fastapi_amis_admin.amis_admin.settings import Settings
 from fastapi_amis_admin.amis_admin.site import AdminSite, ReDocsAdmin, DocsAdmin
 from sqlalchemy.ext.asyncio import AsyncEngine
 from fastapi_amis_admin.amis.components import App
+
 
 # 自定义后台管理站点
 class NewAdminSite(AdminSite):
