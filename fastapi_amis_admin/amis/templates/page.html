@@ -2,18 +2,17 @@
 <html lang="zh">
 <head>
     <meta charset="UTF-8"/>
-    <title>Fastapi Amis Admin</title>
+    <title>${site_title}</title>
     <meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
     <meta content="width=device-width, initial-scale=1, maximum-scale=1" name="viewport"/>
     <meta content="IE=Edge" http-equiv="X-UA-Compatible"/>
-    <link href="https://baidu.gitee.io/amis/static/favicon_b3b0647.png" rel="shortcut icon" type="image/x-icon"/>
-    <!-- 线上部署请固定`amis js sdk`依赖包版本号! 有利于项目更稳定,访问速度更快速! -->
-    <link href="https://npm.elemecdn.com/amis/sdk/sdk.css" rel="stylesheet" title="default"/>
-    <link href="https://npm.elemecdn.com/amis/sdk/helper.css" rel="stylesheet"/>
-    <link href="https://npm.elemecdn.com/amis/sdk/iconfont.css" rel="stylesheet"/>
-    <script src="https://npm.elemecdn.com/amis@1.9.0/sdk/sdk.js"></script>
-    <script src="https://npm.elemecdn.com/vue@2.6.14/dist/vue.js"></script>
-    <script src="https://npm.elemecdn.com/history@4.10.1/umd/history.js"></script>
+    <link href="${site_icon}" rel="shortcut icon" type="image/x-icon"/>
+    <link href="${cdn}/${pkg}/sdk/sdk.css" rel="stylesheet" title="default"/>
+    <link href="${cdn}/${pkg}/sdk/helper.css" rel="stylesheet"/>
+    <link href="${cdn}/${pkg}/sdk/iconfont.css" rel="stylesheet"/>
+    <script src="${cdn}/${pkg}/sdk/sdk.js"></script>
+    <script src="${cdn}/vue@2.6.14/dist/vue.js"></script>
+    <script src="${cdn}/history@4.10.1/umd/history.js"></script>
     <style>
         html, body,
         .app-wrapper {
@@ -29,7 +28,7 @@
 <div class="amiss" id="amisId"></div>
 <script type="text/javascript">
     let amis = amisRequire('amis/embed')
-    let amisData = amis.embed('#amisId', [[AmisSchemaJson]], {locale: "[[locale]]"});
+    let amisData = amis.embed('#amisId', ${AmisSchemaJson}, {locale: "${locale}"});
 </script>
 </body>
 </html>

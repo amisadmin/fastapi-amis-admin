@@ -1,4 +1,5 @@
 """详细文档阅读地址: https://baidu.gitee.io/amis/zh-CN/components"""
+import os
 from typing import Union, List, Optional, Any, Dict
 
 from pydantic import Field
@@ -11,6 +12,8 @@ try:
     from typing import Literal
 except ImportError:
     from typing_extensions import Literal
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
 class Html(AmisNode):
@@ -53,6 +56,8 @@ class Badge(AmisNode):
 
 class Page(AmisNode):
     """页面"""
+    __default_template_path__: str = f'{BASE_DIR}/templates/page.html'
+
     type: str = "page"  # 指定为 Page 组件
     title: SchemaNode = None  # 页面标题
     subTitle: SchemaNode = None  # 页面副标题
@@ -77,11 +82,27 @@ class Page(AmisNode):
     stopAutoRefreshWhen: Expression = None  # 通过表达式来配置停止刷新的条件
     regions: List[str] = None
 
-    def amis_html(self, template_path: str = '', locale: str = ''):
+    def amis_html(
+            self,
+            template_path: str = '',
+            locale: str = 'zh_CN',
+            cdn: str = 'https://unpkg.com',
+            pkg: str = 'amis@1.10.1',
+            site_title: str = 'Amis',
+            site_icon: str = '',
+    ):
         """渲染html模板"""
-        return amis_templates('page.html', template_path).replace(
-            '[[AmisSchemaJson]]', self.amis_json()
-        ).replace('[[locale]]', locale)
+        template_path = template_path or self.__default_template_path__
+        return amis_templates(template_path).safe_substitute(
+            {
+                "AmisSchemaJson": self.amis_json(),
+                "locale": locale,
+                "cdn": cdn,
+                "pkg": pkg,
+                "site_title": site_title,
+                "site_icon": site_icon,
+            }
+        )
 
 
 class Divider(AmisNode):
@@ -300,8 +321,9 @@ class PageSchema(AmisNode):
         ).update_from_dict(item_extra or {})
 
 
-class App(AmisNode):
+class App(Page):
     """多页应用"""
+    __default_template_path__: str = f'{BASE_DIR}/templates/app.html'
     type: str = "app"
     api: API = None  # 页面配置接口，如果你想远程拉取页面配置请配置。返回配置路径 json>data>pages，具体格式请参考 pages 属性。
     brandName: str = None  # 应用名称
@@ -314,12 +336,6 @@ class App(AmisNode):
     pages: List[PageSchema] = None  # Array<页面配置>具体的页面配置。
 
     # 通常为数组，数组第一层为分组，一般只需要配置 label 集合，如果你不想分组，直接不配置，真正的页面请在第二层开始配置，即第一层的 children 中。
-
-    def amis_html(self, template_path: str = '', locale: str = ''):
-        """渲染html模板"""
-        return amis_templates('app.html', template_path).replace(
-            '[[AmisSchemaJson]]', self.amis_json()
-        ).replace('[[locale]]', locale)
 
 
 class ButtonGroup(AmisNode):

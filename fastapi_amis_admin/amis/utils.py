@@ -1,12 +1,9 @@
-import os
 from functools import lru_cache
-
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+from string import Template
 
 
 @lru_cache()
-def amis_templates(template_name: str = 'page.html', template_path: str = '') -> str:
+def amis_templates(template_path: str, encoding='utf8') -> Template:
     """页面模板"""
-    template_path = template_path or f'{BASE_DIR}/templates/{template_name}'
-    with open(template_path, encoding='utf8') as f:
-        return f.read()
+    with open(template_path, encoding=encoding) as f:
+        return Template(f.read())

@@ -697,7 +697,14 @@ class PageAdmin(PageSchemaAdmin, RouterAdmin):
 
     def page_parser(self, request: Request, page: Page) -> Response:
         if request.method == 'GET':
-            result = page.amis_html(self.template_name, _.get_language())
+            result = page.amis_html(
+                template_path=self.template_name,
+                locale=_.get_language(),
+                cdn=self.site.settings.amis_cdn,
+                pkg=self.site.settings.amis_pkg,
+                site_title=self.site.settings.site_title,
+                site_icon=self.site.settings.site_icon,
+            )
             result = HTMLResponse(result)
         else:
             result = BaseAmisApiOut(data=page.amis_dict())
