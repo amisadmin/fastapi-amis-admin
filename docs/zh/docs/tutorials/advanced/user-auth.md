@@ -16,7 +16,7 @@ pip install fastapi-user-auth
 
 ```python linenums="1" hl_lines="3 9 10 11 14"
 from fastapi import FastAPI
-from fastapi_amis_admin.amis_admin.settings import Settings
+from fastapi_amis_admin.admin import Settings
 from fastapi_user_auth.site import AuthAdminSite
 
 # 创建FastAPI应用

@@ -5,7 +5,7 @@
 ## 示例
 
 ```python
-from fastapi_amis_admin.amis_admin import admin
+from fastapi_amis_admin.admin import admin
 from fastapi_amis_admin.crud import BaseApiOut
 from fastapi_amis_admin.models.fields import Field
 from pydantic import BaseModel
@@ -22,7 +22,6 @@ class UserLoginFormAdmin(admin.FormAdmin):
     class schema(BaseModel):
         username: str = Field(..., title='用户名', min_length=3, max_length=30)
         password: str = Field(..., title='密码')
-
 
     # 处理表单提交数据
     async def handle(self, request: Request, data: BaseModel, **kwargs) -> BaseApiOut[Any]:

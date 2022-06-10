@@ -1,28 +1,7 @@
-from .admin import (
-    AdminApp,
-    BaseAdmin,
-    BaseAdminSite,
-    BaseFormAdmin,
-    BaseModelAction,
-    BaseModelAdmin,
-    FormAdmin,
-    IframeAdmin,
-    LinkAdmin,
-    LinkModelForm,
-    ModelAction,
-    ModelAdmin,
-    ModelFormAdmin,
-    PageAdmin,
-    PageSchemaAdmin,
-    RouterAdmin,
-    TemplateAdmin,
-)
-from .parser import AmisParser
-from .settings import Settings
-from .site import (
-    AdminSite,
-    DocsAdmin,
-    FileAdmin,
-    HomeAdmin,
-    ReDocsAdmin,
+"""This package is for compatibility with v0.1.8 and below,v0.3.0 and above will be removed. """
+import logging
+
+logging.warning(
+    'The `fastapi_amis_admin.amis_admin` package is deprecated, '
+    'please migrate to the `fastapi_amis_admin.admin` package'
 )

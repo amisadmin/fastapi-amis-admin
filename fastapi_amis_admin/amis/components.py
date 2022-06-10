@@ -220,7 +220,8 @@ class Horizontal(AmisNode):
 class Action(AmisNode):
     """行为按钮"""
     type: str = "button"  # 指定为 Page 渲染器。 button  action
-    actionType: str = None  # 【必填】这是 action 最核心的配置，来指定该 action 的作用类型，支持：ajax、link、url、drawer、dialog、confirm、cancel、prev、next、copy、close。
+    actionType: str = None  # 【必填】这是 action 最核心的配置，来指定该 action 的作用类型，
+    # 支持：ajax、link、url、drawer、dialog、confirm、cancel、prev、next、copy、close。
     label: str = None  # 按钮文本。可用 ${xxx} 取值。
     level: LevelEnum = None  # 按钮样式，支持：link、primary、secondary、info、success、warning、danger、light、dark、default。
     size: str = None  # 按钮大小，支持：xs、sm、md、lg。

@@ -42,14 +42,14 @@ site = AdminSite(settings=Settings(debug=False),
 
 ## Amis调试
 
-`amis` 内置了调试工具，可以查看组件内部运行日志，方便分析问题，目前在文档右侧就有显示。
+`amis` 内置了调试工具，可以查看组件内部运行日志，方便分析问题。
 
 ### 开启方法
 
 默认不会开启这个功能，可以通过下面两种方式开启：
 
 1. 配置全局变量 `enableAMISDebug` 的值为 `true`，比如 `window.enableAMISDebug = true`。
-2. 在页面 URL 参数中加上 `amisDebug=1`，比如 `https://demo.amis.work/admin/amis.json?_parser=html&amisDebug=1`
+2. 在页面 URL 参数中加上 `amisDebug=1`，比如 `https://demo.amis.work/admin/?amisDebug=1`
 
 开启之后，在页面右侧就会显示。
 

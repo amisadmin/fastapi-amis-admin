@@ -26,8 +26,8 @@
 
 ```python
 from fastapi import FastAPI
-from fastapi_amis_admin.amis_admin.settings import Settings
-from fastapi_amis_admin.amis_admin.site import AdminSite
+from fastapi_amis_admin.admin.settings import Settings
+from fastapi_amis_admin.admin.site import AdminSite
 
 site = AdminSite(
     # 基本配置
@@ -45,8 +45,8 @@ site = AdminSite(
 
 ```python
 from fastapi import FastAPI, Request
-from fastapi_amis_admin.amis_admin.settings import Settings
-from fastapi_amis_admin.amis_admin.site import AdminSite, ReDocsAdmin, DocsAdmin
+from fastapi_amis_admin.admin.settings import Settings
+from fastapi_amis_admin.admin.site import AdminSite, ReDocsAdmin, DocsAdmin
 from sqlalchemy.ext.asyncio import AsyncEngine
 from fastapi_amis_admin.amis.components import App
 

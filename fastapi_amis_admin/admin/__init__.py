@@ -1,5 +1,4 @@
-"""This package is for compatibility with v0.1.8 and below,v0.3.0 and above will be removed. """
-from fastapi_amis_admin.admin.admin import (
+from .admin import (
     AdminApp,
     BaseAdmin,
     BaseAdminSite,
@@ -17,4 +16,13 @@ from fastapi_amis_admin.admin.admin import (
     PageSchemaAdmin,
     RouterAdmin,
     TemplateAdmin,
+)
+from .parser import AmisParser
+from .settings import Settings
+from .site import (
+    AdminSite,
+    DocsAdmin,
+    FileAdmin,
+    HomeAdmin,
+    ReDocsAdmin,
 )

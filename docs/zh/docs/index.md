@@ -81,8 +81,8 @@ pip install fastapi_amis_admin
 
 ```python
 from fastapi import FastAPI
-from fastapi_amis_admin.amis_admin.settings import Settings
-from fastapi_amis_admin.amis_admin.site import AdminSite
+from fastapi_amis_admin.admin.settings import Settings
+from fastapi_amis_admin.admin.site import AdminSite
 
 # 创建FastAPI应用
 app = FastAPI()
@@ -104,9 +104,9 @@ if __name__ == '__main__':
 ```python
 from fastapi import FastAPI
 from sqlmodel import SQLModel
-from fastapi_amis_admin.amis_admin.settings import Settings
-from fastapi_amis_admin.amis_admin.site import AdminSite
-from fastapi_amis_admin.amis_admin import admin
+from fastapi_amis_admin.admin.settings import Settings
+from fastapi_amis_admin.admin.site import AdminSite
+from fastapi_amis_admin.admin import admin
 from fastapi_amis_admin.models.fields import Field
 
 # 创建FastAPI应用
@@ -155,9 +155,9 @@ from fastapi import FastAPI
 from pydantic import BaseModel
 from starlette.requests import Request
 from fastapi_amis_admin.amis.components import Form
-from fastapi_amis_admin.amis_admin import admin
-from fastapi_amis_admin.amis_admin.settings import Settings
-from fastapi_amis_admin.amis_admin.site import AdminSite
+from fastapi_amis_admin.admin import admin
+from fastapi_amis_admin.admin.settings import Settings
+from fastapi_amis_admin.admin.site import AdminSite
 from fastapi_amis_admin.crud.schema import BaseApiOut
 from fastapi_amis_admin.models.fields import Field
 

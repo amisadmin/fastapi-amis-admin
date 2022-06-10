@@ -11,9 +11,9 @@ pip install fastapi_amis_admin
 1.创建文件**`adminsite.py`**:
 
 ```python
-from fastapi_amis_admin.amis_admin.settings import Settings
-from fastapi_amis_admin.amis_admin.site import AdminSite
-from fastapi_amis_admin.amis_admin import admin
+from fastapi_amis_admin.admin.settings import Settings
+from fastapi_amis_admin.admin.site import AdminSite
+from fastapi_amis_admin.admin import admin
 from fastapi_amis_admin.amis.components import PageSchema
 
 # 创建AdminSite实例

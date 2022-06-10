@@ -73,7 +73,7 @@ class AmisPageAdmin(admin.PageAdmin):
 `LinkAdmin`实现在菜单列表显示一个链接跳转菜单.点击菜单后将通过打开一个新的浏览器标签,访问设置的链接:
 
 ```python
-from fastapi_amis_admin.amis_admin import admin
+from fastapi_amis_admin.admin import admin
 from fastapi_amis_admin.amis import PageSchema
 
 
