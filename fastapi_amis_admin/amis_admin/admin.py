@@ -1103,14 +1103,14 @@ class AdminApp(PageAdmin):
             self.page_schema.schemaApi = None
         return self.page_schema
 
-    async def get_page(self, request: Request) -> Union[Page, App]:
+    async def get_page(self, request: Request) -> Page:
         if self.tabs_mode is None:
-            return await self.get_page_as_app(request)
-        return await self.get_page_as_tabs(request)
+            return await self._get_page_as_app(request)
+        return await self._get_page_as_tabs(request)
 
-    async def get_page_as_app(self, request: Request) -> App:
+    async def _get_page_as_app(self, request: Request) -> App:
         app = App()
-        app.brandName = 'AmisAdmin'
+        app.brandName = self.site.settings.site_title
         app.header = Tpl(
             className='w-full',
             tpl='<div class="flex justify-between"><div></div>'
@@ -1129,7 +1129,7 @@ class AdminApp(PageAdmin):
         app.pages = [{'children': children}] if children else []
         return app
 
-    async def get_page_as_tabs(self, request: Request) -> Page:
+    async def _get_page_as_tabs(self, request: Request) -> Page:
         page = await super(AdminApp, self).get_page(request)
         children = await self.get_page_schema_children(request)
         page.body = PageSchema(children=children).as_tabs_item(tabs_extra=dict(tabsMode=self.tabs_mode, mountOnEnter=True)).tab
