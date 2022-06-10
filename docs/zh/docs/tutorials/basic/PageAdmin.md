@@ -7,7 +7,8 @@
 
 ## 页面管理
 
-`PageAdmin`实现在菜单列表显示一个菜单.点击菜单后将展现一个`amis`页面.你可以通过阅读[`baidu-amis`官方文档](https://baidu.gitee.io/amis/zh-CN/components/page)
+`PageAdmin`实现在菜单列表显示一个菜单.点击菜单后将展现一个`amis`页面.
+你可以通过阅读[`baidu-amis`官方文档](https://baidu.gitee.io/amis/zh-CN/components/page)
 ,实现各种复杂的页面展示.先看一个Hello World页面示例吧.
 
 ```python
@@ -32,7 +33,40 @@ class CurrentTimePageAdmin(admin.PageAdmin):
         return page
 ```
 
-在这个示例中并没有通过`page`对象配置静态的页面信息,而是通过`get_page`方法动态获取信息, 在`amis-admin`中会有很多类似的实现,如果你需要动态配置某些信息,都建议你通过重载对应的方法实现,但是建议在大多数情况下,请先调用父类的方法.
+在这个示例中并没有通过`page`对象配置静态的页面信息,而是通过`get_page`方法动态获取信息,
+在`fastapi-amis-admin`中会有很多类似的实现,如果你需要动态配置某些信息,
+都建议你通过重载对应的方法实现,但是建议在大多数情况下,请先调用父类的方法.
+
+!!! note annotate "使用符合Amis语法的Json注册管理页面"
+
+```python
+@site.register_admin
+class AmisPageAdmin(admin.PageAdmin):
+    page_schema = 'Amis Json Page'
+    page = Page.parse_obj(
+        {
+            "type": "page",
+            "title": "表单页面",
+            "body": {
+                "type": "form",
+                "mode": "horizontal",
+                "api": "/saveForm",
+                "body": [
+                    {
+                        "label": "Name",
+                        "type": "input-text",
+                        "name": "name"
+                    },
+                    {
+                        "label": "Email",
+                        "type": "input-email",
+                        "name": "email"
+                    }
+                ]
+            }
+        }
+    )
+```
 
 ## 链接管理
 
