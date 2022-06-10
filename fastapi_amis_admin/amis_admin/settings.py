@@ -1,4 +1,4 @@
-from pydantic import BaseSettings, Field
+from pydantic import BaseSettings, Field, validator
 
 
 class Settings(BaseSettings):
@@ -15,3 +15,7 @@ class Settings(BaseSettings):
     language: str = ''  # 'zh_CN','en_US'
     amis_cdn: str = 'https://unpkg.com'
     amis_pkg: str = 'amis@1.10.1'
+
+    @validator('amis_cdn', 'root_path', 'site_url', pre=True)
+    def valid_url(url: str):
+        return url[:-1] if url.endswith('/') else url
