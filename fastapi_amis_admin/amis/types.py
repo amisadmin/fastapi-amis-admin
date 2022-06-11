@@ -1,7 +1,11 @@
 from typing import Dict, Any, Union, List
 
-import ujson
 from pydantic import BaseModel, Extra
+
+try:
+    import ujson as json
+except ImportError:
+    import json
 
 Expression = str
 Template = Union[str, "Tpl"]
@@ -12,8 +16,8 @@ OptionsNode = Union[List[dict], List[str]]
 class BaseAmisModel(BaseModel):
     class Config:
         extra = Extra.allow
-        json_loads = ujson.loads
-        json_dumps = ujson.dumps
+        json_loads = json.loads
+        json_dumps = json.dumps
 
     def amis_json(self):
         return self.json(exclude_none=True, by_alias=True)

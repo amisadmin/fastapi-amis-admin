@@ -1,9 +1,13 @@
 from enum import Enum
 from typing import Dict, TypeVar, Optional, Generic, List, Any, Union
 
-import ujson
 from pydantic import BaseModel, Extra
 from pydantic.generics import GenericModel
+
+try:
+    import ujson as json
+except ImportError:
+    import json
 
 _T = TypeVar('_T')
 
@@ -11,8 +15,8 @@ _T = TypeVar('_T')
 class BaseApiSchema(BaseModel):
     class Config:
         extra = Extra.allow
-        json_loads = ujson.loads
-        json_dumps = ujson.dumps
+        json_loads = json.loads
+        json_dumps = json.dumps
 
 
 class BaseApiOut(GenericModel, Generic[_T], BaseApiSchema):
