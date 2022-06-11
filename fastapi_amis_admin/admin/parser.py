@@ -8,9 +8,10 @@ from pydantic.utils import smart_deepcopy
 from fastapi_amis_admin.amis.components import FormItem, Remark, Validation, InputNumber, TableColumn
 from fastapi_amis_admin.amis.constants import LabelEnum
 from fastapi_amis_admin.models.enums import Choices
+from fastapi_amis_admin.utils.translation import i18n as _
 
 
-class AmisParser():
+class AmisParser:
 
     def __init__(self, modelfield: ModelField):
         self.modelfield = modelfield  # read only
@@ -23,8 +24,43 @@ class AmisParser():
     def remark(self):
         return Remark(content=self.modelfield.field_info.description) if self.modelfield.field_info.description else None
 
-    def as_form_item(self, set_deafult: bool = False, is_filter: bool = False) -> FormItem:
-        # sourcery skip: low-code-quality
+    def as_form_item(self, set_default: bool = False, is_filter: bool = False) -> FormItem:
+        formitem = self._parse_form_item_from_kwargs(is_filter)
+        if not is_filter:
+            if self.modelfield.field_info.max_length:
+                formitem.maxLength = self.modelfield.field_info.max_length
+            if self.modelfield.field_info.min_length:
+                formitem.minLength = self.modelfield.field_info.min_length
+            formitem.required = self.modelfield.required and not issubclass(self.modelfield.type_, bool)
+            if set_default:
+                formitem.value = self.modelfield.default
+        formitem.name = self.modelfield.alias
+        formitem.label = formitem.label or self.label
+        formitem.labelRemark = formitem.labelRemark or self.remark
+        return formitem
+
+    def as_table_column(self, quick_edit: bool = False) -> TableColumn:
+        column = self._parse_table_column_from_kwargs()
+        column.name = self.modelfield.alias
+        column.label = column.label or self.label
+        column.remark = column.remark or self.remark
+        column.sortable = True
+        if column.type in ['text', None]:
+            column.searchable = True
+        elif column.type in ['switch', 'mapping']:
+            column.sortable = False
+        if quick_edit:
+            column.quickEdit = self.as_form_item(set_default=True).dict(
+                exclude_none=True,
+                by_alias=True,
+                exclude={'name', 'label'}
+            )
+            column.quickEdit.update({"saveImmediately": True})
+            if column.quickEdit.get('type') == 'switch':
+                column.quickEdit.update({"mode": "inline"})
+        return column
+
+    def _parse_form_item_from_kwargs(self, is_filter: bool = False) -> FormItem:
         kwargs = {}
         formitem = self.modelfield.field_info.extra.get(['amis_form_item', 'amis_filter_item'][is_filter])
         if formitem is not None:
@@ -84,22 +120,9 @@ class AmisParser():
             kwargs['type'] = 'json-editor'
         else:
             kwargs['type'] = 'input-text'
+        return formitem or FormItem(**kwargs)
 
-        formitem = formitem or FormItem(**kwargs)
-        if not is_filter:
-            if self.modelfield.field_info.max_length:
-                formitem.maxLength = self.modelfield.field_info.max_length
-            if self.modelfield.field_info.min_length:
-                formitem.minLength = self.modelfield.field_info.min_length
-            formitem.required = self.modelfield.required
-            if set_deafult and self.modelfield.default is not None:
-                formitem.value = self.modelfield.default
-        formitem.name = self.modelfield.alias
-        formitem.label = formitem.label or self.label
-        formitem.labelRemark = formitem.labelRemark or self.remark
-        return formitem
-
-    def as_table_column(self, quick_edit: bool = False) -> TableColumn:
+    def _parse_table_column_from_kwargs(self) -> TableColumn:
         kwargs = {}
         column = self.modelfield.field_info.extra.get('amis_table_column')
         if column is not None:
@@ -119,7 +142,7 @@ class AmisParser():
             pass
         elif issubclass(self.modelfield.type_, bool):
             kwargs['type'] = 'switch'
-            kwargs['filterable'] = {"options": [{"label": "是", "value": True}, {"label": "否", "value": False}]}
+            kwargs['filterable'] = {"options": [{"label": _("YES"), "value": True}, {"label": _("NO"), "value": False}]}
         elif issubclass(self.modelfield.type_, datetime.datetime):
             kwargs['type'] = 'datetime'
         elif issubclass(self.modelfield.type_, datetime.date):
@@ -131,21 +154,7 @@ class AmisParser():
             kwargs['filterable'] = {"options": [{"label": v, "value": k} for k, v in self.modelfield.type_.choices]}
             kwargs['map'] = {k: f"<span class='label label-{l}'>{v}</span>"
                              for (k, v), l in zip(self.modelfield.type_.choices, cyclic_generator(LabelEnum))}
-        column = column or TableColumn(**kwargs)
-        column.name = self.modelfield.alias
-        column.label = column.label or self.label
-        column.remark = column.remark or self.remark
-        column.sortable = True
-        if column.type in ['text', None]:
-            column.searchable = True
-        elif column.type in ['switch', 'mapping']:
-            column.sortable = False
-        if quick_edit:
-            column.quickEdit = self.as_form_item().dict(exclude_none=True, by_alias=True, exclude={'name', 'label'})
-            column.quickEdit.update({"saveImmediately": True})
-            if column.quickEdit.get('type') == 'switch':
-                column.quickEdit.update({"mode": "inline"})
-        return column
+        return column or TableColumn(**kwargs)
 
 
 def cyclic_generator(iterable: Iterable):

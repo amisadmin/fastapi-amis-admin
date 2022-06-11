@@ -92,3 +92,9 @@ msgstr "自定义表单动作"
 
 msgid "Home"
 msgstr "首页"
+
+msgid "YES"
+msgstr "是"
+
+msgid "NO"
+msgstr "否"
