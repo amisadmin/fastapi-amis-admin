@@ -1,7 +1,7 @@
 import datetime
 import re
 from functools import lru_cache
-from typing import Type, Callable, Generator, Any, List, Union, Dict, Iterable, Optional, Tuple, TypeVar, NewType
+from typing import Type, Callable, Generator, Any, List, Union, Dict, Iterable, Optional, TypeVar, NewType, Iterator
 
 from fastapi import Request, Depends, FastAPI, Query, HTTPException, Body
 from pydantic import BaseModel
@@ -9,9 +9,9 @@ from pydantic.fields import ModelField
 from sqlalchemy import delete, Column, Table, insert
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, AsyncEngine
 from sqlalchemy.orm import InstrumentedAttribute, RelationshipProperty
+from sqlalchemy.util import md5_hex
 from sqlmodel import SQLModel, select
 from sqlmodel.engine.result import ScalarResult
-from sqlmodel.main import SQLModelMetaclass
 from starlette import status
 from starlette.responses import HTMLResponse, JSONResponse, Response
 from starlette.templating import Jinja2Templates
@@ -38,18 +38,18 @@ except ImportError:
     from typing_extensions import Literal
 
 _BaseAdminT = TypeVar('_BaseAdminT', bound="BaseAdmin")
+_PageSchemaAdminT = TypeVar('_PageSchemaAdminT', bound="PageSchemaAdmin")
 _BaseModel = NewType('_BaseModel', BaseModel)
 
 
 class LinkModelForm:
     link_model: Table
-    display_admin_cls: Type["ModelAdmin"]
     session_factory: Callable[..., Generator[AsyncSession, Any, None]] = None
 
     def __init__(
             self,
             pk_admin: "BaseModelAdmin",
-            display_admin_cls: Type["ModelAdmin"],
+            display_admin: "ModelAdmin",
             link_model: Union[SQLModel, Table],
             link_col: Column,
             item_col: Column,
@@ -57,17 +57,14 @@ class LinkModelForm:
     ):
         self.link_model = link_model
         self.pk_admin = pk_admin
-        self.display_admin_cls = display_admin_cls or self.display_admin_cls
-        assert self.display_admin_cls in self.pk_admin.app._admins_dict, \
-            f'{self.display_admin_cls} display_admin_cls is not register'
-        self.display_admin: ModelAdmin = self.pk_admin.app.create_admin_instance(self.display_admin_cls)
-        assert isinstance(self.display_admin, ModelAdmin)
+        self.display_admin = display_admin
+        assert self.display_admin, 'display_admin is None'
         self.session_factory = session_factory or self.pk_admin.session_factory
         self.link_col = link_col
         self.item_col = item_col
         assert self.item_col is not None, 'item_col is None'
         assert self.link_col is not None, 'link_col is None'
-        self.path = f'/{self.display_admin_cls.model.__name__.lower()}'
+        self.path = f'/{self.display_admin.model.__name__.lower()}'
 
     @classmethod
     def bind_model_admin(
@@ -86,9 +83,9 @@ class LinkModelForm:
         for key in table.foreign_keys:
             if key.column.table != pk_admin.model.__table__:  # 获取关联第三方表
                 admin = pk_admin.app.site.get_model_admin(key.column.table.name)
-                link_key = key  # auth_group.id
+                link_key = key
             else:
-                item_key = key  # auth_user.id
+                item_key = key
         if admin and link_key and item_key:
             if not admin.link_models:
                 admin.link_models = {pk_admin.model.__tablename__: (table, link_key.parent, item_key.parent)}
@@ -97,7 +94,7 @@ class LinkModelForm:
                     {pk_admin.model.__tablename__: (table, link_key.parent, item_key.parent)})
             return LinkModelForm(
                 pk_admin=pk_admin,
-                display_admin_cls=admin.__class__,
+                display_admin=admin,
                 link_model=table,
                 link_col=link_key.parent,
                 item_col=item_key.parent
@@ -160,8 +157,8 @@ class LinkModelForm:
     async def get_form_item(self, request: Request):
         url = self.display_admin.app.router_path + self.display_admin.router.url_path_for('page')
         picker = Picker(
-            name=self.display_admin_cls.model.__tablename__,
-            label=self.display_admin_cls.page_schema.label,
+            name=self.display_admin.model.__tablename__,
+            label=self.display_admin.page_schema.label,
             labelField='name',
             valueField='id', multiple=True,
             required=False, modalMode='dialog', size='full',
@@ -305,8 +302,8 @@ class BaseModelAdmin(SQLModelCrud):
         for field in await self.get_list_display(request):
             if isinstance(field, BaseAmisModel):
                 columns.append(field)
-            elif isinstance(field, SQLModelMetaclass):
-                ins_list = self.parser.get_sqlmodel_insfield(field)  # type:ignore
+            elif isinstance(field, type) and issubclass(field, SQLModel):
+                ins_list = self.parser.get_sqlmodel_insfield(field)
                 modelfield_list = [self.parser.get_modelfield(ins, deepcopy=True) for ins in ins_list]
                 columns.extend([await self.get_list_column(request, modelfield) for modelfield in modelfield_list])
             else:
@@ -315,12 +312,12 @@ class BaseModelAdmin(SQLModelCrud):
             form = await link_form.get_form_item(request)
             if form:
                 columns.append(ColumnOperation(
-                    width=160, label=link_form.display_admin_cls.page_schema.label, breakpoint='*',
+                    width=160, label=link_form.display_admin.page_schema.label, breakpoint='*',
                     buttons=[form]
                 ))
         return columns
 
-    async def get_list_filter_api(self, request: Request) -> AmisAPI:
+    async def get_list_table_api(self, request: Request) -> AmisAPI:
         data = {'&': '$$'}
         for field in self.search_fields:
             alias = self.parser.get_alias(field)
@@ -344,7 +341,7 @@ class BaseModelAdmin(SQLModelCrud):
                           "align": "right"}]
         headerToolbar.extend(await self.get_actions_on_header_toolbar(request))
         table = TableCRUD(
-            api=await self.get_list_filter_api(request),
+            api=await self.get_list_table_api(request),
             autoFillHeight=True,
             headerToolbar=headerToolbar,
             filterTogglable=True,
@@ -395,8 +392,11 @@ class BaseModelAdmin(SQLModelCrud):
             action: CrudEnum
     ) -> Union[FormItem, SchemaNode, None]:
         is_filter = action == CrudEnum.list
-        return (await self.get_form_item_on_foreign_key(request, modelfield, is_filter=is_filter)
-                or AmisParser(modelfield).as_form_item(is_filter=is_filter))
+        set_default = action == CrudEnum.create
+        return (
+                await self.get_form_item_on_foreign_key(request, modelfield, is_filter=is_filter)
+                or AmisParser(modelfield).as_form_item(is_filter=is_filter, set_default=set_default)
+        )
 
     async def get_list_filter_form(self, request: Request) -> Form:
         body = await self._conv_modelfields_to_formitems(
@@ -567,7 +567,7 @@ class BaseModelAdmin(SQLModelCrud):
                     item = await self.get_form_item(request, field, action)
                     if item:
                         items.append(item)
-        items.sort(key=lambda item: isinstance(item, Service))
+        items.sort(key=lambda i: isinstance(i, Service))
         return items
 
 
@@ -578,7 +578,14 @@ class BaseAdmin:
 
     @cached_property
     def site(self) -> "BaseAdminSite":
-        return self.app if isinstance(self.app, BaseAdminSite) else self.app.site
+        return self if self.app is self else self.app.site
+
+    @cached_property
+    def unique_id(self) -> str:
+        unique_str = f'{self.__class__.__module__}:{self.__class__.__qualname__}'
+        if self.app is not self:
+            unique_str += f'{self.app.unique_id}'
+        return md5_hex(unique_str)[:16]
 
 
 class PageSchemaAdmin(BaseAdmin):
@@ -862,7 +869,7 @@ class ModelFormAdmin(FormAdmin, SQLModelSelector):
 
 class ModelAdmin(BaseModelAdmin, PageAdmin):
     """模型管理"""
-    page_path: str = '/'
+    page_path: str = ''
     bind_model: bool = True
 
     def __init__(self, app: "AdminApp"):
@@ -1001,46 +1008,102 @@ class ModelAction(BaseFormAdmin, BaseModelAction):
         return route
 
 
-class AdminApp(PageAdmin):
+class AdminGroup(PageSchemaAdmin):
+    def __init__(self, app: "AdminApp") -> None:
+        super().__init__(app)
+        self._children: List[_PageSchemaAdminT] = []
+
+    @cached_property
+    def unique_id(self) -> str:
+        unique_str = super().unique_id
+        if self._children:
+            unique_str += self._children[0].unique_id
+        return md5_hex(unique_str)[:16]
+
+    def append_child(self, child: _PageSchemaAdminT, group_schema: PageSchema = None):
+        if not child.page_schema:
+            return
+        group_label = group_schema and group_schema.label
+        if not group_label:
+            self._children.append(child)
+        else:
+            for item in self._children:
+                if isinstance(item, AdminGroup) and item.page_schema and item.page_schema.label == group_label:
+                    item.append_child(child, group_schema=None)
+                    return
+            group = AdminGroup(self.app)
+            group.page_schema = group_schema.copy()
+            group.append_child(child, group_schema=None)
+            self._children.append(group)
+
+    async def get_page_schema_children(self, request: Request) -> List[PageSchema]:
+        page_schema_list = []
+        for child in self._children:
+            if not child.page_schema or not await child.has_page_permission(request):
+                continue
+            if ((isinstance(child, AdminGroup) and not isinstance(child, AdminApp))
+                    or (isinstance(child, AdminApp) and child.tabs_mode is None)):
+                sub_children = await child.get_page_schema_children(request)
+                if sub_children:
+                    page_schema = child.page_schema.copy(deep=True)
+                    page_schema.children = sub_children
+                    page_schema_list.append(page_schema)
+            else:
+                page_schema_list.append(child.page_schema)
+        if page_schema_list:
+            page_schema_list.sort(key=lambda p: p.sort or 0, reverse=True)
+        return page_schema_list
+
+    def get_page_schema_child(self, unique_id: str) -> Optional[_PageSchemaAdminT]:
+        for child in self._children:
+            if child.unique_id == unique_id:
+                return child
+            if isinstance(child, AdminGroup):
+                child = child.get_page_schema_child(unique_id)
+                if child:
+                    return child
+        return None
+
+    def __iter__(self) -> Iterator[_PageSchemaAdminT]:
+        return self._children.__iter__()
+
+
+class AdminApp(PageAdmin, AdminGroup):
     """管理应用"""
     engine: AsyncEngine = None
     page_path = '/'
     tabs_mode: TabsModeEnum = None
 
     def __init__(self, app: "AdminApp"):
-        super().__init__(app)
+        PageAdmin.__init__(self, app)
+        AdminGroup.__init__(self, app)
         self.engine = self.engine or self.app.engine
         assert self.engine, 'engine is None'
         self.db = SqlalchemyAsyncClient(self.engine)
-        self._pages_dict: Dict[str, Tuple[PageSchema, List[Union[PageSchema, BaseAdmin]]]] = {}
-        self._admins_dict: Dict[Type[BaseAdmin], Optional[BaseAdmin]] = {}
+        self._registered: Dict[Type[_BaseAdminT], Optional[_BaseAdminT]] = {}
 
     @property
     def router_prefix(self):
         return f'/{self.__class__.__name__.lower()}'
 
     def create_admin_instance(self, admin_cls: Type[_BaseAdminT]) -> _BaseAdminT:
-        admin = self._admins_dict.get(admin_cls)
-        if admin is not None or not issubclass(admin_cls, BaseAdmin):
+        admin = self._registered.get(admin_cls)
+        if admin:
             return admin
-        admin = admin_cls(self)  # type: ignore
-        self._admins_dict[admin_cls] = admin
+        admin = admin_cls(self)
+        self._registered[admin_cls] = admin
         if isinstance(admin, PageSchemaAdmin):
-            group_label = admin.group_schema and admin.group_schema.label
-            if admin.page_schema:
-                if not self._pages_dict.get(group_label):
-                    self._pages_dict[group_label] = (admin.group_schema, [])
-                self._pages_dict[group_label][1].append(admin)
+            self.append_child(admin, group_schema=admin.group_schema)
         return admin
 
     def create_admin_instance_all(self) -> None:
-        [self.create_admin_instance(admin_cls) for admin_cls in self._admins_dict.keys()]
+        [self.create_admin_instance(admin_cls) for admin_cls in self._registered.keys()]
 
     def _register_admin_router_all_pre(self):
-        [admin.get_link_model_forms() for admin in self._admins_dict.values() if isinstance(admin, ModelAdmin)]
+        [admin.get_link_model_forms() for admin in self._registered.values() if isinstance(admin, ModelAdmin)]
 
     def _register_admin_router_all(self):
-        for admin in self._admins_dict.values():
+        for admin in self._registered.values():
             if isinstance(admin, RouterAdmin):  # 注册路由
                 admin.register_router()
                 self.router.include_router(admin.router)
@@ -1054,49 +1117,21 @@ class AdminApp(PageAdmin):
 
     @lru_cache()
     def get_model_admin(self, table_name: str) -> Optional[ModelAdmin]:
-        for admin_cls, admin in self._admins_dict.items():
-            if issubclass(admin_cls,
-                          ModelAdmin) and admin_cls.bind_model and admin_cls.model.__tablename__ == table_name:
+        for admin_cls, admin in self._registered.items():
+            if issubclass(admin_cls, ModelAdmin) and admin_cls.bind_model and admin_cls.model.__tablename__ == table_name:
                 return admin
             elif isinstance(admin, AdminApp):
-                return admin.get_model_admin(table_name)
+                admin = admin.get_model_admin(table_name)
+                if admin:
+                    return admin
         return None
 
     def register_admin(self, *admin_cls: Type[_BaseAdminT]) -> Type[_BaseAdminT]:
-        [self._admins_dict.update({cls: None}) for cls in admin_cls if cls]
+        [self._registered.update({cls: None}) for cls in admin_cls if cls]
         return admin_cls[0]
 
     def unregister_admin(self, *admin_cls: Type[BaseAdmin]):
-        [self._admins_dict.pop(cls) for cls in admin_cls if cls]
-
-    async def get_page_schema_children(self, request: Request) -> List[PageSchema]:
-        children = []
-        for group_label, (group_schema, admins_list) in self._pages_dict.items():
-            lst = []
-            for admin in admins_list:
-                if admin and isinstance(admin, PageSchemaAdmin):
-                    if await admin.has_page_permission(request):
-                        if isinstance(admin, AdminApp) and admin.tabs_mode is None:
-                            sub_children = await admin.get_page_schema_children(request)
-                            if sub_children:
-                                page_schema = admin.page_schema.copy(deep=True)
-                                page_schema.children = sub_children
-                                lst.append(page_schema)
-                        else:
-                            lst.append(admin.page_schema)
-                else:
-                    lst.append(admin)
-            if lst:
-                if group_label:
-                    lst.sort(key=lambda p: p.sort or 0, reverse=True)
-                    group_schema = group_schema.copy(deep=True)
-                    group_schema.children = lst
-                    children.append(group_schema)
-                else:  # ModelAdmin
-                    children.extend(lst)
-        if children:
-            children.sort(key=lambda p: p.sort or 0, reverse=True)
-        return children
+        [self._registered.pop(cls) for cls in admin_cls if cls]
 
     def get_page_schema(self) -> Optional[PageSchema]:
         if super().get_page_schema() and self.tabs_mode is None:
