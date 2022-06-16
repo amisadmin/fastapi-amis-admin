@@ -243,6 +243,9 @@ class Action(AmisNode):
     required: List[str] = None  # 配置字符串数组，指定在form中进行操作之前，需要指定的字段名的表单项通过验证
     # primary:bool=None
     onClick: str = None  # 自定义点击事件 通过字符串形式的 onClick 来定义点击事件，这个字符串会转成 JavaScript 函数
+    componentId: str = None  # 目标组件ID
+    args: Union[dict, str] = None  # 事件参数
+    script: str = None  # 自定义 JS 脚本代码，代码内可以通过调用doAction执行任何动作 ，通过事件对象event可以实现事件动作干预
 
 
 class ActionType:
@@ -584,6 +587,27 @@ class Checkbox(FormItem):
     falseValue: Any = None  # 标识假值
 
 
+class Radios(FormItem):
+    """单选框"""
+    type: str = 'radios'
+    options: List[Union[dict, str]] = None  # 选项组
+    source: API = None  # 动态选项组
+    labelField: bool = None  # "label"  # 选项标签字段
+    valueField: bool = None  # "value"  # 选项值字段
+    columnsCount: int = None  # 1  # 选项按几列显示，默认为一列
+    inline: bool = None  # True  # 是否显示为一行
+    selectFirst: bool = None  # False  # 是否默认选中第一个
+    autoFill: dict = None  # 自动填充
+
+
+class ChartRadios(Radios):
+    """单选框"""
+    type: str = 'chart-radios'
+    config: dict = None  # echart 图表配置
+    showTooltipOnHighlight: bool = None  # False  # 高亮的时候是否显示 tooltip
+    chartValueField: str = None  # "value"  # 图表数值字段名
+
+
 class Checkboxes(FormItem):
     """复选框"""
     type: str = 'checkboxes'
@@ -870,7 +894,7 @@ class LocationPicker(FormItem):
     """地理位置"""
     type: str = 'location-picker'
     vendor: str = 'baidu'  # 地图厂商，目前只实现了百度地图
-    ak: str = ''  # 百度地图的 ak  # 注册地址: http://lbsyun.baidu.com/
+    ak: str = ...  # 百度地图的 ak  # 注册地址: http://lbsyun.baidu.com/
     clearable: bool = None  # False  # 输入框是否可清空
     placeholder: str = None  # "请选择位置"  # 默认提示
     coordinatesType: str = None  # "bd09"  # 默为百度坐标，可设置为'gcj02'
@@ -883,7 +907,7 @@ class InputNumber(FormItem):
     max: Union[int, Template] = None  # 最大值
     step: int = None  # 步长
     precision: int = None  # 精度，即小数点后几位
-    showSteps: bool = True  # 是否显示上下点击按钮
+    showSteps: bool = None  # True  # 是否显示上下点击按钮
     prefix: str = None  # 前缀
     suffix: str = None  # 后缀
     kilobitSeparator: bool = None  # 千分分隔
@@ -942,7 +966,7 @@ class InputText(FormItem):
     delimiter: str = None  # 拼接符 ","
     labelField: str = None  # 选项标签字段 "label"
     valueField: str = None  # 选项值字段 "value"
-    joinValues: bool = True  # 拼接值
+    joinValues: bool = None  # True  # 拼接值
     extractValue: bool = None  # 提取值
     addOn: SchemaNode = None  # 输入框附加组件，比如附带一个提示文字，或者附带一个提交按钮。
     trimContents: bool = None  # 是否去除首尾空白文本。
@@ -978,30 +1002,30 @@ class Select(FormItem):
     options: OptionsNode = None  # 选项组
     source: API = None  # 动态选项组
     autoComplete: API = None  # 自动提示补全
-    delimiter: Union[bool, str] = False  # 拼接符
+    delimiter: Union[bool, str] = None  # False  # 拼接符
     labelField: str = None  # "label"  # 选项标签字段
     valueField: str = None  # "value"  # 选项值字段
-    joinValues: bool = True  # 拼接值
-    extractValue: bool = False  # 提取值
-    checkAll: bool = False  # 是否支持全选
+    joinValues: bool = None  # True  # 拼接值
+    extractValue: bool = None  # False  # 提取值
+    checkAll: bool = None  # False  # 是否支持全选
     checkAllLabel: str = None  # "全选"  # 全选的文字
-    checkAllBySearch: bool = False  # 有检索时只全选检索命中的项
-    defaultCheckAll: bool = False  # 默认是否全选
-    creatable: bool = False  # 新增选项
-    multiple: bool = False  # 多选
-    searchable: bool = False  # 检索
+    checkAllBySearch: bool = None  # False  # 有检索时只全选检索命中的项
+    defaultCheckAll: bool = None  # False  # 默认是否全选
+    creatable: bool = None  # False  # 新增选项
+    multiple: bool = None  # False  # 多选
+    searchable: bool = None  # False  # 检索
     createBtnLabel: str = None  # "新增选项"  # 新增选项
     addControls: List[FormItem] = None  # 自定义新增表单项
     addApi: API = None  # 配置新增选项接口
-    editable: bool = False  # 编辑选项
+    editable: bool = None  # False  # 编辑选项
     editControls: List[FormItem] = None  # 自定义编辑表单项
     editApi: API = None  # 配置编辑选项接口
-    removable: bool = False  # 删除选项
+    removable: bool = None  # False  # 删除选项
     deleteApi: API = None  # 配置删除选项接口
     autoFill: dict = None  # 自动填充
     menuTpl: str = None  # 支持配置自定义菜单
     clearable: bool = None  # 单选模式下是否支持清空
-    hideSelected: bool = False  # 隐藏已选选项
+    hideSelected: bool = None  # False  # 隐藏已选选项
     mobileClassName: str = None  # 移动端浮层类名
     selectMode: str = None  # 可选：group、table、tree、chained、associated。分别为：列表形式、表格形式、树形选择形式、
     # 级联选择形式， 关联选择形式（与级联选择的区别在于，级联是无限极，而关联只有一级，关联左边可以是个 tree）。
@@ -1010,6 +1034,18 @@ class Select(FormItem):
     leftOptions: List[dict] = None  # 当展示形式为 associated 时用来配置左边的选项集。
     leftMode: str = None  # 当展示形式为 associated 时用来配置左边的选择形式，支持 list 或者 tree。默认为 list。
     rightMode: str = None  # 当展示形式为 associated 时用来配置右边的选择形式，可选：list、table、tree、chained。
+
+
+class NestedSelect(Select):
+    """级联选择器"""
+    type: str = 'nested-select'
+    cascade: bool = None  # False  # 设置 true时，当选中父节点时不自动选择子节点。
+    withChildren: bool = None  # False  # 设置 true时，选中父节点时，值里面将包含子节点的值，否则只会保留父节点的值。
+    onlyChildren: bool = None  # False  # 多选时，选中父节点时，是否只将其子节点加入到值中。
+    searchPromptText: str = None  # "输入内容进行检索"  # 搜索框占位文本
+    noResultsText: str = None  # "未找到任何结果"  # 无结果时的文本
+    hideNodePathLabel: bool = None  # False  # 是否隐藏选择框中已选择节点的路径 label 信息
+    onlyLeaf: bool = None  # False  # 只允许选择叶子节点
 
 
 class Textarea(FormItem):
@@ -1195,6 +1231,8 @@ class InputTree(FormItem):
     treeContainerClassName: str = None  # tree 最外层容器类名
     enableNodePath: bool = None  # False  # 是否开启节点路径模式
     pathSeparator: str = None  # "/"  # 节点路径的分隔符，enableNodePath为true时生效
+    deferApi: API = None  # 懒加载的选项请配置 defer 为 true，然后配置 deferApi 即可完成懒加载
+    selectFirst: bool = None
 
 
 class TreeSelect(InputTree):
@@ -1348,7 +1386,7 @@ class ColumnOperation(TableColumn):
     """操作列"""
     type: str = 'operation'
     label: Template = None  # "操作"
-    toggled: bool = True
+    toggled: bool = None  # True
     buttons: List[Union[Action, AmisNode]] = None
 
 

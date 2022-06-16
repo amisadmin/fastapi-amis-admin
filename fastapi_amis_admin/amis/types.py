@@ -9,8 +9,8 @@ except ImportError:
 
 Expression = str
 Template = Union[str, "Tpl"]
-SchemaNode = Union[Template, "AmisNode", List["AmisNode"], dict]
-OptionsNode = Union[List[dict], List[str]]
+SchemaNode = Union[Template, "AmisNode", List["AmisNode"], Dict[str, Any], List[Dict[str, Any]]]
+OptionsNode = Union[List[Dict[str, Any]], List[str]]
 
 
 class BaseAmisModel(BaseModel):
@@ -49,6 +49,7 @@ class AmisNode(BaseAmisModel):
     visibleOn: Expression = None  # 条件显示
     hiddenOn: Expression = None  # 条件显示
     id: str = None
+    name: str = None
     onEvent: dict = None
 
 
