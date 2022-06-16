@@ -7,10 +7,9 @@ from pydantic.utils import smart_deepcopy
 from sqlalchemy import Column
 from sqlalchemy.engine import Row
 from sqlalchemy.orm import InstrumentedAttribute
+from sqlalchemy.sql import Select
 from sqlalchemy.sql.elements import Label
 from sqlmodel import SQLModel
-from sqlmodel.main import SQLModelMetaclass
-from sqlmodel.sql.expression import Select
 
 SQLModelField = Union[str, InstrumentedAttribute]
 SQLModelListField = Union[Type[SQLModel], SQLModelField]
@@ -109,8 +108,8 @@ class SQLModelFieldParser:
             insfield = self.get_insfield(field)
             if insfield is not None:
                 result.append(insfield)
-            elif isinstance(field, SQLModelMetaclass):
-                result.extend(self.get_sqlmodel_insfield(field))  # type:ignore
+            elif isinstance(field, type) and issubclass(field, SQLModel):
+                result.extend(self.get_sqlmodel_insfield(field))
             elif save_class and isinstance(field, save_class):
                 result.append(field)
         return result

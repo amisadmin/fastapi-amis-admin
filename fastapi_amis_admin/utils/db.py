@@ -9,7 +9,7 @@ class SqlalchemyAsyncClient:
 
     def __init__(self, engine: AsyncEngine):
         self.engine: AsyncEngine = engine
-        self.session_maker: Callable[..., AsyncSession] = sessionmaker(self.engine, class_=AsyncSession, autoflush=False)
+        self.session_maker: Callable[..., AsyncSession] = sessionmaker(self.engine, class_=AsyncSession)
 
     async def session_factory(self) -> AsyncGenerator[AsyncSession, Any]:
         async with self.session_maker() as session:

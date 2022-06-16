@@ -1,12 +1,12 @@
 from enum import Enum
-from typing import Optional, Type, List, Set, Union, Iterable
+from typing import Optional, Type, List, Set, Union, Iterable, Dict, Any
 
 from fastapi.params import Path
-from pydantic import BaseModel, BaseConfig
+from pydantic import BaseModel, BaseConfig, Extra
 from pydantic.fields import ModelField
 from pydantic.utils import smart_deepcopy
 
-from .schema import Paginator
+from .schema import Paginator, BaseApiSchema
 
 
 def validator_skip_blank(cls, v, config: BaseConfig, field: ModelField, *args, **kwargs):
@@ -22,7 +22,8 @@ def schema_create_by_schema(
         schema_name: str,
         include: Set[str] = None,
         exclude: Set[str] = None,
-        set_none: bool = False
+        set_none: bool = False,
+        **kwargs
 ) -> Type[BaseModel]:
     schema_fields = smart_deepcopy(schema_cls.__dict__['__fields__'])
     exclude = exclude or {}
@@ -33,16 +34,19 @@ def schema_create_by_schema(
                  name: schema_fields[name] for name in schema_fields
                  if name not in exclude
              }
-    return schema_create_by_modelfield(schema_name, fields.values(), set_none=set_none)
+    return schema_create_by_modelfield(schema_name, fields.values(), set_none=set_none, **kwargs)
 
 
 def schema_create_by_modelfield(
         schema_name: str,
         modelfields: Iterable[ModelField],
         set_none: bool = False,
+        namespaces: Dict[str, Any] = None,
+        extra: Extra = Extra.ignore,
         **kwargs
 ) -> Type[BaseModel]:
-    dct = {'__fields__': {}, '__annotations__': {}}
+    namespaces = namespaces or {}
+    namespaces.update({'__fields__': {}, '__annotations__': {}})
     for modelfield in modelfields:
         if set_none:
             modelfield.required = False
@@ -51,10 +55,9 @@ def schema_create_by_modelfield(
                 modelfield.pre_validators = [validator_skip_blank]
             else:
                 modelfield.pre_validators.insert(0, validator_skip_blank)
-        dct['__fields__'][modelfield.name] = modelfield
-        dct['__annotations__'][modelfield.name] = modelfield.type_
-    dct.update(kwargs)
-    return type(schema_name, (BaseModel,), dct)  # type: ignore
+        namespaces['__fields__'][modelfield.name] = modelfield
+        namespaces['__annotations__'][modelfield.name] = modelfield.type_
+    return type(schema_name, (BaseApiSchema,), namespaces, extra=extra, **kwargs)  # type: ignore
 
 
 def paginator_factory(perPage_max: Optional[int] = None) -> Type[Paginator]:

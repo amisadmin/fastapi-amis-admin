@@ -81,14 +81,19 @@ class BaseCrud(RouterMixin):
                 or self.schema_filter
                 or schema_create_by_schema(self.schema_list, f'{self.schema_name_prefix}Filter', set_none=True)
         )
-        self.schema_create = schema_create or self.schema_create or self.schema_model
-        self.schema_read = schema_read or self.schema_read or self.schema_model
-        self.schema_update = (
-                schema_update
-                or self.schema_update
-                or schema_create_by_schema(self.schema_model, f'{self.schema_name_prefix}Update',
-                                           exclude={self.pk_name}, set_none=True)
+        self.schema_create = (
+                schema_create
+                or self.schema_create
+                or schema_create_by_schema(self.schema_model, f'{self.schema_name_prefix}Create')
         )
+        self.schema_read = schema_read or self.schema_read or self.schema_model
+        self.schema_update = (schema_update or self.schema_update
+                              or schema_create_by_schema(self.schema_model,
+                                                         f'{self.schema_name_prefix}Update',
+                                                         exclude={self.pk_name},
+                                                         set_none=True,
+                                                         )
+                              )
         self.list_per_page_max = list_max_per_page or self.list_per_page_max
         self.paginator = paginator_factory(perPage_max=self.list_per_page_max)
         self.router.add_api_route(

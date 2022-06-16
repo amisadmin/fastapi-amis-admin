@@ -11,14 +11,14 @@ from typing import (
 )
 
 from fastapi import Depends, Body, APIRouter, Query
-from pydantic import Json, BaseModel
+from pydantic import Json, BaseModel, Extra
 from sqlalchemy import insert, update, delete, func, Table, Column
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy.orm import InstrumentedAttribute
+from sqlalchemy.sql import Select
 from sqlalchemy.sql.elements import BinaryExpression, UnaryExpression
 from sqlmodel import SQLModel
-from sqlmodel.ext.asyncio.session import AsyncSession
-from sqlmodel.sql.expression import Select
 from starlette.requests import Request
 
 from .base import BaseCrud
@@ -183,7 +183,8 @@ class SQLModelCrud(BaseCrud, SQLModelSelector):
             self.schema_list = schema_create_by_modelfield(
                 schema_name=f'{self.schema_name_prefix}List',
                 modelfields=modelfields,
-                set_none=True
+                set_none=True,
+                extra=Extra.allow,
             )
         if not self.schema_filter:
             modelfields = list(filter(None, [self.parser.get_modelfield(insfield, deepcopy=True)
