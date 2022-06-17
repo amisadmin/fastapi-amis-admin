@@ -6,6 +6,7 @@ from typing import Type, Callable, Generator, Any, List, Union, Dict, Iterable, 
 from fastapi import Request, Depends, FastAPI, Query, HTTPException, Body
 from pydantic import BaseModel
 from pydantic.fields import ModelField
+from pydantic.utils import deep_update
 from sqlalchemy import delete, Column, Table, insert
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, AsyncEngine
 from sqlalchemy.orm import InstrumentedAttribute, RelationshipProperty
@@ -702,7 +703,7 @@ class PageAdmin(PageSchemaAdmin, RouterAdmin):
                 self.page_schema.schema_ = Iframe(src=self.page_schema.url)
         return self.page_schema
 
-    def page_parser(self, request: Request, page: Page) -> Response:
+    async def page_parser(self, request: Request, page: Page) -> Response:
         if request.method == 'GET':
             result = page.amis_html(
                 template_path=self.template_name,
@@ -714,7 +715,10 @@ class PageAdmin(PageSchemaAdmin, RouterAdmin):
             )
             result = HTMLResponse(result)
         else:
-            result = BaseAmisApiOut(data=page.amis_dict())
+            data = page.amis_dict()
+            if await request.body():
+                data = deep_update(data, (await request.json()).get('_update', {}))
+            result = BaseAmisApiOut(data=data)
             result = JSONResponse(result.dict())
         return result
 
@@ -744,7 +748,7 @@ class PageAdmin(PageSchemaAdmin, RouterAdmin):
     @property
     def route_page(self) -> Callable:
         async def route(request: Request, page: Page = Depends(self.get_page)):
-            return self.page_parser(request, page)
+            return await self.page_parser(request, page)
 
         return route
 
@@ -761,7 +765,7 @@ class TemplateAdmin(PageAdmin):
         self.page_path = self.page_path or f'/{self.template_name}'
         super().__init__(app)
 
-    def page_parser(self, request: Request, page: Dict[str, Any]) -> Response:
+    async def page_parser(self, request: Request, page: Dict[str, Any]) -> Response:
         page['request'] = request
         return self.templates.TemplateResponse(self.template_name, page)
 
