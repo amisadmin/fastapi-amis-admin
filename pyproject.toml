@@ -51,7 +51,7 @@ FastAPI-User-Auth = "https://github.com/amisadmin/fastapi_user_auth"
 [project.optional-dependencies]
 standard = [
     "uvicorn[standard] >=0.12.0,<0.16.0",
-    "fastapi-amis-admin-cli",
+    "fastapi-amis-admin-cli>=0.0.4,<0.1.0",
 ]
 test = [
     "pytest >=6.2.4,<7.0.0",
@@ -61,14 +61,14 @@ dev = [
     "jinja2 >=2.11.2,<4.0.0",
     "aiosqlite",
     "uvicorn[standard] >=0.12.0,<0.16.0",
-    "fastapi-amis-admin-cli",
+    "fastapi-amis-admin-cli>=0.0.4,<0.1.0",
 ]
 cli = [
-    "fastapi-amis-admin-cli",
+    "fastapi-amis-admin-cli>=0.0.4,<0.1.0",
 ]
 all = [
     "jinja2 >=2.11.2,<4.0.0",
     "uvicorn[standard] >=0.12.0,<0.16.0",
     "ujson>=4.0.1",
-    "fastapi-amis-admin-cli",
+    "fastapi-amis-admin-cli>=0.0.4,<0.1.0",
 ]
