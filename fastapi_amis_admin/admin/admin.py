@@ -336,7 +336,8 @@ class BaseModelAdmin(SQLModelCrud):
         )
 
     async def get_list_table(self, request: Request) -> TableCRUD:
-        headerToolbar = ["filter-toggler", "reload", "bulkActions", {"type": "columns-toggler", "align": "right"},
+        headerToolbar = ["filter-toggler", "reload", "bulkActions",
+                         {"type": "columns-toggler", "align": "right", "draggable": True},
                          {"type": "drag-toggler", "align": "right"}, {"type": "pagination", "align": "right"},
                          {"type": "tpl", "tpl": _("SHOWING ${items|count} OF ${total} RESULT(S)"), "className": "v-middle",
                           "align": "right"}]
@@ -1124,7 +1125,7 @@ class AdminApp(PageAdmin, AdminGroup):
         for admin_cls, admin in self._registered.items():
             if issubclass(admin_cls, ModelAdmin) and admin_cls.bind_model and admin_cls.model.__tablename__ == table_name:
                 return admin
-            elif isinstance(admin, AdminApp):
+            elif isinstance(admin, AdminApp) and self.engine.url == admin.engine.url:
                 admin = admin.get_model_admin(table_name)
                 if admin:
                     return admin
