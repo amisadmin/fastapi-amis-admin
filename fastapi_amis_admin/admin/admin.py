@@ -1,14 +1,16 @@
+import asyncio
 import datetime
 import re
 from functools import lru_cache
-from typing import Type, Callable, Generator, Any, List, Union, Dict, Iterable, Optional, TypeVar, NewType, Iterator
+from typing import Type, Callable, Any, List, Union, Dict, Iterable, Optional, TypeVar, NewType, Iterator
 
 from fastapi import Request, Depends, FastAPI, Query, HTTPException, Body
 from pydantic import BaseModel
 from pydantic.fields import ModelField
 from pydantic.utils import deep_update
-from sqlalchemy import delete, Column, Table, insert
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, AsyncEngine
+from sqlalchemy import delete, Column, Table, insert, create_engine
+from sqlalchemy.engine import Engine
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncEngine
 from sqlalchemy.orm import InstrumentedAttribute, RelationshipProperty
 from sqlalchemy.util import md5_hex
 from sqlmodel import SQLModel, select
@@ -29,7 +31,7 @@ from fastapi_amis_admin.crud.parser import SQLModelFieldParser, SQLModelField, S
 from fastapi_amis_admin.crud.schema import CrudEnum, BaseApiOut, Paginator
 from fastapi_amis_admin.crud.utils import parser_item_id, schema_create_by_schema, parser_str_set_list, \
     schema_create_by_modelfield
-from fastapi_amis_admin.utils.db import SqlalchemyAsyncClient
+from fastapi_amis_admin.utils.db import SqlalchemyAsyncClient, SqlalchemySyncClient
 from fastapi_amis_admin.utils.functools import cached_property
 from fastapi_amis_admin.utils.translation import i18n as _
 
@@ -45,7 +47,6 @@ _BaseModel = NewType('_BaseModel', BaseModel)
 
 class LinkModelForm:
     link_model: Table
-    session_factory: Callable[..., Generator[AsyncSession, Any, None]] = None
 
     def __init__(
             self,
@@ -54,13 +55,11 @@ class LinkModelForm:
             link_model: Union[SQLModel, Table],
             link_col: Column,
             item_col: Column,
-            session_factory: Callable[..., Generator[AsyncSession, Any, None]] = None
     ):
         self.link_model = link_model
         self.pk_admin = pk_admin
         self.display_admin = display_admin
         assert self.display_admin, 'display_admin is None'
-        self.session_factory = session_factory or self.pk_admin.session_factory
         self.link_col = link_col
         self.item_col = item_col
         assert self.item_col is not None, 'item_col is None'
@@ -109,7 +108,6 @@ class LinkModelForm:
                 item_id: List[str] = Depends(parser_item_id),
                 link_id: str = Query(..., min_length=1, title='link_id', example='1,2,3',
                                      description='link model Primary key or list of link model primary keys'),
-                session: AsyncSession = Depends(self.session_factory)
         ):
             if not await self.pk_admin.has_update_permission(request, item_id, None):
                 return self.pk_admin.error_no_router_permission(request)
@@ -119,9 +117,7 @@ class LinkModelForm:
             ).where(
                 self.item_col.in_(list(map(self.pk_admin.parser.get_python_type_parse(self.item_col), item_id)))
             )
-            result = await session.execute(stmt)
-            if result.rowcount:  # type: ignore
-                await session.commit()
+            result = await self.pk_admin.execute_sql(stmt, commit=True)
             return BaseApiOut(data=result.rowcount)  # type: ignore
 
         return route
@@ -133,7 +129,6 @@ class LinkModelForm:
                 item_id: List[str] = Depends(parser_item_id),
                 link_id: str = Query(..., min_length=1, title='link_id', example='1,2,3',
                                      description='link model Primary key or list of link model primary keys'),
-                db: AsyncSession = Depends(self.session_factory)
         ):
             if not await self.pk_admin.has_update_permission(request, item_id, None):
                 return self.pk_admin.error_no_router_permission(request)
@@ -146,9 +141,7 @@ class LinkModelForm:
                 )
             stmt = insert(self.link_model).values(values)
             try:
-                result = await db.execute(stmt)
-                if result.rowcount:  # type: ignore
-                    await db.commit()
+                result = await self.pk_admin.execute_sql(stmt, commit=True)
             except Exception as error:
                 return self.pk_admin.error_execute_sql(request=request, error=error)
             return BaseApiOut(data=result.rowcount)  # type: ignore
@@ -258,13 +251,13 @@ class BaseModelAdmin(SQLModelCrud):
         assert self.model, 'model is None'
         assert app, 'app is None'
         self.app = app
-        self.session_factory = self.session_factory or self.app.db.session_factory
+        self.engine = self.engine or self.app.db.engine
         self.parser = SQLModelFieldParser(default_model=self.model)
         list_display_insfield = self.parser.filter_insfield(self.list_display)
         self.list_filter = self.list_filter or list_display_insfield
         self.fields = self.fields or [self.model]
         self.fields.extend(list_display_insfield)
-        super().__init__(self.model, self.session_factory)
+        super().__init__(self.model, self.engine)
         if self.create_fields and not self.schema_create:
             modelfields = list(filter(None, [self.parser.get_modelfield(insfield, deepcopy=True)
                                              for insfield in self.create_fields]))
@@ -952,10 +945,9 @@ class BaseModelAction:
 
     async def fetch_item_scalars(
             self,
-            session: AsyncSession,
             item_id: List[str]
     ) -> ScalarResult:
-        result = await session.execute(select(self.admin.model).where(self.admin.pk.in_(item_id)))
+        result = await self.admin.execute_sql(select(self.admin.model).where(self.admin.pk.in_(item_id)))
         return result.scalars()
 
     def register_router(self):
@@ -992,7 +984,6 @@ class ModelAction(BaseFormAdmin, BaseModelAction):
             request: Request,
             item_id: List[str],
             data: Optional[BaseModel],
-            session: AsyncSession,
             **kwargs
     ) -> BaseApiOut[Any]:
         return BaseApiOut(data=data)
@@ -1006,9 +997,8 @@ class ModelAction(BaseFormAdmin, BaseModelAction):
                 data: self.schema = Body(default=default),  # type:ignore
                 item_id: str = Query(None, title='item_id', example='1,2,3',
                                      description='Primary key or list of primary keys'),
-                session: AsyncSession = Depends(self.admin.session_factory),
         ):
-            return await self.handle(request, parser_str_set_list(set_str=item_id), data, session)
+            return await self.handle(request, parser_str_set_list(set_str=item_id), data)
 
         return route
 
@@ -1075,7 +1065,7 @@ class AdminGroup(PageSchemaAdmin):
 
 class AdminApp(PageAdmin, AdminGroup):
     """管理应用"""
-    engine: AsyncEngine = None
+    engine: Union[Engine, AsyncEngine] = None
     page_path = '/'
     tabs_mode: TabsModeEnum = None
 
@@ -1084,7 +1074,12 @@ class AdminApp(PageAdmin, AdminGroup):
         AdminGroup.__init__(self, app)
         self.engine = self.engine or self.app.engine
         assert self.engine, 'engine is None'
-        self.db = SqlalchemyAsyncClient(self.engine)
+        if isinstance(self.engine, Engine):
+            self.is_async_engine = False
+            self.db = SqlalchemySyncClient(self.engine)
+        else:
+            self.is_async_engine = True
+            self.db = SqlalchemyAsyncClient(self.engine)
         self._registered: Dict[Type[_BaseAdminT], Optional[_BaseAdminT]] = {}
 
     @property
@@ -1178,12 +1173,22 @@ class AdminApp(PageAdmin, AdminGroup):
 
 class BaseAdminSite(AdminApp):
 
-    def __init__(self, settings: Settings, fastapi: FastAPI = None, engine: AsyncEngine = None):
+    def __init__(
+            self,
+            settings: Settings,
+            fastapi: FastAPI = None,
+            engine: Union[Engine, AsyncEngine] = None
+    ):
         self.auth = None
         self.settings = settings
         self.fastapi = fastapi or FastAPI(debug=settings.debug, reload=settings.debug)
         self.router = self.fastapi.router
-        self.engine = engine or create_async_engine(settings.database_url_async, echo=settings.debug, future=True)
+        if engine:
+            self.engine = engine
+        elif settings.database_url_async:
+            self.engine = create_async_engine(settings.database_url_async, echo=settings.debug, future=True)
+        elif settings.database_url:
+            self.engine = create_engine(settings.database_url, echo=settings.debug, future=True)
         super().__init__(self)
 
     @cached_property
@@ -1195,5 +1200,12 @@ class BaseAdminSite(AdminApp):
         fastapi.mount(self.settings.root_path, self.fastapi, name=name)
 
     async def create_db_and_tables(self) -> None:
-        async with self.db.engine.begin() as conn:
-            await conn.run_sync(SQLModel.metadata.create_all)
+        if self.is_async_engine:
+            async with self.db.engine.begin() as conn:
+                await conn.run_sync(SQLModel.metadata.create_all)
+        else:
+            def create_all():
+                with self.db.engine.begin() as conn:
+                    SQLModel.metadata.create_all(conn)
+
+            await asyncio.to_thread(create_all)

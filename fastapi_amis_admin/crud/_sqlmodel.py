@@ -1,3 +1,4 @@
+import asyncio
 import datetime
 import re
 from enum import Enum
@@ -7,16 +8,17 @@ from typing import (
     List,
     Type,
     Optional,
-    Union, Dict, Tuple, AsyncGenerator, Pattern,
+    Union, Dict, Tuple, Pattern, Mapping, Sequence,
 )
 
 from fastapi import Depends, Body, APIRouter, Query
 from pydantic import Json, BaseModel, Extra
 from sqlalchemy import insert, update, delete, func, Table, Column
-from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.engine import Result, Engine
+from sqlalchemy.ext.asyncio import AsyncSession, AsyncEngine
 from sqlalchemy.future import select
-from sqlalchemy.orm import InstrumentedAttribute
-from sqlalchemy.sql import Select
+from sqlalchemy.orm import InstrumentedAttribute, sessionmaker, Session
+from sqlalchemy.sql import Select, Executable
 from sqlalchemy.sql.elements import BinaryExpression, UnaryExpression
 from sqlmodel import SQLModel
 from starlette.requests import Request
@@ -162,19 +164,25 @@ class SQLModelSelector:
 
 
 class SQLModelCrud(BaseCrud, SQLModelSelector):
-    session_factory: Callable[..., AsyncGenerator[AsyncSession, Any]] = None
+    engine: Union[Engine, AsyncEngine] = None
     readonly_fields: List[SQLModelListField] = []  # 只读字段
     update_fields: List[SQLModelListField] = []  # 可编辑字段
 
     def __init__(
             self,
             model: Type[SQLModel],
-            session_factory: Callable[..., AsyncGenerator[AsyncSession, Any]],
+            engine: Union[Engine, AsyncEngine],
             fields: List[SQLModelListField] = None,
             router: APIRouter = None
     ) -> None:
-        self.session_factory = session_factory or self.session_factory
-        assert self.session_factory, 'session_factory is None'
+        self.engine = engine or self.engine
+        assert self.engine, 'engine is None'
+        if isinstance(self.engine, Engine):
+            self.session_maker = sessionmaker(bind=model.engine, class_=Session)
+            self.is_async_engine = False
+        else:
+            self.session_maker = sessionmaker(bind=model.engine, class_=AsyncSession)
+            self.is_async_engine = True
         SQLModelSelector.__init__(self, model, fields)
         BaseCrud.__init__(self, self.model, router)
         if not self.schema_list:
@@ -243,7 +251,6 @@ class SQLModelCrud(BaseCrud, SQLModelSelector):
                 request: Request,
                 paginator: self.paginator = Depends(self.paginator),  # type: ignore
                 filter: self.schema_filter = Body(None),  # type: ignore
-                session: AsyncSession = Depends(self.session_factory),
                 stmt: Select = Depends(self._select_maker),
         ):
             if not await self.has_list_permission(request, paginator, filter):
@@ -254,12 +261,12 @@ class SQLModelCrud(BaseCrud, SQLModelSelector):
             if filter_data:
                 stmt = stmt.filter(*self.calc_filter_clause(filter_data))
             if paginator.show_total:
-                result = await session.execute(select(func.count('*')).select_from(stmt.subquery()))
+                result = await self.execute_sql(select(func.count('*')).select_from(stmt.subquery()))
                 data.total = result.scalar()
             orderBy = self._calc_ordering(paginator.orderBy, paginator.orderDir)
             if orderBy:
                 stmt = stmt.order_by(*orderBy)
-            result = await session.execute(stmt.limit(perPage).offset((page - 1) * perPage))
+            result = await self.execute_sql(stmt.limit(perPage).offset((page - 1) * perPage))
             data.items = result.all()
             data.items = self.parser.conv_row_to_dict(data.items)
             data.items = [self.schema_list.parse_obj(item) for item in data.items] if data.items else []
@@ -274,7 +281,6 @@ class SQLModelCrud(BaseCrud, SQLModelSelector):
         async def route(
                 request: Request,
                 data: Union[self.schema_create, List[self.schema_create]] = Body(...),  # type: ignore
-                session: AsyncSession = Depends(self.session_factory)
         ) -> BaseApiOut[self.model]:  # type: ignore
             if not await self.has_create_permission(request, data):
                 return self.error_no_router_permission(request)
@@ -287,9 +293,7 @@ class SQLModelCrud(BaseCrud, SQLModelSelector):
                 return self.error_data_handle(request)
             stmt = insert(self.model).values(values)
             try:
-                result = await session.execute(stmt)
-                if result.rowcount:  # type: ignore
-                    await session.commit()
+                result = await self.execute_sql(stmt, commit=True)
             except Exception as error:
                 return self.error_execute_sql(request=request, error=error)
             if is_bulk:
@@ -306,14 +310,12 @@ class SQLModelCrud(BaseCrud, SQLModelSelector):
         async def route(
                 request: Request,
                 item_id: List[str] = Depends(parser_item_id),
-                session: AsyncSession = Depends(self.session_factory),
                 stmt: Select = Depends(self.get_select)
         ):
             if not await self.has_read_permission(request, item_id):
                 return self.error_no_router_permission(request)
-            result = await session.execute(stmt.where(
-                self.pk.in_(list(map(self.parser.get_python_type_parse(self.pk), item_id)))
-            ))
+            stmt = stmt.where(self.pk.in_(list(map(self.parser.get_python_type_parse(self.pk), item_id))))
+            result = await self.execute_sql(stmt)
             items = result.all()
             items = self.parser.conv_row_to_dict(items)
             if items:
@@ -330,7 +332,6 @@ class SQLModelCrud(BaseCrud, SQLModelSelector):
                 request: Request,
                 item_id: List[str] = Depends(parser_item_id),
                 data: self.schema_update = Body(...),  # type: ignore
-                session: AsyncSession = Depends(self.session_factory)
         ):
             if not await self.has_update_permission(request, item_id, data):
                 return self.error_no_router_permission(request)
@@ -339,10 +340,8 @@ class SQLModelCrud(BaseCrud, SQLModelSelector):
             if not data:
                 return self.error_data_handle(request)
             stmt = stmt.values(data)
-            result = await session.execute(stmt)
-            if result.rowcount:  # type: ignore
-                await session.commit()
-                return BaseApiOut(data=result.rowcount)  # type: ignore
+            result = await self.execute_sql(stmt, commit=True)
+            return BaseApiOut(data=result.rowcount)  # type: ignore
 
         return route
 
@@ -351,14 +350,40 @@ class SQLModelCrud(BaseCrud, SQLModelSelector):
         async def route(
                 request: Request,
                 item_id: List[str] = Depends(parser_item_id),
-                session: AsyncSession = Depends(self.session_factory)
         ):
             if not await self.has_delete_permission(request, item_id):
                 return self.error_no_router_permission(request)
             stmt = delete(self.model).where(self.pk.in_(list(map(self.parser.get_python_type_parse(self.pk), item_id))))
-            result = await session.execute(stmt)
-            if result.rowcount:  # type: ignore
-                await session.commit()
+            result = await self.execute_sql(stmt, commit=True)
             return BaseApiOut(data=result.rowcount)  # type: ignore
 
         return route
+
+    def _execute_sql_sync(
+            self,
+            statement: Executable,
+            params: Union[Mapping[Any, Any], Sequence[Mapping[Any, Any]]] = None,
+            *,
+            commit: bool = False,
+    ) -> Result:
+        with self.session_maker() as session:
+            result = session.execute(statement, params)
+            if commit:
+                session.commit()
+        return result
+
+    async def execute_sql(
+            self,
+            statement: Executable,
+            params: Union[Mapping[Any, Any], Sequence[Mapping[Any, Any]]] = None,
+            *,
+            commit: bool = False,
+    ) -> Result:
+        if self.is_async_engine:
+            async with self.session_maker() as session:
+                result = await session.execute(statement)
+                if commit:
+                    await session.commit()
+        else:
+            result = await asyncio.to_thread(self._execute_sql_sync, statement, params, commit=commit)
+        return result

@@ -12,6 +12,7 @@ class Settings(BaseSettings):
     site_url: str = ''
     root_path: str = '/admin'
     database_url_async: str = Field(..., env='DATABASE_URL_ASYNC')
+    database_url: str = Field('', env='DATABASE_URL')
     language: str = ''  # 'zh_CN','en_US'
     amis_cdn: str = 'https://unpkg.com'
     amis_pkg: str = 'amis@1.10.2'
