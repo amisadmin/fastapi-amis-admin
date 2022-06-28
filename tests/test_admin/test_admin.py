@@ -1,0 +1,146 @@
+import os
+from typing import Dict, Any
+
+import pytest
+from httpx import AsyncClient
+from starlette.requests import Request
+from starlette.templating import Jinja2Templates
+
+from fastapi_amis_admin import admin, amis
+from fastapi_amis_admin.admin import AdminSite
+from fastapi_amis_admin.amis import Page
+
+pytestmark = pytest.mark.asyncio
+
+
+async def test_BaseAdmin(site: AdminSite):
+    @site.register_admin
+    class TestAdmin(admin.BaseAdmin):
+        pass
+
+    ins = site.get_admin_or_create(TestAdmin)
+    assert ins.site is site
+    assert ins.unique_id
+
+
+async def test_PageSchemaAdmin(site: AdminSite):
+    @site.register_admin
+    class TestAdmin(admin.PageSchemaAdmin):
+        pass
+
+    ins = site.get_admin_or_create(TestAdmin)
+    assert ins.group_schema is None
+    assert ins.page_schema
+
+    @site.register_admin
+    class TestAdmin1(admin.PageSchemaAdmin):
+        group_schema = 'group_label'
+        page_schema = 'page_label'
+
+    ins = site.get_admin_or_create(TestAdmin1)
+
+    assert isinstance(ins.group_schema, amis.PageSchema) and ins.group_schema.label == 'group_label'
+    assert isinstance(ins.group_schema, amis.PageSchema) and ins.page_schema.label == 'page_label'
+
+    @site.register_admin
+    class TestAdmin2(admin.PageSchemaAdmin):
+        group_schema = amis.PageSchema(label='group_label')
+        page_schema = amis.PageSchema(label='page_label', isDefaultPage=True, sort=100)
+
+    ins = site.get_admin_or_create(TestAdmin2)
+
+    assert isinstance(ins.group_schema, amis.PageSchema) and ins.group_schema.label == 'group_label'
+    assert isinstance(ins.page_schema, amis.PageSchema) and ins.page_schema.label == 'page_label'
+
+
+async def test_LinkAdmin(site: AdminSite):
+    @site.register_admin
+    class TestAdmin(admin.LinkAdmin):
+        link = 'https://docs.amis.work'
+
+    ins = site.get_admin_or_create(TestAdmin)
+    assert ins.page_schema.link == 'https://docs.amis.work'
+
+
+async def test_IframeAdmin(site: AdminSite):
+    @site.register_admin
+    class TestAdmin(admin.IframeAdmin):
+        src = 'https://docs.amis.work'
+
+    ins = site.get_admin_or_create(TestAdmin)
+    assert (
+            isinstance(ins.page_schema.schema_, amis.Iframe)
+            and ins.page_schema.schema_.src == 'https://docs.amis.work'
+    )
+
+
+async def test_RouterAdmin(site: AdminSite, async_client: AsyncClient):
+    @site.register_admin
+    class TestAdmin(admin.RouterAdmin):
+        router_prefix = '/router'
+
+        def register_router(self):
+            @self.router.get('/hello')
+            def hello():
+                return {'name': 'hello'}
+
+    ins = site.get_admin_or_create(TestAdmin)
+    assert ins.router_path == f'{site.settings.root_path}/router'
+
+    site.register_router()
+    res = await async_client.get('/router/hello')
+    assert res.json() == {'name': 'hello'}
+
+
+async def test_PageAdmin(site: AdminSite, async_client: AsyncClient):
+    @site.register_admin
+    class TestAdmin(admin.PageAdmin):
+        page_path = '/test'
+
+        async def get_page(self, request: Request) -> Page:
+            return Page(title='hello', body='Test Amis Page')
+
+    ins = site.get_admin_or_create(TestAdmin)
+    assert ins.page_path == '/test'
+    assert ins.page_schema.url == ins.router_path + ins.page_path
+
+    site.register_router()
+    # test amis json
+    res = await async_client.post(ins.router_path + ins.page_path)
+    assert res.json()['data'] == {'type': 'page', 'title': 'hello', 'body': 'Test Amis Page'}
+    # test amis html
+    res = await async_client.get(ins.router_path + ins.page_path)
+    assert res.text.find(Page(title='hello', body='Test Amis Page').amis_json())
+    # test amis json _update
+    res = await async_client.post(ins.router_path + ins.page_path, json={
+        '_update': {'title': 'new title', 'extra': 'extra data'}
+    })
+    assert res.json()['data'] == {'type': 'page', 'title': 'new title', 'body': 'Test Amis Page', 'extra': 'extra data'}
+
+
+async def test_TemplateAdmin(site: AdminSite, async_client: AsyncClient, tmpdir):
+    path = os.path.join(tmpdir, "index.html")
+    with open(path, "w") as file:
+        file.write("<html>Hello,{{ name }}</html>")
+
+    @site.register_admin
+    class TestAdmin(admin.TemplateAdmin):
+        page_path = '/index'
+        templates = Jinja2Templates(directory=str(tmpdir))
+        template_name = 'index.html'
+
+        async def get_page(self, request: Request) -> Dict[str, Any]:
+            return {'name': 'hello'}
+
+    ins = site.get_admin_or_create(TestAdmin)
+    assert ins.page_path == '/index'
+    assert ins.page_schema.url == ins.router_path + ins.page_path
+    assert (
+            isinstance(ins.page_schema.schema_, amis.Iframe)
+            and ins.page_schema.schema_.src == ins.page_schema.url
+    )
+    site.register_router()
+
+    # test jinja2 html
+    res = await async_client.get(ins.router_path + ins.page_path)
+    assert res.text == '<html>Hello,hello</html>'
