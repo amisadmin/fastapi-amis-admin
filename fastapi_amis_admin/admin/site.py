@@ -11,15 +11,14 @@ from starlette.requests import Request
 from starlette.staticfiles import StaticFiles
 
 import fastapi_amis_admin
-from fastapi_amis_admin.amis.components import PageSchema, Page, Property
-from fastapi_amis_admin.admin.admin import IframeAdmin, PageAdmin, AdminApp, RouterAdmin, \
-    BaseAdminSite
+from fastapi_amis_admin.admin import admin, AdminApp
 from fastapi_amis_admin.admin.settings import Settings
+from fastapi_amis_admin.amis.components import PageSchema, Page, Property
 from fastapi_amis_admin.crud.schema import BaseApiOut
 from fastapi_amis_admin.utils.translation import i18n as _
 
 
-class DocsAdmin(IframeAdmin):
+class DocsAdmin(admin.IframeAdmin):
     group_schema = PageSchema(label='APIDocs', icon='fa fa-book', sort=-100)
     page_schema = PageSchema(label='AdminDocs', icon='fa fa-book')
 
@@ -28,7 +27,7 @@ class DocsAdmin(IframeAdmin):
         return self.app.site.router_path + self.app.site.fastapi.docs_url
 
 
-class ReDocsAdmin(IframeAdmin):
+class ReDocsAdmin(admin.IframeAdmin):
     group_schema = PageSchema(label='APIDocs', icon='fa fa-book', sort=-100)
     page_schema = PageSchema(label='AdminRedocs', icon='fa fa-book')
 
@@ -37,7 +36,7 @@ class ReDocsAdmin(IframeAdmin):
         return self.app.site.router_path + self.app.site.fastapi.redoc_url
 
 
-class HomeAdmin(PageAdmin):
+class HomeAdmin(admin.PageAdmin):
     group_schema = None
     page_schema = PageSchema(label=_('Home'), icon='fa fa-home', url='/home', isDefaultPage=True, sort=100)
     page_path = '/home'
@@ -57,7 +56,7 @@ class HomeAdmin(PageAdmin):
         return page
 
 
-class FileAdmin(RouterAdmin):
+class FileAdmin(admin.RouterAdmin):
     # todo perfect: Limit file size/suffixes/content_type
     file_directory: str = 'upload'
     file_path: str = '/upload'
@@ -104,7 +103,7 @@ class FileAdmin(RouterAdmin):
         url: str = None
 
 
-class AdminSite(BaseAdminSite):
+class AdminSite(admin.BaseAdminSite):
 
     def __init__(self, settings: Settings, fastapi: FastAPI = None, engine: AsyncEngine = None):
         super().__init__(settings, fastapi, engine)
