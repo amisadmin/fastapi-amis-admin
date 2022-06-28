@@ -1,4 +1,4 @@
-from pydantic import BaseSettings, Field, validator
+from pydantic import BaseSettings, Field, validator, root_validator
 
 
 class Settings(BaseSettings):
@@ -11,7 +11,7 @@ class Settings(BaseSettings):
     site_icon: str = 'https://baidu.gitee.io/amis/static/favicon_b3b0647.png'
     site_url: str = ''
     root_path: str = '/admin'
-    database_url_async: str = Field(..., env='DATABASE_URL_ASYNC')
+    database_url_async: str = Field('', env='DATABASE_URL_ASYNC')
     database_url: str = Field('', env='DATABASE_URL')
     language: str = ''  # 'zh_CN','en_US'
     amis_cdn: str = 'https://unpkg.com'
@@ -20,3 +20,9 @@ class Settings(BaseSettings):
     @validator('amis_cdn', 'root_path', 'site_url', pre=True)
     def valid_url(url: str):
         return url[:-1] if url.endswith('/') else url
+
+    @root_validator(pre=True)
+    def valid_database_url(cls, values):
+        if not values.get('database_url') and not values.get('database_url_async'):
+            values.setdefault('database_url', 'sqlite+aiosqlite:///amisadmin.db?check_same_thread=False')
+            return values
