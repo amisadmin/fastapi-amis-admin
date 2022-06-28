@@ -1,4 +1,3 @@
-import asyncio
 import datetime
 import re
 from functools import lru_cache
@@ -14,7 +13,6 @@ from sqlalchemy.ext.asyncio import create_async_engine, AsyncEngine
 from sqlalchemy.orm import InstrumentedAttribute, RelationshipProperty
 from sqlalchemy.util import md5_hex
 from sqlmodel import SQLModel, select
-from sqlmodel.engine.result import ScalarResult
 from starlette import status
 from starlette.responses import HTMLResponse, JSONResponse, Response
 from starlette.templating import Jinja2Templates
@@ -27,11 +25,10 @@ from fastapi_amis_admin.amis.components import Page, TableCRUD, Action, ActionTy
 from fastapi_amis_admin.amis.constants import LevelEnum, DisplayModeEnum, SizeEnum, TabsModeEnum
 from fastapi_amis_admin.amis.types import BaseAmisApiOut, BaseAmisModel, AmisAPI, SchemaNode
 from fastapi_amis_admin.crud import SQLModelCrud, SQLModelSelector, RouterMixin
-from fastapi_amis_admin.crud.parser import SQLModelFieldParser, SQLModelField, SQLModelListField
+from fastapi_amis_admin.crud.parser import SQLModelFieldParser, SQLModelField, SQLModelListField, get_python_type_parse
 from fastapi_amis_admin.crud.schema import CrudEnum, BaseApiOut, Paginator
-from fastapi_amis_admin.crud.utils import parser_item_id, schema_create_by_schema, parser_str_set_list, \
-    schema_create_by_modelfield
-from fastapi_amis_admin.utils.db import SqlalchemyAsyncClient, SqlalchemySyncClient
+from fastapi_amis_admin.crud.utils import parser_item_id, schema_create_by_schema, parser_str_set_list
+from fastapi_amis_admin.utils.database import AsyncDatabase, Database
 from fastapi_amis_admin.utils.functools import cached_property
 from fastapi_amis_admin.utils.translation import i18n as _
 
@@ -113,11 +110,11 @@ class LinkModelForm:
                 return self.pk_admin.error_no_router_permission(request)
             stmt = delete(self.link_model).where(
                 self.link_col.in_(
-                    list(map(self.pk_admin.parser.get_python_type_parse(self.link_col), parser_str_set_list(link_id))))
+                    list(map(get_python_type_parse(self.link_col), parser_str_set_list(link_id))))
             ).where(
-                self.item_col.in_(list(map(self.pk_admin.parser.get_python_type_parse(self.item_col), item_id)))
+                self.item_col.in_(list(map(get_python_type_parse(self.item_col), item_id)))
             )
-            result = await self.pk_admin.execute_sql(stmt, commit=True)
+            result = await self.pk_admin.db.async_execute(stmt, commit=True)
             return BaseApiOut(data=result.rowcount)  # type: ignore
 
         return route
@@ -133,15 +130,15 @@ class LinkModelForm:
             if not await self.pk_admin.has_update_permission(request, item_id, None):
                 return self.pk_admin.error_no_router_permission(request)
             values = []
-            for item in map(self.pk_admin.parser.get_python_type_parse(self.item_col), item_id):
+            for item in map(get_python_type_parse(self.item_col), item_id):
                 values.extend(
                     {self.link_col.key: link, self.item_col.key: item}
                     for link in
-                    map(self.pk_admin.parser.get_python_type_parse(self.link_col), parser_str_set_list(link_id))
+                    map(get_python_type_parse(self.link_col), parser_str_set_list(link_id))
                 )
             stmt = insert(self.link_model).values(values)
             try:
-                result = await self.pk_admin.execute_sql(stmt, commit=True)
+                result = await self.pk_admin.db.async_execute(stmt, commit=True)
             except Exception as error:
                 return self.pk_admin.error_execute_sql(request=request, error=error)
             return BaseApiOut(data=result.rowcount)  # type: ignore
@@ -239,13 +236,11 @@ class LinkModelForm:
 
 class BaseModelAdmin(SQLModelCrud):
     list_display: List[Union[SQLModelListField, TableColumn]] = []  # 需要显示的字段
-    list_filter: List[Union[SQLModelListField, FormItem]] = []  # 需要查询的字段
     list_per_page: int = 10  # 每页数据量
     link_model_fields: List[InstrumentedAttribute] = []  # 内联字段
     link_model_forms: List[LinkModelForm] = []
     bulk_update_fields: List[Union[SQLModelListField, FormItem]] = []  # 批量编辑字段
     search_fields: List[SQLModelField] = []  # 模糊搜索字段
-    create_fields: List[InstrumentedAttribute] = []  # 新增数据字段
 
     def __init__(self, app: "AdminApp"):
         assert self.model, 'model is None'
@@ -258,10 +253,6 @@ class BaseModelAdmin(SQLModelCrud):
         self.fields = self.fields or [self.model]
         self.fields.extend(list_display_insfield)
         super().__init__(self.model, self.engine)
-        if self.create_fields and not self.schema_create:
-            modelfields = list(filter(None, [self.parser.get_modelfield(insfield, deepcopy=True)
-                                             for insfield in self.create_fields]))
-            self.schema_create = schema_create_by_modelfield(f'{self.schema_name_prefix}Create', modelfields)
 
     @cached_property
     def router_path(self) -> str:
@@ -625,6 +616,7 @@ class LinkAdmin(PageSchemaAdmin):
 
     def get_page_schema(self) -> Optional[PageSchema]:
         if super().get_page_schema():
+            assert self.link, 'link is None'
             self.page_schema.link = self.page_schema.link or self.link
         return self.page_schema
 
@@ -635,6 +627,7 @@ class IframeAdmin(PageSchemaAdmin):
 
     def get_page_schema(self) -> Optional[PageSchema]:
         if super().get_page_schema():
+            assert self.src, 'src is None'
             iframe = self.iframe or Iframe(src=self.src)
             if self.site.settings.site_url and iframe.src.startswith(self.site.settings.site_url):
                 self.page_schema.url = iframe.src
@@ -768,7 +761,7 @@ class TemplateAdmin(PageAdmin):
 
 
 class BaseFormAdmin(PageAdmin):
-    schema: Type[BaseModel]
+    schema: Type[BaseModel] = None
     schema_init_out: Type[Any] = Any
     schema_submit_out: Type[Any] = Any
     form: Form = None
@@ -833,21 +826,18 @@ class FormAdmin(BaseFormAdmin):
 
     @property
     def route_submit(self):
+        assert self.schema, 'schema is None'
+
         async def route(request: Request, data: self.schema):  # type:ignore
-            return await self.handle(request, data)
+            return await self.handle(request, data)  # type:ignore
 
         return route
 
-    async def handle(
-            self,
-            request: Request,
-            data: BaseModel,
-            **kwargs
-    ) -> BaseApiOut[Any]:
-        return BaseApiOut(data=data)
+    async def handle(self, request: Request, data: BaseModel, **kwargs) -> BaseApiOut[Any]:
+        raise NotImplementedError
 
     async def get_init_data(self, request: Request, **kwargs) -> BaseApiOut[Any]:
-        return BaseApiOut(data=None)
+        raise NotImplementedError
 
     @property
     def route_init(self):
@@ -896,7 +886,7 @@ class ModelAdmin(BaseModelAdmin, PageAdmin):
             self,
             request: Request,
             paginator: Paginator,
-            filter: BaseModel = None,  # type self.schema_filter
+            filters: BaseModel = None,  # type self.schema_filter
             **kwargs
     ) -> bool:
         return await self.has_page_permission(request)
@@ -946,9 +936,9 @@ class BaseModelAction:
     async def fetch_item_scalars(
             self,
             item_id: List[str]
-    ) -> ScalarResult:
-        result = await self.admin.execute_sql(select(self.admin.model).where(self.admin.pk.in_(item_id)))
-        return result.scalars()
+    ) -> List[BaseModel]:
+        stmt = select(self.admin.model).where(self.admin.pk.in_(item_id))
+        return await self.admin.db.async_execute(stmt, lambda r: r.scalars().all())
 
     def register_router(self):
         raise NotImplementedError
@@ -1074,19 +1064,17 @@ class AdminApp(PageAdmin, AdminGroup):
         AdminGroup.__init__(self, app)
         self.engine = self.engine or self.app.engine
         assert self.engine, 'engine is None'
-        if isinstance(self.engine, Engine):
-            self.is_async_engine = False
-            self.db = SqlalchemySyncClient(self.engine)
-        else:
-            self.is_async_engine = True
-            self.db = SqlalchemyAsyncClient(self.engine)
+        self.db = AsyncDatabase(self.engine) if isinstance(self.engine, AsyncEngine) else Database(self.engine)
         self._registered: Dict[Type[_BaseAdminT], Optional[_BaseAdminT]] = {}
+        self.__register_lock = False
 
     @property
     def router_prefix(self):
         return f'/{self.__class__.__name__.lower()}'
 
-    def create_admin_instance(self, admin_cls: Type[_BaseAdminT]) -> _BaseAdminT:
+    def get_admin_or_create(self, admin_cls: Type[_BaseAdminT], register: bool = True) -> Optional[_BaseAdminT]:
+        if admin_cls not in self._registered and not register and not self.__register_lock:
+            return None
         admin = self._registered.get(admin_cls)
         if admin:
             return admin
@@ -1096,8 +1084,8 @@ class AdminApp(PageAdmin, AdminGroup):
             self.append_child(admin, group_schema=admin.group_schema)
         return admin
 
-    def create_admin_instance_all(self) -> None:
-        [self.create_admin_instance(admin_cls) for admin_cls in self._registered.keys()]
+    def _create_admin_instance_all(self) -> None:
+        [self.get_admin_or_create(admin_cls) for admin_cls in self._registered.keys()]
 
     def _register_admin_router_all_pre(self):
         [admin.get_link_model_forms() for admin in self._registered.values() if isinstance(admin, ModelAdmin)]
@@ -1109,10 +1097,12 @@ class AdminApp(PageAdmin, AdminGroup):
                 self.router.include_router(admin.router)
 
     def register_router(self):
-        super(AdminApp, self).register_router()
-        self.create_admin_instance_all()
-        self._register_admin_router_all_pre()
-        self._register_admin_router_all()
+        if not self.__register_lock:
+            super(AdminApp, self).register_router()
+            self._create_admin_instance_all()
+            self._register_admin_router_all_pre()
+            self._register_admin_router_all()
+            self.__register_lock = True
         return self
 
     @lru_cache()
@@ -1200,12 +1190,9 @@ class BaseAdminSite(AdminApp):
         fastapi.mount(self.settings.root_path, self.fastapi, name=name)
 
     async def create_db_and_tables(self) -> None:
-        if self.is_async_engine:
+        if isinstance(self.db, AsyncDatabase):
             async with self.db.engine.begin() as conn:
                 await conn.run_sync(SQLModel.metadata.create_all)
         else:
-            def create_all():
-                with self.db.engine.begin() as conn:
-                    SQLModel.metadata.create_all(conn)
-
-            await asyncio.to_thread(create_all)
+            with self.db.engine.begin() as conn:
+                SQLModel.metadata.create_all(conn)
