@@ -119,11 +119,11 @@ class ArticleAdmin(admin.ModelAdmin):
     async def has_create_permission(
             self, request: Request, data: BaseModel, **kwargs
     ) -> bool:
-        # 用户已登录,并且注册时间大于3天,才可以发布文章
+        # 用户已登录,并且注册时间大于3天,才可以发布文章; 或admin角色
         return bool(
             await self.site.auth.requires(response=False)(request)
             and request.user.create_time < datetime.now() - timedelta(days=3)
-        )
+        ) or await self.site.auth.requires(roles='admin', response=False)(request)
 
     async def has_delete_permission(
             self, request: Request, item_id: List[str], **kwargs

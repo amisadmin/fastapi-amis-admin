@@ -37,8 +37,15 @@ faa new app_name
 │  │  ├─blog
 │  │  │  │  admin.py
 │  │  │  │  apis.py
+│  │  │  │  views.py
 │  │  │  │  models.py
+│  │  │  │  schemas.py
+│  │  │  │  jobs.py
+│  │  │  │  settings.py
 │  │  │  │  __init__.py
+│  │  │  │  
+│  │  │  ├─templates
+│  │  │  ├─static
 │  │  │  
 │  │  │          
 │  │  ├─demo

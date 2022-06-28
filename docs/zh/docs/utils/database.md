@@ -1,4 +1,4 @@
-## SqlalchemyAsyncClient
+## AsyncDatabase
 
 - `sqlalchemy`异步客户端
 
@@ -15,6 +15,7 @@
 
 ```python
 from sqlalchemy.ext.asyncio import create_async_engine
+
 engine = create_async_engine("sqlite+aiosqlite:///amisadmin.db", future=True)
 # engine = create_async_engine("mysql+aiomysql://amisadmin:amisadmin@127.0.0.1:3306/amisadmin?charset=utf8mb4", future=True)
 # engine = create_async_engine("postgresql+asyncpg://user:pass@host/dbname", future=True)
@@ -23,20 +24,20 @@ engine = create_async_engine("sqlite+aiosqlite:///amisadmin.db", future=True)
 #### session_maker
 
 ```python
-self.session_maker: sessionmaker = sessionmaker(self.engine, class_=AsyncSession, autoflush=False)
+self.session_maker: sessionmaker = sessionmaker(self.async_engine, class_=AsyncSession, autoflush=False)
 ```
 
 ### 方法:
 
-#### session_factory
+#### session_generator
 
 ```python
-async def session_factory(self) -> AsyncGenerator[AsyncSession, Any]:
+async def session_generator(self) -> AsyncGenerator[AsyncSession, Any]:
     async with self.session_maker() as session:
         yield session
 ```
 
-## SqlalchemySyncClient
+## Database
 
 - `sqlalchemy`同步客户端
 
@@ -53,6 +54,7 @@ async def session_factory(self) -> AsyncGenerator[AsyncSession, Any]:
 
 ```python
 from sqlalchemy import create_engine
+
 engine = create_engine("sqlite+pysqlite:///amisadmin.db", echo=True, future=True)
 # engine = create_async_engine("mysql+pymysql://amisadmin:amisadmin@127.0.0.1:3306/amisadmin?charset=utf8mb4", future=True)
 # engine = create_async_engine("postgresql+psycopg2://user:pass@host/dbname", future=True)
@@ -63,20 +65,17 @@ engine = create_engine("sqlite+pysqlite:///amisadmin.db", echo=True, future=True
 #### session_maker
 
 ```python
-self.session_maker: sessionmaker = sessionmaker(self.engine, autoflush=False)
+self.session_maker: sessionmaker = sessionmaker(self.async_engine, autoflush=False)
 ```
 
 ### 方法:
 
-#### session_factory
+#### session_generator
 
 ```python
-def session_factory(self) -> Generator[Session, Any, None]:
+def session_generator(self) -> Generator[Session, Any, None]:
     session = self.session_maker()
-    try:
+    with self.session_maker() as session:
         yield session
-        session.commit()
-        finally:
-            session.close()
 ```
 

@@ -62,7 +62,7 @@ classDiagram
 	%% app
     AdminAPP --|> RouterMixin
     AdminAPP --|> PageAdmin
-    AdminAPP: +SqlalchemyAsyncClient db
+    AdminAPP: +AsyncDatabase db
     AdminAPP: +AdminSite site
     
     AdminSite --|> AdminAPP

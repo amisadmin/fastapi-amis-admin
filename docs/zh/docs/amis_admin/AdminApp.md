@@ -26,8 +26,8 @@ engine = create_async_engine("sqlite+aiosqlite:///amisadmin.db", future=True)
 
 #### db
 
-- 当前应用`sqlalchemy`异步客户端, 即 `SqlalchemyAsyncClient` 对象. 
-- 参考: [SqlalchemyAsyncClient](../../utils/db)
+- 当前应用`sqlalchemy`异步客户端, 即 `AsyncDatabase` 对象. 
+- 参考: [AsyncDatabase](../../utils/database)
 
 #### route_index
 

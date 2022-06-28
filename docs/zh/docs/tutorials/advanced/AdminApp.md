@@ -31,6 +31,26 @@ AdminAPP --> RouterAdmin
 
 - 每个管理应用都可以配置独立的数据库连接.
 
+## 配置独立数据库引擎
+
+```python
+from sqlalchemy.ext.asyncio import create_async_engine
+
+
+@site.register_admin
+class BlogApp(admin.AdminApp):
+    page_schema = PageSchema(label='博客应用', icon='fa fa-wordpress')
+    router_prefix = '/blog'
+    # 配置自定义数据库引擎
+    engine = create_async_engine('sqlite+aiosqlite:///amisadmin.db', future=True)
+
+    def __init__(self, app: "AdminApp"):
+        super().__init__(app)
+        # 注册管理页面到此应用下;
+        self.register_admin(ArticleAdmin, CategoryAdmin)
+
+```
+
 ## 特殊用法
 
 管理应用可以做为一个迷你版的管理站点,用来给管理类分组.
@@ -38,6 +58,9 @@ AdminAPP --> RouterAdmin
 ```python
 @site.register_admin
 class DocsAdminGroup(AdminApp):
+    # 展示模式,支持9种模式:'line,card,radio,vertical,chrome,simple,strong,tiled,sidebar'
+    # 展示效果参考: https://aisuda.bce.baidu.com/amis/zh-CN/components/tabs#%E5%B1%95%E7%A4%BA%E6%A8%A1%E5%BC%8F
+    # 默认为:None,采用菜单分组形式展示.
     tabs_mode = amis.TabsModeEnum.vertical
 
     def __init__(self, app: "AdminApp"):

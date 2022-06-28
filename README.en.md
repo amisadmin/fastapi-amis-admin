@@ -58,7 +58,7 @@ everyone's sponsorship and support.
 
 ## Dependencies
 
-- [Fastapi](https://fastapi.tiangolo.com/): Finish the web part.
+- [FastAPI](https://fastapi.tiangolo.com/): Finish the web part.
 - [SQLModel](https://sqlmodel.tiangolo.com/): Finish `ORM` model mapping. Perfectly
   combine  [SQLAlchemy](https://www.sqlalchemy.org/) with [Pydantic](https://pydantic-docs.helpmanual.io/), and have all
   their features .
@@ -72,7 +72,7 @@ modules, `amis_admin` is developed by the former.
 - `amis`: Based on the `pydantic` data model building library of `baidu amis`. To generate/parse data rapidly.
 - `fastapi-sqlmodel-crud`: Based on `FastAPI` &`SQLModel`. To quickly build Create, Read, Update, Delete common API
   interface .
-- `amis_admin`: Inspired by `Django-Admin`. Combine `amis` with `fastapi-sqlmodel-crud`. To quickly build Web Admin
+- `admin`: Inspired by `Django-Admin`. Combine `amis` with `fastapi-sqlmodel-crud`. To quickly build Web Admin
   dashboard .
 
 ## Installation

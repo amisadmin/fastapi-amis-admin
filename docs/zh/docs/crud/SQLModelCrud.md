@@ -80,26 +80,9 @@ def calc_filter_clause(self, data: Dict[str, Any]) -> List[BinaryExpression]
 
 ### 字段
 
-#### session_factory
+#### engine
 
-- sqlalchemy AsyncSession 生成器, 必须设置.
-
-```python
-session_factory: Callable[..., Generator[AsyncSession, Any, None]]
-```
-
-- 获取示例
-
-```python
-engine: AsyncEngine = create_async_engine(database_url, future=True, pool_recycle=1200)
-session_maker: sessionmaker = sessionmaker(engine, class_=AsyncSession,
-                                           expire_on_commit=False, autocommit=False, autoflush=False)
-
-
-async def session_factory(self) -> Generator[AsyncSession, Any, None]:
-    async with self.session_maker() as session:
-        yield session
-```
+- sqlalchemy 连接引擎, 必须设置.
 
 #### readonly_fields
 

@@ -57,7 +57,7 @@
 
 ## 核心依赖
 
-- [Fastapi](https://fastapi.tiangolo.com) 负责 web 部分
+- [FastAPI](https://fastapi.tiangolo.com) 负责 web 部分
 - [SQLModel](https://sqlmodel.tiangolo.com/) 负责ORM模型映射(
   完美结合[SQLAlchemy](https://www.sqlalchemy.org/)+[Pydantic](https://pydantic-docs.helpmanual.io/), 拥有`SQLAlchemy`
   和`Pydantic`的所有功能)
@@ -69,7 +69,7 @@
 
 - `amis`: 基于`baidu amis`的`pydantic`数据模型构建库,用于快速生成/解析`amis` `json` 数据.
 - `fastapi-sqlmodel-crud`: 基于`FastAPI`+`SQLModel`, 用于快速构建Create,Read,Update,Delete通用API接口.
-- `amis_admin`: 启发自`Django-Admin`, 结合`amis`+`fastapi-sqlmodel-crud`, 用于快速构建`Web Admin`管理后台.
+- `admin`: 启发自`Django-Admin`, 结合`amis`+`fastapi-sqlmodel-crud`, 用于快速构建`Web Admin`管理后台.
 
 ## 安装
 
