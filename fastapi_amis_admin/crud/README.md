@@ -34,17 +34,9 @@ class Article(SQLModel, table=True):
 # 2.创建 AsyncSession
 database_url = 'sqlite+aiosqlite:///amisadmin.db'
 engine: AsyncEngine = create_async_engine(database_url, future=True, pool_recycle=1200)
-session_maker: sessionmaker = sessionmaker(engine, class_=AsyncSession,
-                                           expire_on_commit=False, autocommit=False, autoflush=False)
-
-
-async def session_factory() -> Generator[AsyncSession, Any, None]:
-    async with session_maker() as session:
-        yield session
-
 
 # 3. 注册crud路由
-article_crud = SQLModelCrud(model=Article, session_factory=session_factory).register_crud()
+article_crud = SQLModelCrud(model=Article, engine=engine).register_crud()
 
 app = FastAPI(debug=True)
 
