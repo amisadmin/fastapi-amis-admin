@@ -4,131 +4,130 @@ from httpx import AsyncClient
 
 from fastapi_amis_admin.crud import SQLModelCrud
 from tests.db import async_db as db
-from tests.models import Category
-
-pytestmark = pytest.mark.asyncio
+from tests.models import User
 
 
-async def test_pk_name(app: FastAPI, async_client: AsyncClient, fake_categorys):
-    class CategoryCrud(SQLModelCrud):
-        router_prefix = '/category'
-        pk_name = 'name'
 
-    ins = CategoryCrud(Category, db.engine).register_crud()
+async def test_pk_name(app: FastAPI, async_client: AsyncClient, fake_users):
+    class UserCrud(SQLModelCrud):
+        router_prefix = '/user'
+        pk_name = "username"
+
+    ins = UserCrud(User, db.engine).register_crud()
 
     app.include_router(ins.router)
-    assert ins.pk.key == 'name'
+    assert ins.pk.key == "username"
     # read one
-    res = await async_client.get('/category/item/Category_1')
-    category = res.json()['data']
-    assert category['id'] == 1
-    assert category['name'] == "Category_1"
+    res = await async_client.get('/user/item/User_1')
+    user = res.json()['data']
+    assert user['id'] == 1
+    assert user["username"] == "User_1"
     # read bulk
-    res = await async_client.get('/category/item/Category_1,Category_2,Category_4')
-    categorys = res.json()['data']
-    assert len(categorys) == 3
-    assert categorys[0]['name'] == "Category_1"
-    assert categorys[2]['name'] == "Category_4"
+    res = await async_client.get('/user/item/User_1,User_2,User_4')
+    users = res.json()['data']
+    assert len(users) == 3
+    assert users[0]["username"] == "User_1"
+    assert users[2]["username"] == "User_4"
 
 
-async def test_readonly_fields(app: FastAPI, async_client: AsyncClient, fake_categorys):
-    class CategoryCrud(SQLModelCrud):
-        router_prefix = '/category'
-        readonly_fields = [Category.name]
+async def test_readonly_fields(app: FastAPI, async_client: AsyncClient, fake_users):
+    class UserCrud(SQLModelCrud):
+        router_prefix = '/user'
+        readonly_fields = [User.username]
 
-    ins = CategoryCrud(Category, db.engine).register_crud()
+    ins = UserCrud(User, db.engine).register_crud()
 
     app.include_router(ins.router)
 
     # test schemas
     openapi = app.openapi()
     schemas = openapi['components']['schemas']
-    assert 'description' in schemas['CategoryCrudUpdate']['properties']
-    assert 'name' not in schemas['CategoryCrudUpdate']['properties']
+    assert 'password' in schemas['UserCrudUpdate']['properties']
+    assert "username" not in schemas['UserCrudUpdate']['properties']
 
     # test api
-    res = await async_client.put('/category/item/1', json={"name": "new_name"})
+    res = await async_client.put('/user/item/1', json={"username": "new_name"})
     assert res.json() == {'detail': 'error data handle'}
-    res = await async_client.put('/category/item/1', json={"description": "new_description"})
+    res = await async_client.put('/user/item/1', json={"password": "new_password"})
     assert res.json()['data'] == 1
 
 
-async def test_update_fields(app: FastAPI, async_client: AsyncClient, fake_categorys):
-    class CategoryCrud(SQLModelCrud):
-        router_prefix = '/category'
-        update_fields = [Category.name]
+async def test_update_fields(app: FastAPI, async_client: AsyncClient, fake_users):
+    class UserCrud(SQLModelCrud):
+        router_prefix = '/user'
+        update_fields = [User.username]
 
-    ins = CategoryCrud(Category, db.engine).register_crud()
+    ins = UserCrud(User, db.engine).register_crud()
 
     app.include_router(ins.router)
 
     # test schemas
     openapi = app.openapi()
     schemas = openapi['components']['schemas']
-    assert 'description' not in schemas['CategoryCrudUpdate']['properties']
-    assert 'name' in schemas['CategoryCrudUpdate']['properties']
+    assert 'password' not in schemas['UserCrudUpdate']['properties']
+    assert "username" in schemas['UserCrudUpdate']['properties']
 
     # test api
-    res = await async_client.put('/category/item/1', json={"name": "new_name"})
+    res = await async_client.put('/user/item/1', json={"username": "new_name"})
     assert res.json()['data'] == 1
 
-    res = await async_client.put('/category/item/1', json={"description": "new_description"})
+    res = await async_client.put('/user/item/1', json={"password": "new_password"})
     assert res.json() == {'detail': 'error data handle'}
 
 
-async def test_list_filter(app: FastAPI, async_client: AsyncClient, fake_categorys):
-    class CategoryCrud(SQLModelCrud):
-        router_prefix = '/category'
-        list_filter = [Category.id, Category.name]
+async def test_list_filter(app: FastAPI, async_client: AsyncClient, fake_users):
+    class UserCrud(SQLModelCrud):
+        router_prefix = '/user'
+        list_filter = [User.id, User.username]
 
-    ins = CategoryCrud(Category, db.engine).register_crud()
+    ins = UserCrud(User, db.engine).register_crud()
 
     app.include_router(ins.router)
 
-    assert 'name' in ins.schema_filter.__fields__
-    assert 'description' not in ins.schema_filter.__fields__
+    assert "username" in ins.schema_filter.__fields__
+    assert 'password' not in ins.schema_filter.__fields__
 
     # test schemas
     openapi = app.openapi()
     schemas = openapi['components']['schemas']
-    assert 'name' in schemas['CategoryCrudFilter']['properties']
-    assert 'description' not in schemas['CategoryCrudFilter']['properties']
+    assert "username" in schemas['UserCrudFilter']['properties']
+    assert 'password' not in schemas['UserCrudFilter']['properties']
 
     # test api
-    res = await async_client.post('/category/list', json={"id": 1})
+    res = await async_client.post('/user/list', json={"id": 1})
     items = res.json()['data']['items']
     assert items[0]['id'] == 1
 
-    res = await async_client.post('/category/list', json={"name": "Category_1"})
+    res = await async_client.post('/user/list', json={"username": "User_1"})
     items = res.json()['data']['items']
-    assert items[0]['name'] == "Category_1"
+    assert items[0]["username"] == "User_1"
 
-    res = await async_client.post('/category/list', json={"description": "new_description"})
+    res = await async_client.post('/user/list', json={"password": "new_password"})
     items = res.json()['data']['items']
     assert items
 
 
 async def test_create_fields(app: FastAPI, async_client: AsyncClient):
-    class CategoryCrud(SQLModelCrud):
-        router_prefix = '/category'
-        create_fields = [Category.name]
+    class UserCrud(SQLModelCrud):
+        router_prefix = '/user'
+        create_fields = [User.username]
 
-    ins = CategoryCrud(Category, db.engine).register_crud()
+    ins = UserCrud(User, db.engine).register_crud()
 
     app.include_router(ins.router)
 
-    assert 'name' in ins.schema_create.__fields__
-    assert 'description' not in ins.schema_create.__fields__
+    assert "username" in ins.schema_create.__fields__
+    assert 'password' not in ins.schema_create.__fields__
 
     # test schemas
     openapi = app.openapi()
     schemas = openapi['components']['schemas']
-    assert 'name' in schemas['CategoryCrudCreate']['properties']
-    assert 'description' not in schemas['CategoryCrudCreate']['properties']
+    assert "username" in schemas['UserCrudCreate']['properties']
+    assert 'password' not in schemas['UserCrudCreate']['properties']
     # test api
-    body = {"name": 'Category', "description": "description"}
-    res = await async_client.post('/category/item', json=body)
+    body = {"username": 'User', "password": "password"}
+    res = await async_client.post('/user/item', json=body)
     data = res.json().get('data')
     assert data['id'] > 0
-    assert data['name'] == 'Category'
-    assert data['description'] == ''
+    assert data["username"] == 'User'
+    assert data['password'] == ''

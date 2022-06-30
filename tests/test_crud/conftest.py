@@ -8,7 +8,7 @@ from sqlalchemy import insert
 from sqlmodel import SQLModel
 
 from tests.db import async_db as db
-from tests.models import Category
+from tests.models import User
 
 pytestmark = pytest.mark.asyncio
 
@@ -20,12 +20,9 @@ def app() -> FastAPI:
 
 @pytest.fixture
 async def prepare_database() -> AsyncGenerator[None, None]:
-    async with db.engine.begin() as conn:
-        await conn.run_sync(SQLModel.metadata.create_all)
+    await db.async_run_sync(SQLModel.metadata.create_all)
     yield
-    async with db.engine.begin() as conn:
-        await conn.run_sync(SQLModel.metadata.drop_all)
-
+    await db.async_run_sync(SQLModel.metadata.drop_all)
     await db.engine.dispose()
 
 
@@ -36,13 +33,13 @@ async def async_client(app: FastAPI, prepare_database: Any) -> AsyncGenerator[As
 
 
 @pytest.fixture
-async def fake_categorys() -> List[Category]:
+async def fake_users() -> List[User]:
     data = [
         {'id': i,
-         "name": f'Category_{i}',
-         "description": f"description_{i}",
+         "username": f'User_{i}',
+         "password": f"password_{i}",
          "create_time": datetime.datetime.strptime(f"2022-01-0{i} 00:00:00", "%Y-%m-%d %H:%M:%S")
          } for i in range(1, 6)
     ]
-    await db.execute(insert(Category).values(data), commit=True)
-    return [Category.parse_obj(item) for item in data]
+    await db.execute(insert(User).values(data), commit=True)
+    return [User.parse_obj(item) for item in data]

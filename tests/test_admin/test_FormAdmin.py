@@ -9,8 +9,6 @@ from fastapi_amis_admin import admin
 from fastapi_amis_admin.admin import AdminSite
 from fastapi_amis_admin.crud import BaseApiOut
 
-pytestmark = pytest.mark.asyncio
-
 
 class LoginSchema(BaseModel):
     username: str

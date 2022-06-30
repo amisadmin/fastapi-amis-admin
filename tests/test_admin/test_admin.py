@@ -1,7 +1,6 @@
 import os
 from typing import Dict, Any
 
-import pytest
 from httpx import AsyncClient
 from starlette.requests import Request
 from starlette.templating import Jinja2Templates
@@ -9,8 +8,6 @@ from starlette.templating import Jinja2Templates
 from fastapi_amis_admin import admin, amis
 from fastapi_amis_admin.admin import AdminSite
 from fastapi_amis_admin.amis import Page
-
-pytestmark = pytest.mark.asyncio
 
 
 async def test_BaseAdmin(site: AdminSite):
@@ -82,14 +79,14 @@ async def test_RouterAdmin(site: AdminSite, async_client: AsyncClient):
         def register_router(self):
             @self.router.get('/hello')
             def hello():
-                return {'name': 'hello'}
+                return {"username": 'hello'}
 
     ins = site.get_admin_or_create(TestAdmin)
     assert ins.router_path == f'{site.settings.root_path}/router'
 
     site.register_router()
     res = await async_client.get('/router/hello')
-    assert res.json() == {'name': 'hello'}
+    assert res.json() == {"username": 'hello'}
 
 
 async def test_PageAdmin(site: AdminSite, async_client: AsyncClient):
@@ -121,7 +118,7 @@ async def test_PageAdmin(site: AdminSite, async_client: AsyncClient):
 async def test_TemplateAdmin(site: AdminSite, async_client: AsyncClient, tmpdir):
     path = os.path.join(tmpdir, "index.html")
     with open(path, "w") as file:
-        file.write("<html>Hello,{{ name }}</html>")
+        file.write("<html>Hello,{{ username }}</html>")
 
     @site.register_admin
     class TestAdmin(admin.TemplateAdmin):
@@ -130,7 +127,7 @@ async def test_TemplateAdmin(site: AdminSite, async_client: AsyncClient, tmpdir)
         template_name = 'index.html'
 
         async def get_page(self, request: Request) -> Dict[str, Any]:
-            return {'name': 'hello'}
+            return {"username": 'hello'}
 
     ins = site.get_admin_or_create(TestAdmin)
     assert ins.page_path == '/index'

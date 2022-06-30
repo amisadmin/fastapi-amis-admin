@@ -3,9 +3,7 @@ from httpx import AsyncClient
 
 from fastapi_amis_admin import admin
 from fastapi_amis_admin.admin import AdminSite
-from tests.models import Category, Article
-
-pytestmark = pytest.mark.asyncio
+from tests.models import User, Article
 
 
 async def test_register_router(site: AdminSite):
@@ -16,10 +14,10 @@ async def test_register_router(site: AdminSite):
     site.unregister_admin(admin.ModelAdmin)
 
     @site.register_admin
-    class CategoryAdmin(admin.ModelAdmin):
-        model = Category
+    class UserAdmin(admin.ModelAdmin):
+        model = User
 
-    ins = site.get_admin_or_create(CategoryAdmin)
+    ins = site.get_admin_or_create(UserAdmin)
     assert ins.engine
     assert ins.fields
     site.register_router()
@@ -33,34 +31,34 @@ async def test_register_router(site: AdminSite):
 
 async def test_list_display(site: AdminSite, async_client: AsyncClient):
     @site.register_admin
-    class CategoryAdmin(admin.ModelAdmin):
-        model = Category
-        list_display = [Category.id, Category.name]
+    class UserAdmin(admin.ModelAdmin):
+        model = User
+        list_display = [User.id, User.username]
 
     site.register_router()
-    ins = site.get_admin_or_create(CategoryAdmin)
-    assert 'name' in ins.schema_list.__fields__
+    ins = site.get_admin_or_create(UserAdmin)
+    assert "username" in ins.schema_list.__fields__
 
     # test schemas
     openapi = site.fastapi.openapi()
     schemas = openapi['components']['schemas']
-    assert 'name' in schemas['CategoryAdminList']['properties']
+    assert "username" in schemas['UserAdminList']['properties']
 
 
 async def test_list_display_join(site: AdminSite, async_client: AsyncClient):
     @site.register_admin
     class ArticleAdmin(admin.ModelAdmin):
         model = Article
-        list_display = [Article.title, Category.name, 'description']
+        list_display = [Article.title, User.username, 'description']
 
     site.register_router()
 
     ins = site.get_admin_or_create(ArticleAdmin)
-    assert 'category_name' in ins.schema_list.__fields__
+    assert 'user_username' in ins.schema_list.__fields__
     assert 'description' in ins.schema_list.__fields__
 
     # test schemas
     site.fastapi.openapi_schema = None
     openapi = site.fastapi.openapi()
     schemas = openapi['components']['schemas']
-    assert 'category__name' in schemas['ArticleAdminList']['properties']
+    assert 'user__username' in schemas['ArticleAdminList']['properties']
