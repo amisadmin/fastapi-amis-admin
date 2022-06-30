@@ -35,7 +35,8 @@ class I18N:
         language = language or self._language
         if language in self._locales:
             for trans in self._locales[language]:
-                if value in trans._catalog:
+                # noinspection PyProtectedMember
+                if value in trans._catalog:  # type: ignore
                     value = trans.gettext(value)
         return value
 
