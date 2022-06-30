@@ -25,4 +25,4 @@ class Settings(BaseSettings):
     def valid_database_url(cls, values):
         if not values.get('database_url') and not values.get('database_url_async'):
             values.setdefault('database_url', 'sqlite+aiosqlite:///amisadmin.db?check_same_thread=False')
-            return values
+        return values
