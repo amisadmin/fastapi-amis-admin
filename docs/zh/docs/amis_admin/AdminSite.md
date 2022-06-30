@@ -30,7 +30,7 @@
 - `engine`: 管理站点默认数据库引擎.
 
 ```python
-def __init__(self, settings: Settings, fastapi: FastAPI = None,engine: AsyncEngine = None)
+def __init__(self, settings: Settings, fastapi: FastAPI = None, engine: AsyncEngine = None)
 ```
 
 #### mount_app
@@ -39,19 +39,6 @@ def __init__(self, settings: Settings, fastapi: FastAPI = None,engine: AsyncEngi
 
 ```python
 def mount_app(self, fastapi: FastAPI, name: str = None) -> None
-```
-
-#### create_db_and_tables
-
-创建SQLModel数据以及数据库表.
-
-- 一般在项目第一次初始化未创建数据库表时, 调用一次即可.
-
-- 示例:
-
-```python
-import asyncio
-asyncio.run(site.create_db_and_tables())
 ```
 
 ## AdminSite

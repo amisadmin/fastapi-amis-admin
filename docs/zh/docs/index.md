@@ -138,7 +138,7 @@ site.mount_app(app)
 # 创建初始化数据库表
 @app.on_event("startup")
 async def startup():
-    await site.create_db_and_tables()
+    await site.db.async_run_sync(SQLModel.metadata.create_all)
 
 
 if __name__ == '__main__':
