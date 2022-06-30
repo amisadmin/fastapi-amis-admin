@@ -1,4 +1,4 @@
-from fastapi_amis_admin.utils.database import AsyncDatabase, Database
+from sqlalchemy_database import Database, AsyncDatabase
 
 # sqlite
 sync_db = Database.create('sqlite:///amisadmin.db?check_same_thread=False')

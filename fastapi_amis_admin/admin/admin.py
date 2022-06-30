@@ -12,6 +12,7 @@ from sqlalchemy.engine import Engine
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncEngine
 from sqlalchemy.orm import InstrumentedAttribute, RelationshipProperty
 from sqlalchemy.util import md5_hex
+from sqlalchemy_database import Database, AsyncDatabase
 from sqlmodel import SQLModel, select
 from starlette import status
 from starlette.responses import HTMLResponse, JSONResponse, Response
@@ -28,7 +29,6 @@ from fastapi_amis_admin.crud import SQLModelCrud, SQLModelSelector, RouterMixin
 from fastapi_amis_admin.crud.parser import SQLModelFieldParser, SQLModelField, SQLModelListField, get_python_type_parse
 from fastapi_amis_admin.crud.schema import CrudEnum, BaseApiOut, Paginator
 from fastapi_amis_admin.crud.utils import parser_item_id, schema_create_by_schema, parser_str_set_list
-from fastapi_amis_admin.utils.database import AsyncDatabase, Database
 from fastapi_amis_admin.utils.functools import cached_property
 from fastapi_amis_admin.utils.translation import i18n as _
 
@@ -1073,7 +1073,7 @@ class AdminApp(PageAdmin, AdminGroup):
         return f'/{self.__class__.__name__.lower()}'
 
     def get_admin_or_create(self, admin_cls: Type[_BaseAdminT], register: bool = True) -> Optional[_BaseAdminT]:
-        if admin_cls not in self._registered and not register and not self.__register_lock:
+        if admin_cls not in self._registered and (not register or self.__register_lock):
             return None
         admin = self._registered.get(admin_cls)
         if admin:
@@ -1188,11 +1188,3 @@ class BaseAdminSite(AdminApp):
     def mount_app(self, fastapi: FastAPI, name: str = None) -> None:
         self.register_router()
         fastapi.mount(self.settings.root_path, self.fastapi, name=name)
-
-    async def create_db_and_tables(self) -> None:
-        if isinstance(self.db, AsyncDatabase):
-            async with self.db.engine.begin() as conn:
-                await conn.run_sync(SQLModel.metadata.create_all)
-        else:
-            with self.db.engine.begin() as conn:
-                SQLModel.metadata.create_all(conn)

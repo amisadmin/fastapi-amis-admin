@@ -38,6 +38,7 @@ dependencies = [
     "fastapi>=0.68.0",
     "sqlmodel>=0.0.4",
     "python-multipart>=0.0.5",
+    "sqlalchemy-database>=0.0.1,<0.1.0",
     "SQLAlchemy<=1.4.35",
     "aiofiles",
 ]
@@ -56,7 +57,7 @@ standard = [
 test = [
     "pytest >=6.2.4,<7.0.0",
     "aiosqlite",
-    "pytest-asyncio",
+    "pytest-asyncio>=0.17",
     "httpx",
 ]
 dev = [
@@ -74,3 +75,12 @@ all = [
     "ujson>=4.0.1",
     "fastapi-amis-admin-cli>=0.0.4,<0.1.0",
 ]
+
+# pytest
+[tool.pytest.ini_options]
+minversion = "6.0"
+testpaths = [
+    "tests",
+]
+# pytest-asyncio
+asyncio_mode = "auto"
