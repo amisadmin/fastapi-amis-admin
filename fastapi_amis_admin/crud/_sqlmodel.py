@@ -317,7 +317,7 @@ class SQLModelCrud(BaseCrud, SQLModelSelector):
             if not is_bulk and self.engine.dialect.name == 'postgresql':
                 stmt = stmt.returning(self.pk)
             try:
-                result = await self.db.async_execute(stmt, commit=True)
+                result = await self.db.async_execute(stmt)
             except Exception as error:
                 return self.error_execute_sql(request=request, error=error)
             if is_bulk:
@@ -366,7 +366,7 @@ class SQLModelCrud(BaseCrud, SQLModelSelector):
             if not values:
                 return self.error_data_handle(request)
             stmt = stmt.values(values)
-            result = await self.db.async_execute(stmt, commit=True)
+            result = await self.db.async_execute(stmt)
             return BaseApiOut(data=getattr(result, 'rowcount', None))
 
         return route
@@ -380,7 +380,7 @@ class SQLModelCrud(BaseCrud, SQLModelSelector):
             if not await self.has_delete_permission(request, item_id):
                 return self.error_no_router_permission(request)
             stmt = delete(self.model).where(self.pk.in_(list(map(get_python_type_parse(self.pk), item_id))))
-            result = await self.db.async_execute(stmt, commit=True)
+            result = await self.db.async_execute(stmt)
             return BaseApiOut(data=getattr(result, 'rowcount', None))
 
         return route

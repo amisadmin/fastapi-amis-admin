@@ -20,9 +20,9 @@ def app() -> FastAPI:
 
 @pytest.fixture
 async def prepare_database() -> AsyncGenerator[None, None]:
-    await db.async_run_sync(SQLModel.metadata.create_all)
+    await db.async_run_sync(SQLModel.metadata.create_all, is_session=False)
     yield
-    await db.async_run_sync(SQLModel.metadata.drop_all)
+    await db.async_run_sync(SQLModel.metadata.drop_all, is_session=False)
     await db.engine.dispose()
 
 

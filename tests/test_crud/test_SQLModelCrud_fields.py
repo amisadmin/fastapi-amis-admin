@@ -1,11 +1,9 @@
-import pytest
 from fastapi import FastAPI
 from httpx import AsyncClient
 
 from fastapi_amis_admin.crud import SQLModelCrud
 from tests.db import async_db as db
 from tests.models import User
-
 
 
 async def test_pk_name(app: FastAPI, async_client: AsyncClient, fake_users):

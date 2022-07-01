@@ -36,7 +36,7 @@ site.mount_app(app)
 # 创建初始化数据库表
 @app.on_event("startup")
 async def startup():
-    await site.db.async_run_sync(SQLModel.metadata.create_all)
+    await site.db.async_run_sync(SQLModel.metadata.create_all, is_session=False)
 
 
 if __name__ == '__main__':

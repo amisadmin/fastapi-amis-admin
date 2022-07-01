@@ -114,7 +114,7 @@ class LinkModelForm:
             ).where(
                 self.item_col.in_(list(map(get_python_type_parse(self.item_col), item_id)))
             )
-            result = await self.pk_admin.db.async_execute(stmt, commit=True)
+            result = await self.pk_admin.db.async_execute(stmt)
             return BaseApiOut(data=result.rowcount)  # type: ignore
 
         return route
@@ -138,7 +138,7 @@ class LinkModelForm:
                 )
             stmt = insert(self.link_model).values(values)
             try:
-                result = await self.pk_admin.db.async_execute(stmt, commit=True)
+                result = await self.pk_admin.db.async_execute(stmt)
             except Exception as error:
                 return self.pk_admin.error_execute_sql(request=request, error=error)
             return BaseApiOut(data=result.rowcount)  # type: ignore
