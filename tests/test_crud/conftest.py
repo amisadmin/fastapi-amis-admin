@@ -7,7 +7,7 @@ from httpx import AsyncClient
 from sqlalchemy import insert
 from sqlmodel import SQLModel
 
-from tests.db import async_db as db
+from tests.conftest import async_db as db
 from tests.models import User
 
 pytestmark = pytest.mark.asyncio

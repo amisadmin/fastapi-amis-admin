@@ -15,11 +15,11 @@ class LoginSchema(BaseModel):
     password: str
 
 
-class TestAdmin(admin.FormAdmin):
+class TmpAdmin(admin.FormAdmin):
     page_path = '/test'
 
 
-class TestAdmin1(TestAdmin):
+class TmpAdmin1(TmpAdmin):
     schema = LoginSchema
 
     async def handle(self, request: Request, data: BaseModel, **kwargs) -> BaseApiOut[Any]:
@@ -27,7 +27,7 @@ class TestAdmin1(TestAdmin):
         return BaseApiOut(data={**ret, 'extra': 'success'})
 
 
-class TestAdmin2(TestAdmin1):
+class TmpAdmin2(TmpAdmin1):
     form_init = True
 
     async def get_init_data(self, request: Request, **kwargs) -> BaseApiOut[Any]:
@@ -35,17 +35,17 @@ class TestAdmin2(TestAdmin1):
 
 
 async def test_form_admin_register(site: AdminSite):
-    site.register_admin(TestAdmin)
+    site.register_admin(TmpAdmin)
 
     with pytest.raises(AssertionError) as exc:
-        ins = site.get_admin_or_create(TestAdmin)
+        ins = site.get_admin_or_create(TmpAdmin)
     assert exc.match('schema is None')
 
 
 async def test_form_admin_route_submit(site: AdminSite, async_client: AsyncClient):
-    site.register_admin(TestAdmin1)
+    site.register_admin(TmpAdmin1)
 
-    ins = site.get_admin_or_create(TestAdmin1)
+    ins = site.get_admin_or_create(TmpAdmin1)
 
     site.register_router()
     # test form amis json
@@ -60,9 +60,9 @@ async def test_form_admin_route_submit(site: AdminSite, async_client: AsyncClien
 
 
 async def test_form_admin_route_init(site: AdminSite, async_client: AsyncClient):
-    site.register_admin(TestAdmin2)
+    site.register_admin(TmpAdmin2)
 
-    ins = site.get_admin_or_create(TestAdmin2)
+    ins = site.get_admin_or_create(TmpAdmin2)
 
     site.register_router()
     # test form amis json

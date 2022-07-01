@@ -5,7 +5,7 @@ from httpx import AsyncClient
 from starlette.testclient import TestClient
 
 from fastapi_amis_admin.admin import AdminSite, Settings
-from tests.db import async_db
+from tests.conftest import async_db
 
 
 @pytest.fixture

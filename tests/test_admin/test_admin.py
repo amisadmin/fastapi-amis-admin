@@ -12,39 +12,39 @@ from fastapi_amis_admin.amis import Page
 
 async def test_BaseAdmin(site: AdminSite):
     @site.register_admin
-    class TestAdmin(admin.BaseAdmin):
+    class TmpAdmin(admin.BaseAdmin):
         pass
 
-    ins = site.get_admin_or_create(TestAdmin)
+    ins = site.get_admin_or_create(TmpAdmin)
     assert ins.site is site
     assert ins.unique_id
 
 
 async def test_PageSchemaAdmin(site: AdminSite):
     @site.register_admin
-    class TestAdmin(admin.PageSchemaAdmin):
+    class TmpAdmin(admin.PageSchemaAdmin):
         pass
 
-    ins = site.get_admin_or_create(TestAdmin)
+    ins = site.get_admin_or_create(TmpAdmin)
     assert ins.group_schema is None
     assert ins.page_schema
 
     @site.register_admin
-    class TestAdmin1(admin.PageSchemaAdmin):
+    class TmpAdmin1(admin.PageSchemaAdmin):
         group_schema = 'group_label'
         page_schema = 'page_label'
 
-    ins = site.get_admin_or_create(TestAdmin1)
+    ins = site.get_admin_or_create(TmpAdmin1)
 
     assert isinstance(ins.group_schema, amis.PageSchema) and ins.group_schema.label == 'group_label'
     assert isinstance(ins.group_schema, amis.PageSchema) and ins.page_schema.label == 'page_label'
 
     @site.register_admin
-    class TestAdmin2(admin.PageSchemaAdmin):
+    class TmpAdmin2(admin.PageSchemaAdmin):
         group_schema = amis.PageSchema(label='group_label')
         page_schema = amis.PageSchema(label='page_label', isDefaultPage=True, sort=100)
 
-    ins = site.get_admin_or_create(TestAdmin2)
+    ins = site.get_admin_or_create(TmpAdmin2)
 
     assert isinstance(ins.group_schema, amis.PageSchema) and ins.group_schema.label == 'group_label'
     assert isinstance(ins.page_schema, amis.PageSchema) and ins.page_schema.label == 'page_label'
@@ -52,19 +52,19 @@ async def test_PageSchemaAdmin(site: AdminSite):
 
 async def test_LinkAdmin(site: AdminSite):
     @site.register_admin
-    class TestAdmin(admin.LinkAdmin):
+    class TmpAdmin(admin.LinkAdmin):
         link = 'https://docs.amis.work'
 
-    ins = site.get_admin_or_create(TestAdmin)
+    ins = site.get_admin_or_create(TmpAdmin)
     assert ins.page_schema.link == 'https://docs.amis.work'
 
 
 async def test_IframeAdmin(site: AdminSite):
     @site.register_admin
-    class TestAdmin(admin.IframeAdmin):
+    class TmpAdmin(admin.IframeAdmin):
         src = 'https://docs.amis.work'
 
-    ins = site.get_admin_or_create(TestAdmin)
+    ins = site.get_admin_or_create(TmpAdmin)
     assert (
             isinstance(ins.page_schema.schema_, amis.Iframe)
             and ins.page_schema.schema_.src == 'https://docs.amis.work'
@@ -73,7 +73,7 @@ async def test_IframeAdmin(site: AdminSite):
 
 async def test_RouterAdmin(site: AdminSite, async_client: AsyncClient):
     @site.register_admin
-    class TestAdmin(admin.RouterAdmin):
+    class TmpAdmin(admin.RouterAdmin):
         router_prefix = '/router'
 
         def register_router(self):
@@ -81,7 +81,7 @@ async def test_RouterAdmin(site: AdminSite, async_client: AsyncClient):
             def hello():
                 return {"username": 'hello'}
 
-    ins = site.get_admin_or_create(TestAdmin)
+    ins = site.get_admin_or_create(TmpAdmin)
     assert ins.router_path == f'{site.settings.root_path}/router'
 
     site.register_router()
@@ -91,13 +91,13 @@ async def test_RouterAdmin(site: AdminSite, async_client: AsyncClient):
 
 async def test_PageAdmin(site: AdminSite, async_client: AsyncClient):
     @site.register_admin
-    class TestAdmin(admin.PageAdmin):
+    class TmpAdmin(admin.PageAdmin):
         page_path = '/test'
 
         async def get_page(self, request: Request) -> Page:
             return Page(title='hello', body='Test Amis Page')
 
-    ins = site.get_admin_or_create(TestAdmin)
+    ins = site.get_admin_or_create(TmpAdmin)
     assert ins.page_path == '/test'
     assert ins.page_schema.url == ins.router_path + ins.page_path
 
@@ -121,7 +121,7 @@ async def test_TemplateAdmin(site: AdminSite, async_client: AsyncClient, tmpdir)
         file.write("<html>Hello,{{ username }}</html>")
 
     @site.register_admin
-    class TestAdmin(admin.TemplateAdmin):
+    class TmpAdmin(admin.TemplateAdmin):
         page_path = '/index'
         templates = Jinja2Templates(directory=str(tmpdir))
         template_name = 'index.html'
@@ -129,7 +129,7 @@ async def test_TemplateAdmin(site: AdminSite, async_client: AsyncClient, tmpdir)
         async def get_page(self, request: Request) -> Dict[str, Any]:
             return {"username": 'hello'}
 
-    ins = site.get_admin_or_create(TestAdmin)
+    ins = site.get_admin_or_create(TmpAdmin)
     assert ins.page_path == '/index'
     assert ins.page_schema.url == ins.router_path + ins.page_path
     assert (
