@@ -11,6 +11,7 @@ from starlette.requests import Request
 from starlette.staticfiles import StaticFiles
 
 import fastapi_amis_admin
+from fastapi_amis_admin import amis
 from fastapi_amis_admin.admin import admin, AdminApp
 from fastapi_amis_admin.admin.settings import Settings
 from fastapi_amis_admin.amis.components import PageSchema, Page, Property
@@ -43,16 +44,31 @@ class HomeAdmin(admin.PageAdmin):
 
     async def get_page(self, request: Request) -> Page:
         page = await super().get_page(request)
-        page.body = Property(
-            title='Information',
-            items=[
-                Property.Item(label='system', content=platform.system()),
-                Property.Item(label='python', content=platform.python_version()),
-                Property.Item(label='program', content='fastapi-amis-admin'),
-                Property.Item(label='version', content=fastapi_amis_admin.__version__),
-                Property.Item(label='license', content='Apache2.0'),
-            ]
-        )
+        page.body = [
+            Property(
+                title='SiteInfo',
+                column=4,
+                items=[
+                    Property.Item(label='title', content=self.site.settings.site_title),
+                    Property.Item(label='version', content=self.site.settings.version),
+                    Property.Item(label='language', content=self.site.settings.language),
+                    Property.Item(label='debug', content=str(self.site.settings.debug)),
+                ]
+            ),
+            amis.Divider(),
+            Property(
+                title='FastAPI-Amis-Admin',
+                column=4,
+                items=[
+                    Property.Item(label='system', content=platform.system()),
+                    Property.Item(label='python', content=platform.python_version()),
+                    Property.Item(label='version', content=fastapi_amis_admin.__version__),
+                    Property.Item(label='license', content='Apache2.0'),
+                    Property.Item(label='amis-cdn', content=self.site.settings.amis_cdn),
+                    Property.Item(label='amis-pkg', content=self.site.settings.amis_pkg),
+                ]
+            ),
+        ]
         return page
 
 
