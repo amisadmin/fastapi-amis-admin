@@ -6,7 +6,22 @@
 
 #### app
 
-- 当前管理对象注册的应用(站点)
+当前管理对象注册的应用`AdminApp`对象.
+
+- 注意`app`并非最顶级,还可能被其他`AdminApp`或`AdminSite`注册.)
+
+#### site
+
+当前管理对象注册的站点`AdminSite`站点,最顶级Admin对象.
+
+#### unique_id
+
+当前管理对象的唯一性标识ID.
+
+- 可自定义设置,如未设置则根据默认规则自动生成.
+- 唯一性标识ID不应当随着项目的启动或停止产生变化, 并且在项目中每个Admin类标识应当唯一.
+
+
 
 ## Admin ClassDiagram
 
@@ -59,8 +74,11 @@ classDiagram
     BaseModelAdmin --|> SQLModelCrud
     ModelAdmin --|> BaseModelAdmin
 	ModelAdmin --|> PageAdmin
-	%% app
-    AdminAPP --|> RouterMixin
+	
+	%% group,app,site
+	AdminGroup --|> PageSchemaAdmin
+	
+    AdminAPP --|> AdminGroup
     AdminAPP --|> PageAdmin
     AdminAPP: +AsyncDatabase db
     AdminAPP: +AdminSite site
@@ -82,6 +100,11 @@ App --|> AmisNode
 App *-- PageSchema
 PageSchema --|> AmisNode
 PageSchema *-- PageSchema
+
+AdminApp --> App
+AdminApp --> Tabs
+Tabs *-- TabsItem
+TabsItem --|> AmisNode
 
 Page --|> AmisNode
 PageAdmin --> Page

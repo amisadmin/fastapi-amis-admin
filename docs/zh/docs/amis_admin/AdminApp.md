@@ -12,7 +12,7 @@
 
 #### engine
 
-- 当前应用`sqlalchemy`数据库异步引擎.
+- 当前应用`sqlalchemy`数据库引擎,支持同步引擎和异步引擎.
 
 - 参考: [Asynchronous I/O (asyncio) — SQLAlchemy 1.4 Documentation](https://docs.sqlalchemy.org/en/14/orm/extensions/asyncio.html?highlight=async#sqlalchemy.ext.asyncio.AsyncEngine)
 - 示例:
@@ -26,12 +26,8 @@ engine = create_async_engine("sqlite+aiosqlite:///amisadmin.db", future=True)
 
 #### db
 
-- 当前应用`sqlalchemy`异步客户端, 即 `AsyncDatabase` 对象. 
+- 当前应用`sqlalchemy`客户端,支持同步或异步, 即 `AsyncDatabase`或`Database` 对象. 
 - 参考: [AsyncDatabase](../../utils/database)
-
-#### route_index
-
-- 当前应用主页路由.
 
 #### site
 
@@ -41,12 +37,12 @@ engine = create_async_engine("sqlite+aiosqlite:///amisadmin.db", future=True)
 
 ### 方法
 
-#### create_admin_instance
+#### get_admin_or_create
 
-创建并返回管理类对象实例.
+返回或创建管理类对象实例.
 
 ```python
-def create_admin_instance(self, admin_cls: Type[_BaseAdminT]) -> _BaseAdminT
+def get_admin_or_create(self, admin_cls: Type[_BaseAdminT], register: bool = True) -> Optional[_BaseAdminT]
 ```
 
 #### create_admin_instance_all
@@ -86,20 +82,15 @@ def unregister_admin(self, *admin_cls: Type[BaseAdmin])
 
 #### get_page
 
-返回当前应用页面amis App 对象.
+返回当前应用页面.
+
+1. 如果`tabs_mode`未设置,则返回amis App 对象.
+2. 如果设置了`tabs_mode`,则返回的一个主体为`Tabs`的amis Page页面.
 
 - 参考: [App 多页应用](https://baidu.gitee.io/amis/zh-CN/components/app)
+- 参考: [Tabs 选项卡](https://aisuda.bce.baidu.com/amis/zh-CN/components/tabs)
 
 ```python
-async def get_page(self, request: Request) -> App
+async def get_page(self, request: Request) -> Union[Page, App]
 ```
 
-#### get_page_schema_children
-
-返回当前应用导航页面属性列表.
-
-- 参考: [App 多页应用#属性说明](https://baidu.gitee.io/amis/zh-CN/components/app#属性说明)
-
-```python
-async def get_page_schema_children(self, request: Request) -> List[PageSchema]
-```

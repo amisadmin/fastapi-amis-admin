@@ -56,7 +56,7 @@ async def startup():
 
 ## 依赖项目
 
-- [Fastapi](https://fastapi.tiangolo.com)
+- [FastAPI](https://fastapi.tiangolo.com)
 
 - [SQLModel](https://sqlmodel.tiangolo.com/)
 

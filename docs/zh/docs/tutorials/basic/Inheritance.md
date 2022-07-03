@@ -103,13 +103,11 @@ class ActiveArticle(ArticleAdmin):
 
 ## 示例-4(自定义管理应用)
 
--
-
 参考: [fastapi_user_auth.UserAuthApp](https://github.com/amisadmin/fastapi_user_auth/blob/9a7c30f5f562543c376fd0235091666547fb175d/fastapi_user_auth/app.py#L14)
 
 ## 示例-5(自定义管理站点)
 
-- 参考: [基础教程->站点配置->自定义管理站点](/tutorials/basic/Settings/#_4)
--
+参考: [基础教程->站点配置->自定义管理站点](/tutorials/basic/Settings/#_4)
+
 参考: [fastapi_user_auth.AuthAdminSite](https://github.com/amisadmin/fastapi_user_auth/blob/9a7c30f5f562543c376fd0235091666547fb175d/fastapi_user_auth/site.py#L16)
 

@@ -31,7 +31,11 @@
 
 #### database_url_async
 
-- 当前管理站点`sqlalchemy`数据库引擎连接url.
+- 当前管理站点`sqlalchemy`数据库引擎异步连接url.
+
+#### database_url
+
+- 当前管理站点`sqlalchemy`数据库引擎同步连接url.
 
 #### language
 

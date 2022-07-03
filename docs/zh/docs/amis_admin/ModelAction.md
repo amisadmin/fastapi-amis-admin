@@ -24,9 +24,9 @@
 - 获取选项数据.
 
 ```python
-async def fetch_item_scalars(self, session: AsyncSession, item_id: List[str]) -> ScalarResult:
-    result = await session.execute(select(self.admin.model).where(self.admin.pk.in_(item_id)))
-    return result.scalars()
+async def fetch_item_scalars(self,item_id: List[str]) -> List[BaseModel]:
+    stmt = select(self.admin.model).where(self.admin.pk.in_(item_id))
+    return await self.admin.db.async_execute(stmt, lambda r: r.scalars().all())
 ```
 
 ## ModelAction
@@ -65,7 +65,12 @@ async def get_action(self, request: Request, **kwargs) -> Action
 - `session`:当前管理模型所属数据库连接异步会话.
 
 ```python
-async def handle(self, request: Request, item_id: List[str], data: Optional[BaseModel],
-                     session: AsyncSession, **kwargs) -> BaseApiOut[Any]
+async def handle(
+    self, 
+    request: Request, 
+    item_id: List[str], 
+    data: Optional[BaseModel],
+    **kwargs
+) -> BaseApiOut[Any]
 ```
 

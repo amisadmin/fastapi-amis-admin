@@ -52,7 +52,7 @@ FastAPI-Amis-Admin非常感谢以下项目的支持.
 
 您还可以赞助：
 
-- [Fastapi](https://fastapi.tiangolo.com/)
+- [FastAPI](https://fastapi.tiangolo.com/)
 - [Amis](https://baidu.gitee.io/amis)
 - [SQLModel](https://sqlmodel.tiangolo.com/)
 - [Pydantic](https://pydantic-docs.helpmanual.io/)
