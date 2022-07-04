@@ -933,10 +933,7 @@ class BaseModelAction:
         self.admin = admin
         assert self.admin, 'admin is None'
 
-    async def fetch_item_scalars(
-            self,
-            item_id: List[str]
-    ) -> List[BaseModel]:
+    async def fetch_item_scalars(self,item_id: List[str]) -> List[BaseModel]:
         stmt = select(self.admin.model).where(self.admin.pk.in_(item_id))
         return await self.admin.db.async_execute(stmt, lambda r: r.scalars().all())
 
@@ -1005,7 +1002,7 @@ class AdminGroup(PageSchemaAdmin):
             unique_str += self._children[0].unique_id
         return md5_hex(unique_str)[:16]
 
-    def append_child(self, child: _PageSchemaAdminT, group_schema: PageSchema = None):
+    def append_child(self, child: _PageSchemaAdminT, group_schema: PageSchema = None)->None:
         if not child.page_schema:
             return
         group_label = group_schema and group_schema.label
