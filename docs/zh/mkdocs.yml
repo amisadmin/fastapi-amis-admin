@@ -112,6 +112,7 @@ nav:
           - amis_admin/FormAdmin.md
           - amis_admin/ModelAdmin.md
           - amis_admin/ModelAction.md
+          - amis_admin/AdminGroup.md
           - amis_admin/AdminApp.md
           - amis_admin/AdminSite.md
           - amis_admin/Settings.md

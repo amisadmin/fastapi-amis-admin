@@ -49,9 +49,9 @@ class TestAction(admin.ModelAction):
     action = ActionType.Dialog(label='自定义普通处理动作', dialog=Dialog())
     
 	# 动作处理
-    async def handle(self, request: Request, item_id: List[str], data: Optional[BaseModel], session: AsyncSession, **kwargs):
+    async def handle(self, request: Request, item_id: List[str], data: Optional[BaseModel], **kwargs):
         # 从数据库获取用户选择的数据列表
-        items = await self.fetch_item_scalars(session, item_id)
+        items = await self.fetch_item_scalars(item_id)
         # 执行动作处理
         ...
         # 返回动作处理结果
@@ -90,6 +90,8 @@ class ArticleAdmin(admin.ModelAdmin):
 ### 示例-3
 
 ```python
+from fastapi_amis_admin import admin
+
 # 创建表单ajax动作
 class TestFormAction(admin.ModelAction):
     # 配置动作基本信息
@@ -102,9 +104,9 @@ class TestFormAction(admin.ModelAction):
         is_active: bool = Field(True, title='是否激活')
             
 	# 动作处理
-    async def handle(self, request: Request, item_id: List[str], data: schema, session: AsyncSession, **kwargs):
+    async def handle(self, request: Request, item_id: List[str], data: schema, **kwargs):
         # 从数据库获取用户选择的数据列表
-        items = await self.fetch_item_scalars(session, item_id)
+        items = await self.fetch_item_scalars(item_id)
         # 执行动作处理
         ...
         # 返回动作处理结果
