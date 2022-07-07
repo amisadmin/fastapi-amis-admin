@@ -135,7 +135,7 @@ class BaseCrud(RouterMixin):
         )
 
     def _create_schema_read(self):
-        return self.schema_read or self.schema_list
+        return self.schema_read or self.schema_model
 
     def _create_schema_update(self):
         return self.schema_update or schema_create_by_schema(

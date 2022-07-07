@@ -9,7 +9,7 @@ from sqlalchemy import insert, update, delete, func, Table, Column
 from sqlalchemy.engine import Engine
 from sqlalchemy.ext.asyncio import AsyncEngine
 from sqlalchemy.future import select
-from sqlalchemy.orm import InstrumentedAttribute
+from sqlalchemy.orm import InstrumentedAttribute, Session
 from sqlalchemy.sql import Select
 from sqlalchemy.sql.elements import BinaryExpression, UnaryExpression
 from sqlalchemy_database import AsyncDatabase, Database
@@ -19,7 +19,7 @@ from starlette.requests import Request
 from .base import BaseCrud
 from .parser import SQLModelFieldParser, SQLModelListField, get_python_type_parse, SQLModelField
 from .schema import BaseApiOut, ItemListSchema
-from .utils import schema_create_by_modelfield, parser_item_id, parser_str_set_list, schema_create_by_schema
+from .utils import schema_create_by_modelfield, parser_item_id, parser_str_set_list
 
 sql_operator_pattern: Pattern = re.compile(r'^\[(=|<=|<|>|>=|!|!=|<>|\*|!\*|~|!~|-)]')
 sql_operator_map: Dict[str, str] = {
@@ -215,17 +215,19 @@ class SQLModelCrud(BaseCrud, SQLModelSelector):
             return self.schema_update
         if not self.readonly_fields and not self.update_fields:
             return super(SQLModelCrud, self)._create_schema_update()
-        include = {self.parser.get_modelfield(ins).name
-                   for ins in self.parser.filter_insfield(self.update_fields)
-                   } - {self.pk_name}
-        exclude = {self.parser.get_modelfield(ins).name
-                   for ins in self.parser.filter_insfield(self.readonly_fields)
-                   } | {self.pk_name}
-        return schema_create_by_schema(
-            schema_cls=self.schema_model,
-            schema_name=f'{self.schema_name_prefix}Update',
-            include=include,
-            exclude=exclude,
+        self.update_fields = self.update_fields or self.schema_model.__fields__.values()
+        modelfields = {self.parser.get_modelfield(ins, deepcopy=True)
+                       for ins in self.parser.filter_insfield(self.update_fields)
+                       }
+        modelfields = {field for field in modelfields
+                       if field.name not in {
+                           self.parser.get_modelfield(ins, deepcopy=True).name
+                           for ins in self.parser.filter_insfield(self.readonly_fields)
+                       } | {self.pk_name}
+                       }
+        return schema_create_by_modelfield(
+            f'{self.schema_name_prefix}Update',
+            modelfields,
             set_none=True
         )
 
@@ -243,6 +245,12 @@ class SQLModelCrud(BaseCrud, SQLModelSelector):
             modelfields
         )
 
+    def _read_items(self, session: Session, item_id: List[str]):
+        parse_obj = getattr(self.schema_read, 'from_orm', None) or getattr(self.schema_read, 'parse_obj', None)
+        stmt = select(self.model).where(self.pk.in_(list(map(get_python_type_parse(self.pk), item_id))))
+        items = session.scalars(stmt).all()
+        return [parse_obj(obj) for obj in items]
+
     @property
     def schema_name_prefix(self):
         if self.__class__ is SQLModelCrud:
@@ -250,19 +258,25 @@ class SQLModelCrud(BaseCrud, SQLModelSelector):
         return super().schema_name_prefix
 
     async def on_create_pre(self, request: Request, obj: BaseModel, **kwargs) -> Dict[str, Any]:
-        data_dict = obj.dict()  # exclude=set(self.pk)
+        data_dict = obj.dict(by_alias=True)  # exclude=set(self.pk)
         if self.pk_name in data_dict and not data_dict.get(self.pk_name):
             del data_dict[self.pk_name]
         return data_dict
 
-    async def on_update_pre(self, request: Request, obj: BaseModel, **kwargs) -> Dict[str, Any]:
-        data = obj.dict(exclude_unset=True)
+    async def on_update_pre(
+            self,
+            request: Request,
+            obj: BaseModel,
+            item_id: Union[List[str], List[int]],
+            **kwargs
+    ) -> Dict[str, Any]:
+        data = obj.dict(exclude_unset=True, by_alias=True)
         data = {key: val for key, val in data.items()
                 if val is not None or self.model.__fields__[key].allow_none}
         return data
 
     async def on_filter_pre(self, request: Request, obj: BaseModel, **kwargs) -> Dict[str, Any]:
-        return obj and {k: v for k, v in obj.dict(exclude_unset=True).items() if v is not None}
+        return obj and {k: v for k, v in obj.dict(exclude_unset=True, by_alias=True).items() if v is not None}
 
     @property
     def route_list(self) -> Callable:
@@ -334,20 +348,16 @@ class SQLModelCrud(BaseCrud, SQLModelSelector):
 
     @property
     def route_read(self) -> Callable:
+
         async def route(
                 request: Request,
                 item_id: List[str] = Depends(parser_item_id),
-                stmt: Select = Depends(self.get_select)
         ):
             if not await self.has_read_permission(request, item_id):
                 return self.error_no_router_permission(request)
-            stmt = stmt.where(self.pk.in_(list(map(get_python_type_parse(self.pk), item_id))))
-            items = await self.db.async_execute(stmt, on_close_pre=lambda r: r.all())
-            items = self.parser.conv_row_to_dict(items)
-            if items:
-                items = [self.schema_read.parse_obj(item) for item in items]
-                if len(items) == 1:
-                    items = items[0]
+            items = await self.db.async_run_sync(self._read_items, item_id)
+            if len(items) == 1:
+                items = items[0]
             return BaseApiOut(data=items)
 
         return route
@@ -361,8 +371,9 @@ class SQLModelCrud(BaseCrud, SQLModelSelector):
         ):
             if not await self.has_update_permission(request, item_id, data):
                 return self.error_no_router_permission(request)
-            stmt = update(self.model).where(self.pk.in_(list(map(get_python_type_parse(self.pk), item_id))))
-            values = await self.on_update_pre(request, data)
+            item_id = list(map(get_python_type_parse(self.pk), item_id))
+            stmt = update(self.model).where(self.pk.in_(item_id))
+            values = await self.on_update_pre(request, data, item_id)
             if not values:
                 return self.error_data_handle(request)
             stmt = stmt.values(values)
