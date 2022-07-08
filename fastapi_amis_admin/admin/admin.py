@@ -146,7 +146,7 @@ class LinkModelForm:
         return route
 
     async def get_form_item(self, request: Request):
-        url = self.display_admin.app.router_path + self.display_admin.router.url_path_for('page')
+        url = self.display_admin.router_path + self.display_admin.page_path
         picker = Picker(
             name=self.display_admin.model.__tablename__,
             label=self.display_admin.page_schema.label,
@@ -362,7 +362,7 @@ class BaseModelAdmin(SQLModelCrud):
         admin = self.app.site.get_model_admin(foreign_keys[0].column.table.name)
         if not admin:
             return None
-        url = admin.app.router_path + admin.router.url_path_for('page')
+        url = admin.router_path + admin.page_path
         label = modelfield.field_info.title or modelfield.name
         remark = Remark(content=modelfield.field_info.description) if modelfield.field_info.description else None
         picker = Picker(name=modelfield.alias, label=label, labelField='name', valueField='id',
@@ -714,7 +714,6 @@ class PageAdmin(PageSchemaAdmin, RouterAdmin):
             self.page_path,
             self.route_page,
             methods=["GET"],
-            name='page',
             dependencies=[Depends(self.page_permission_depend)],
             include_in_schema=False,
             response_class=HTMLResponse,
@@ -724,7 +723,6 @@ class PageAdmin(PageSchemaAdmin, RouterAdmin):
             self.page_path,
             self.route_page,
             methods=["POST"],
-            name='page',
             dependencies=[Depends(self.page_permission_depend)],
             response_model=BaseAmisApiOut,
             include_in_schema=(self.page_parser_mode == 'json'),
@@ -933,7 +931,7 @@ class BaseModelAction:
         self.admin = admin
         assert self.admin, 'admin is None'
 
-    async def fetch_item_scalars(self,item_id: List[str]) -> List[BaseModel]:
+    async def fetch_item_scalars(self, item_id: List[str]) -> List[BaseModel]:
         stmt = select(self.admin.model).where(self.admin.pk.in_(item_id))
         return await self.admin.db.async_execute(stmt, lambda r: r.scalars().all())
 
@@ -1002,7 +1000,7 @@ class AdminGroup(PageSchemaAdmin):
             unique_str += self._children[0].unique_id
         return md5_hex(unique_str)[:16]
 
-    def append_child(self, child: _PageSchemaAdminT, group_schema: PageSchema = None)->None:
+    def append_child(self, child: _PageSchemaAdminT, group_schema: PageSchema = None) -> None:
         if not child.page_schema:
             return
         group_label = group_schema and group_schema.label
@@ -1182,6 +1180,6 @@ class BaseAdminSite(AdminApp):
     def router_path(self) -> str:
         return self.settings.site_url + self.settings.root_path + self.router.prefix
 
-    def mount_app(self, fastapi: FastAPI, name: str = None) -> None:
+    def mount_app(self, fastapi: FastAPI, name: str = 'admin') -> None:
         self.register_router()
         fastapi.mount(self.settings.root_path, self.fastapi, name=name)
