@@ -5,6 +5,7 @@ from pydantic import Json
 from pydantic.fields import ModelField
 from pydantic.utils import smart_deepcopy
 
+from fastapi_amis_admin import amis
 from fastapi_amis_admin.amis.components import FormItem, Remark, Validation, InputNumber, TableColumn
 from fastapi_amis_admin.amis.constants import LabelEnum
 from fastapi_amis_admin.models.enums import Choices
@@ -37,6 +38,11 @@ class AmisParser:
         formitem.name = self.modelfield.alias
         formitem.label = formitem.label or self.label
         formitem.labelRemark = formitem.labelRemark or self.remark
+        if formitem.type in {'input-image', 'input-file'}:
+            formitem = amis.Group(name=formitem.name, body=[
+                formitem,
+                formitem.copy( exclude={'maxLength'},update={'type': 'input-text'},),
+            ])
         return formitem
 
     def as_table_column(self, quick_edit: bool = False) -> TableColumn:
