@@ -265,10 +265,10 @@ class SQLModelCrud(BaseCrud, SQLModelSelector):
         )
 
     def _read_items(self, session: Session, item_id: List[str]):
-        parse_obj = getattr(self.schema_read, 'from_orm', None) or getattr(self.schema_read, 'parse_obj', None)
         stmt = select(self.model).where(self.pk.in_(list(map(get_python_type_parse(self.pk), item_id))))
         items = session.scalars(stmt).all()
-        return [parse_obj(obj) for obj in items]
+        parse = self.schema_model.from_orm if self.schema_model.Config.orm_mode else self.schema_model.parse_obj
+        return [parse(obj) for obj in items]
 
     @property
     def schema_name_prefix(self):
