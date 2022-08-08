@@ -9,41 +9,41 @@ from fastapi_amis_admin.amis.components import FormItem, TableColumn
 
 
 def Field(
-        default: Any = Undefined,
-        *,
-        default_factory: Optional[NoArgAnyCallable] = None,
-        alias: str = None,
-        title: str = None,
-        description: str = None,
-        exclude: Union[
-            AbstractSet[Union[int, str]], Mapping[Union[int, str], Any], Any
-        ] = None,
-        include: Union[
-            AbstractSet[Union[int, str]], Mapping[Union[int, str], Any], Any
-        ] = None,
-        const: bool = None,
-        gt: float = None,
-        ge: float = None,
-        lt: float = None,
-        le: float = None,
-        multiple_of: float = None,
-        min_items: int = None,
-        max_items: int = None,
-        min_length: int = None,
-        max_length: int = None,
-        allow_mutation: bool = True,
-        regex: str = None,
-        primary_key: bool = False,
-        foreign_key: Optional[Any] = None,
-        nullable: Union[bool, UndefinedType] = Undefined,
-        index: Union[bool, UndefinedType] = Undefined,
-        sa_column: Union[Column, UndefinedType] = Undefined,
-        sa_column_args: Union[Sequence[Any], UndefinedType] = Undefined,
-        sa_column_kwargs: Union[Mapping[str, Any], UndefinedType] = Undefined,
-        schema_extra: Optional[Dict[str, Any]] = None,
-        amis_form_item: Union[FormItem, dict, str] = None,
-        amis_filter_item: Union[FormItem, dict, str] = None,
-        amis_table_column: Union[TableColumn, dict, str] = None,
+    default: Any = Undefined,
+    *,
+    default_factory: Optional[NoArgAnyCallable] = None,
+    alias: str = None,
+    title: str = None,
+    description: str = None,
+    exclude: Union[
+        AbstractSet[Union[int, str]], Mapping[Union[int, str], Any], Any
+    ] = None,
+    include: Union[
+        AbstractSet[Union[int, str]], Mapping[Union[int, str], Any], Any
+    ] = None,
+    const: bool = None,
+    gt: float = None,
+    ge: float = None,
+    lt: float = None,
+    le: float = None,
+    multiple_of: float = None,
+    min_items: int = None,
+    max_items: int = None,
+    min_length: int = None,
+    max_length: int = None,
+    allow_mutation: bool = True,
+    regex: str = None,
+    primary_key: bool = False,
+    foreign_key: Optional[Any] = None,
+    nullable: Union[bool, UndefinedType] = Undefined,
+    index: Union[bool, UndefinedType] = Undefined,
+    sa_column: Union[Column, UndefinedType] = Undefined,
+    sa_column_args: Union[Sequence[Any], UndefinedType] = Undefined,
+    sa_column_kwargs: Union[Mapping[str, Any], UndefinedType] = Undefined,
+    schema_extra: Optional[Dict[str, Any]] = None,
+    amis_form_item: Union[FormItem, dict, str] = None,
+    amis_filter_item: Union[FormItem, dict, str] = None,
+    amis_table_column: Union[TableColumn, dict, str] = None,
 ) -> Any:
     current_schema_extra = schema_extra or {}
     if amis_form_item:

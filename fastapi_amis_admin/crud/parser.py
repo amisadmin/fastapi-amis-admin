@@ -56,10 +56,12 @@ class SQLModelFieldParser:
     def get_alias(self, field: Union[Column, SQLModelField, Label]) -> str:
         if isinstance(field, Column):
             return field.name if field.table.name == self.default_model.__tablename__ else self._alias_format.format(
-                table_name=field.table.name, field_key=field.name)
+                table_name=field.table.name, field_key=field.name
+            )
         elif isinstance(field, InstrumentedAttribute):
             return field.key if field.class_.__tablename__ == self.default_model.__tablename__ else self._alias_format.format(
-                table_name=field.class_.__tablename__, field_key=field.expression.key)
+                table_name=field.class_.__tablename__, field_key=field.expression.key
+            )
         elif isinstance(field, Label):
             return field.key
         elif isinstance(field, str) and field in self.default_model.__fields__:
@@ -68,7 +70,8 @@ class SQLModelFieldParser:
 
     def get_name(self, field: InstrumentedAttribute) -> str:
         return field.key if field.class_.__tablename__ == self.default_model.__tablename__ else self._name_format.format(
-            model_name=field.class_.__tablename__, field_name=field.key)
+            model_name=field.class_.__tablename__, field_name=field.key
+        )
 
     def get_row_keys(self, row: Row) -> List[str]:
         """sqlalchemy row keys"""
@@ -103,7 +106,7 @@ class SQLModelFieldParser:
         return None
 
     def filter_insfield(self, fields: Iterable[Union[SQLModelListField, Any]], save_class: Tuple[type] = None) -> \
-            List[Union[InstrumentedAttribute, Any]]:
+        List[Union[InstrumentedAttribute, Any]]:
         result = []
         for field in fields:
             insfield = self.get_insfield(field)

@@ -46,12 +46,12 @@ class LinkModelForm:
     link_model: Table
 
     def __init__(
-            self,
-            pk_admin: "BaseModelAdmin",
-            display_admin: "ModelAdmin",
-            link_model: Union[SQLModel, Table],
-            link_col: Column,
-            item_col: Column,
+        self,
+        pk_admin: "BaseModelAdmin",
+        display_admin: "ModelAdmin",
+        link_model: Union[SQLModel, Table],
+        link_col: Column,
+        item_col: Column,
     ):
         self.link_model = link_model
         self.pk_admin = pk_admin
@@ -65,9 +65,9 @@ class LinkModelForm:
 
     @classmethod
     def bind_model_admin(
-            cls,
-            pk_admin: "BaseModelAdmin",
-            insfield: InstrumentedAttribute
+        cls,
+        pk_admin: "BaseModelAdmin",
+        insfield: InstrumentedAttribute
     ) -> Optional["LinkModelForm"]:
         if not isinstance(insfield.prop, RelationshipProperty):
             return None
@@ -88,7 +88,8 @@ class LinkModelForm:
                 admin.link_models = {pk_admin.model.__tablename__: (table, link_key.parent, item_key.parent)}
             else:
                 admin.link_models.update(
-                    {pk_admin.model.__tablename__: (table, link_key.parent, item_key.parent)})
+                    {pk_admin.model.__tablename__: (table, link_key.parent, item_key.parent)}
+                )
             return LinkModelForm(
                 pk_admin=pk_admin,
                 display_admin=admin,
@@ -101,16 +102,19 @@ class LinkModelForm:
     @property
     def route_delete(self):
         async def route(
-                request: Request,
-                item_id: List[str] = Depends(parser_item_id),
-                link_id: str = Query(..., min_length=1, title='link_id', example='1,2,3',
-                                     description='link model Primary key or list of link model primary keys'),
+            request: Request,
+            item_id: List[str] = Depends(parser_item_id),
+            link_id: str = Query(
+                ..., min_length=1, title='link_id', example='1,2,3',
+                description='link model Primary key or list of link model primary keys'
+            ),
         ):
             if not await self.pk_admin.has_update_permission(request, item_id, None):
                 return self.pk_admin.error_no_router_permission(request)
             stmt = delete(self.link_model).where(
                 self.link_col.in_(
-                    list(map(get_python_type_parse(self.link_col), parser_str_set_list(link_id))))
+                    list(map(get_python_type_parse(self.link_col), parser_str_set_list(link_id)))
+                )
             ).where(
                 self.item_col.in_(list(map(get_python_type_parse(self.item_col), item_id)))
             )
@@ -122,10 +126,12 @@ class LinkModelForm:
     @property
     def route_create(self):
         async def route(
-                request: Request,
-                item_id: List[str] = Depends(parser_item_id),
-                link_id: str = Query(..., min_length=1, title='link_id', example='1,2,3',
-                                     description='link model Primary key or list of link model primary keys'),
+            request: Request,
+            item_id: List[str] = Depends(parser_item_id),
+            link_id: str = Query(
+                ..., min_length=1, title='link_id', example='1,2,3',
+                description='link model Primary key or list of link model primary keys'
+            ),
         ):
             if not await self.pk_admin.has_update_permission(request, item_id, None):
                 return self.pk_admin.error_no_router_permission(request)
@@ -207,12 +213,14 @@ class LinkModelForm:
                       + ';payload.data.body.headerToolbar.push(' + button_create_dialog.amis_json() \
                       + ');payload.data.body.bulkActions.push(button_delete);payload.data.body.itemActions.push(button_delete);' \
                         'return payload;'.replace('action_id', 'delete' + self.path.replace('/', '_'))
-        return Service(schemaApi=AmisAPI(
-            method='post', url=url, data={}, cache=300000,
-            responseData=dict(controls=[picker]),
-            qsOptions={'id': f'${self.pk_admin.pk_name}'},
-            adaptor=adaptor
-        ))
+        return Service(
+            schemaApi=AmisAPI(
+                method='post', url=url, data={}, cache=300000,
+                responseData=dict(controls=[picker]),
+                qsOptions={'id': f'${self.pk_admin.pk_name}'},
+                adaptor=adaptor
+            )
+        )
 
     def register_router(self):
         self.pk_admin.router.add_api_route(
@@ -260,7 +268,8 @@ class BaseModelAdmin(SQLModelCrud):
 
     def get_link_model_forms(self) -> List[LinkModelForm]:
         self.link_model_forms = list(
-            filter(None, [LinkModelForm.bind_model_admin(self, insfield) for insfield in self.link_model_fields]))
+            filter(None, [LinkModelForm.bind_model_admin(self, insfield) for insfield in self.link_model_fields])
+        )
         return self.link_model_forms
 
     async def get_list_display(self, request: Request) -> List[Union[SQLModelListField, TableColumn]]:
@@ -296,10 +305,12 @@ class BaseModelAdmin(SQLModelCrud):
         for link_form in self.link_model_forms:
             form = await link_form.get_form_item(request)
             if form:
-                columns.append(ColumnOperation(
-                    width=160, label=link_form.display_admin.page_schema.label, breakpoint='*',
-                    buttons=[form]
-                ))
+                columns.append(
+                    ColumnOperation(
+                        width=160, label=link_form.display_admin.page_schema.label, breakpoint='*',
+                        buttons=[form]
+                    )
+                )
         return columns
 
     async def get_list_table_api(self, request: Request) -> AmisAPI:
@@ -323,8 +334,10 @@ class BaseModelAdmin(SQLModelCrud):
         headerToolbar = ["filter-toggler", "reload", "bulkActions",
                          {"type": "columns-toggler", "align": "right", "draggable": True},
                          {"type": "drag-toggler", "align": "right"}, {"type": "pagination", "align": "right"},
-                         {"type": "tpl", "tpl": _("SHOWING ${items|count} OF ${total} RESULT(S)"), "className": "v-middle",
-                          "align": "right"}]
+                         {
+                             "type": "tpl", "tpl": _("SHOWING ${items|count} OF ${total} RESULT(S)"), "className": "v-middle",
+                             "align": "right"
+                         }]
         headerToolbar.extend(await self.get_actions_on_header_toolbar(request))
         table = TableCRUD(
             api=await self.get_list_table_api(request),
@@ -348,10 +361,10 @@ class BaseModelAdmin(SQLModelCrud):
         return table
 
     async def get_form_item_on_foreign_key(
-            self,
-            request: Request,
-            modelfield: ModelField,
-            is_filter: bool = False
+        self,
+        request: Request,
+        modelfield: ModelField,
+        is_filter: bool = False
     ) -> Union[Service, SchemaNode, None]:
         column = self.parser.get_column(modelfield.alias)
         if column is None:
@@ -365,23 +378,27 @@ class BaseModelAdmin(SQLModelCrud):
         url = admin.router_path + admin.page_path
         label = modelfield.field_info.title or modelfield.name
         remark = Remark(content=modelfield.field_info.description) if modelfield.field_info.description else None
-        picker = Picker(name=modelfield.alias, label=label, labelField='name', valueField='id',
-                        required=(modelfield.required and not is_filter), modalMode='dialog', inline=is_filter,
-                        size='full', labelRemark=remark, pickerSchema='${body}', source='${body.api}')
-        return Service(name=modelfield.alias,
-                       schemaApi=AmisAPI(method='post', url=url, data={}, cache=300000, responseData=dict(controls=[picker])))
+        picker = Picker(
+            name=modelfield.alias, label=label, labelField='name', valueField='id',
+            required=(modelfield.required and not is_filter), modalMode='dialog', inline=is_filter,
+            size='full', labelRemark=remark, pickerSchema='${body}', source='${body.api}'
+        )
+        return Service(
+            name=modelfield.alias,
+            schemaApi=AmisAPI(method='post', url=url, data={}, cache=300000, responseData=dict(controls=[picker]))
+        )
 
     async def get_form_item(
-            self,
-            request: Request,
-            modelfield: ModelField,
-            action: CrudEnum
+        self,
+        request: Request,
+        modelfield: ModelField,
+        action: CrudEnum
     ) -> Union[FormItem, SchemaNode, None]:
         is_filter = action == CrudEnum.list
         set_default = action == CrudEnum.create
         return (
-                await self.get_form_item_on_foreign_key(request, modelfield, is_filter=is_filter)
-                or AmisParser(modelfield).as_form_item(is_filter=is_filter, set_default=set_default)
+            await self.get_form_item_on_foreign_key(request, modelfield, is_filter=is_filter)
+            or AmisParser(modelfield).as_form_item(is_filter=is_filter, set_default=set_default)
         )
 
     async def get_list_filter_form(self, request: Request) -> Form:
@@ -428,12 +445,15 @@ class BaseModelAdmin(SQLModelCrud):
             column.name = column.label
             columns.append(column)
         return Form(
-            api=AmisAPI(method='post', url=f'{self.router_path}/item',
-                        data={'&': {'$excel': keys}}),
+            api=AmisAPI(
+                method='post', url=f'{self.router_path}/item',
+                data={'&': {'$excel': keys}}
+            ),
             mode=DisplayModeEnum.normal,
             body=[InputExcel(name='excel'),
-                  InputTable(name='excel', showIndex=True, columns=columns,
-                             addable=True, copyable=True, editable=True, removable=True, ),
+                  InputTable(
+                      name='excel', showIndex=True, columns=columns,
+                      addable=True, copyable=True, editable=True, removable=True, ),
                   ],
         )
 
@@ -538,10 +558,10 @@ class BaseModelAdmin(SQLModelCrud):
         return list(filter(None, bulkActions))
 
     async def _conv_modelfields_to_formitems(
-            self,
-            request: Request,
-            fields: Iterable[Union[SQLModelListField, ModelField, FormItem]],
-            action: CrudEnum = None
+        self,
+        request: Request,
+        fields: Iterable[Union[SQLModelListField, ModelField, FormItem]],
+        action: CrudEnum = None
     ) -> List[FormItem]:
         items = []
         for field in fields:
@@ -779,11 +799,12 @@ class BaseFormAdmin(PageAdmin):
         page.body = await self.get_form(request)
         return page
 
-    async def get_form_item(self,
-                            request: Request,
-                            modelfield: ModelField
-                            ) -> Union[FormItem, SchemaNode]:
-        return AmisParser(modelfield).as_form_item()
+    async def get_form_item(
+        self,
+        request: Request,
+        modelfield: ModelField
+    ) -> Union[FormItem, SchemaNode]:
+        return AmisParser(modelfield).as_form_item(set_default=True)
 
     async def get_form(self, request: Request) -> Form:
         form = self.form or Form()
@@ -881,44 +902,44 @@ class ModelAdmin(BaseModelAdmin, PageAdmin):
         return page
 
     async def has_list_permission(
-            self,
-            request: Request,
-            paginator: Paginator,
-            filters: BaseModel = None,  # type self.schema_filter
-            **kwargs
+        self,
+        request: Request,
+        paginator: Paginator,
+        filters: BaseModel = None,  # type self.schema_filter
+        **kwargs
     ) -> bool:
         return await self.has_page_permission(request)
 
     async def has_create_permission(
-            self,
-            request: Request,
-            data: BaseModel,  # type self.schema_create
-            **kwargs
+        self,
+        request: Request,
+        data: BaseModel,  # type self.schema_create
+        **kwargs
     ) -> bool:
         return await self.has_page_permission(request)
 
     async def has_read_permission(
-            self,
-            request: Request,
-            item_id: List[str],
-            **kwargs
+        self,
+        request: Request,
+        item_id: List[str],
+        **kwargs
     ) -> bool:
         return await self.has_page_permission(request)
 
     async def has_update_permission(
-            self,
-            request: Request,
-            item_id: List[str],
-            data: BaseModel,  # type self.schema_update
-            **kwargs
+        self,
+        request: Request,
+        item_id: List[str],
+        data: BaseModel,  # type self.schema_update
+        **kwargs
     ) -> bool:
         return await self.has_page_permission(request)
 
     async def has_delete_permission(
-            self,
-            request: Request,
-            item_id: List[str],
-            **kwargs
+        self,
+        request: Request,
+        item_id: List[str],
+        **kwargs
     ) -> bool:
         return await self.has_page_permission(request)
 
@@ -965,11 +986,11 @@ class ModelAction(BaseFormAdmin, BaseModelAction):
         return action
 
     async def handle(
-            self,
-            request: Request,
-            item_id: List[str],
-            data: Optional[BaseModel],
-            **kwargs
+        self,
+        request: Request,
+        item_id: List[str],
+        data: Optional[BaseModel],
+        **kwargs
     ) -> BaseApiOut[Any]:
         return BaseApiOut(data=data)
 
@@ -978,10 +999,12 @@ class ModelAction(BaseFormAdmin, BaseModelAction):
         default = ... if self.schema else None
 
         async def route(
-                request: Request,
-                data: self.schema = Body(default=default),  # type:ignore
-                item_id: str = Query(None, title='item_id', example='1,2,3',
-                                     description='Primary key or list of primary keys'),
+            request: Request,
+            data: self.schema = Body(default=default),  # type:ignore
+            item_id: str = Query(
+                None, title='item_id', example='1,2,3',
+                description='Primary key or list of primary keys'
+            ),
         ):
             return await self.handle(request, parser_str_set_list(set_str=item_id), data)
 
@@ -1022,7 +1045,7 @@ class AdminGroup(PageSchemaAdmin):
             if not child.page_schema or not await child.has_page_permission(request):
                 continue
             if ((isinstance(child, AdminGroup) and not isinstance(child, AdminApp))
-                    or (isinstance(child, AdminApp) and child.tabs_mode is None)):
+                or (isinstance(child, AdminApp) and child.tabs_mode is None)):
                 sub_children = await child.get_page_schema_children(request)
                 if sub_children:
                     page_schema = child.page_schema.copy(deep=True)
@@ -1159,10 +1182,10 @@ class AdminApp(PageAdmin, AdminGroup):
 class BaseAdminSite(AdminApp):
 
     def __init__(
-            self,
-            settings: Settings,
-            fastapi: FastAPI = None,
-            engine: Union[Engine, AsyncEngine] = None
+        self,
+        settings: Settings,
+        fastapi: FastAPI = None,
+        engine: Union[Engine, AsyncEngine] = None
     ):
         self.auth = None
         self.settings = settings

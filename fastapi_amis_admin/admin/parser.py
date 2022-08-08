@@ -39,10 +39,15 @@ class AmisParser:
         formitem.label = formitem.label or self.label
         formitem.labelRemark = formitem.labelRemark or self.remark
         if formitem.type in {'input-image', 'input-file'}:
-            formitem = amis.Group(name=formitem.name, body=[
-                formitem,
-                formitem.copy( exclude={'maxLength'},update={'type': 'input-text'},),
-            ])
+            formitem = amis.Group(
+                name=formitem.name, body=[
+                    formitem,
+                    formitem.copy(
+                        exclude={'maxLength', 'receiver'},
+                        update={'type': 'input-text'},
+                    ),
+                ]
+            )
         return formitem
 
     def as_table_column(self, quick_edit: bool = False) -> TableColumn:
@@ -85,12 +90,14 @@ class AmisParser:
         elif self.modelfield.type_ in [str, Any]:
             kwargs['type'] = 'input-text'
         elif issubclass(self.modelfield.type_, Choices):
-            kwargs.update({
-                'type': 'select',
-                'options': [{'label': l, 'value': v} for v, l in self.modelfield.type_.choices],
-                'extractValue': True,
-                'joinValues': False,
-            })
+            kwargs.update(
+                {
+                    'type': 'select',
+                    'options': [{'label': l, 'value': v} for v, l in self.modelfield.type_.choices],
+                    'extractValue': True,
+                    'joinValues': False,
+                }
+            )
             if not self.modelfield.required:
                 kwargs['clearable'] = True
         elif issubclass(self.modelfield.type_, bool):
@@ -148,7 +155,9 @@ class AmisParser:
             pass
         elif issubclass(self.modelfield.type_, bool):
             kwargs['type'] = 'switch'
-            kwargs['filterable'] = {"options": [{"label": _("YES"), "value": True}, {"label": _("NO"), "value": False}]}
+            kwargs['filterable'] = {
+                "options": [{"label": _("YES"), "value": True}, {"label": _("NO"), "value": False}]
+            }
         elif issubclass(self.modelfield.type_, datetime.datetime):
             kwargs['type'] = 'datetime'
         elif issubclass(self.modelfield.type_, datetime.date):
@@ -157,9 +166,13 @@ class AmisParser:
             kwargs['type'] = 'time'
         elif issubclass(self.modelfield.type_, Choices):
             kwargs['type'] = 'mapping'
-            kwargs['filterable'] = {"options": [{"label": v, "value": k} for k, v in self.modelfield.type_.choices]}
-            kwargs['map'] = {k: f"<span class='label label-{l}'>{v}</span>"
-                             for (k, v), l in zip(self.modelfield.type_.choices, cyclic_generator(LabelEnum))}
+            kwargs['filterable'] = {
+                "options": [{"label": v, "value": k} for k, v in self.modelfield.type_.choices]
+            }
+            kwargs['map'] = {
+                k: f"<span class='label label-{l}'>{v}</span>"
+                for (k, v), l in zip(self.modelfield.type_.choices, cyclic_generator(LabelEnum))
+            }
         return column or TableColumn(**kwargs)
 
 

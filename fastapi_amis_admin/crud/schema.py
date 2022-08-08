@@ -46,12 +46,12 @@ class Paginator():
     perPageMax: int = None
 
     def __init__(
-            self,
-            page: Union[int, str] = 1,
-            perPage: Union[int, str] = 10,
-            show_total: int = 1,
-            orderBy: str = None,
-            orderDir: str = 'asc'
+        self,
+        page: Union[int, str] = 1,
+        perPage: Union[int, str] = 10,
+        show_total: int = 1,
+        orderBy: str = None,
+        orderDir: str = 'asc'
     ):
         self.page = page if page and page > 0 else 1
         self.perPage = perPage if perPage and perPage > 0 else 10

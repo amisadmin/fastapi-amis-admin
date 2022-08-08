@@ -18,13 +18,13 @@ def validator_skip_blank(cls, v, config: BaseConfig, field: ModelField, *args, *
 
 
 def schema_create_by_schema(
-        schema_cls: Type[BaseModel],
-        schema_name: str,
-        *,
-        include: Set[str] = None,
-        exclude: Set[str] = None,
-        set_none: bool = False,
-        **kwargs
+    schema_cls: Type[BaseModel],
+    schema_name: str,
+    *,
+    include: Set[str] = None,
+    exclude: Set[str] = None,
+    set_none: bool = False,
+    **kwargs
 ) -> Type[BaseModel]:
     schema_fields = smart_deepcopy(schema_cls.__dict__['__fields__'])
     exclude = exclude or {}
@@ -39,13 +39,13 @@ def schema_create_by_schema(
 
 
 def schema_create_by_modelfield(
-        schema_name: str,
-        modelfields: Iterable[ModelField],
-        *,
-        set_none: bool = False,
-        namespaces: Dict[str, Any] = None,
-        extra: Extra = Extra.ignore,
-        **kwargs
+    schema_name: str,
+    modelfields: Iterable[ModelField],
+    *,
+    set_none: bool = False,
+    namespaces: Dict[str, Any] = None,
+    extra: Extra = Extra.ignore,
+    **kwargs
 ) -> Type[BaseModel]:
     namespaces = namespaces or {}
     namespaces.update({'__fields__': {}, '__annotations__': {}})
@@ -78,7 +78,9 @@ def parser_str_set_list(set_str: Union[int, str]) -> List[str]:
 
 
 def parser_item_id(
-        item_id: str = Path(..., min_length=1, title='pk', example='1,2,3',
-                            description='Primary key or list of primary keys')
+    item_id: str = Path(
+        ..., min_length=1, title='pk', example='1,2,3',
+        description='Primary key or list of primary keys'
+        )
 ) -> List[str]:
     return parser_str_set_list(set_str=item_id)

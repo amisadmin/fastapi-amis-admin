@@ -43,9 +43,9 @@ class BaseCrud(RouterMixin):
     list_per_page_max: int = None
 
     def __init__(
-            self,
-            schema_model: Type[BaseModel],
-            router: APIRouter = None
+        self,
+        schema_model: Type[BaseModel],
+        router: APIRouter = None
     ):
         self.paginator: Type[Paginator] = Paginator
         self.schema_model = schema_model or self.schema_model
@@ -62,18 +62,18 @@ class BaseCrud(RouterMixin):
         return self.__class__.__name__
 
     def register_crud(
-            self,
-            schema_list: Type[BaseModel] = None,
-            schema_filter: Type[BaseModel] = None,
-            schema_create: Type[BaseModel] = None,
-            schema_read: Type[BaseModel] = None,
-            schema_update: Type[BaseModel] = None,
-            list_max_per_page: int = None,
-            depends_list: List[Depends] = None,
-            depends_read: List[Depends] = None,
-            depends_create: List[Depends] = None,
-            depends_update: List[Depends] = None,
-            depends_delete: List[Depends] = None
+        self,
+        schema_list: Type[BaseModel] = None,
+        schema_filter: Type[BaseModel] = None,
+        schema_create: Type[BaseModel] = None,
+        schema_read: Type[BaseModel] = None,
+        schema_update: Type[BaseModel] = None,
+        list_max_per_page: int = None,
+        depends_list: List[Depends] = None,
+        depends_read: List[Depends] = None,
+        depends_create: List[Depends] = None,
+        depends_update: List[Depends] = None,
+        depends_delete: List[Depends] = None
     ) -> "BaseCrud":
         self.schema_list = schema_list or self._create_schema_list()
         self.schema_filter = schema_filter or self._create_schema_filter()
@@ -88,7 +88,7 @@ class BaseCrud(RouterMixin):
             methods=["POST"],
             response_model=BaseApiOut[ItemListSchema[self.schema_list]],
             dependencies=depends_list,
-            name=CrudEnum.list.value
+            name=CrudEnum.list
         )
         self.router.add_api_route(
             "/item/{item_id}",
@@ -96,7 +96,7 @@ class BaseCrud(RouterMixin):
             methods=["GET"],
             response_model=BaseApiOut[Union[self.schema_read, List[self.schema_read]]],
             dependencies=depends_read,
-            name=CrudEnum.read.value
+            name=CrudEnum.read
         )
         self.router.add_api_route(
             "/item",
@@ -104,7 +104,7 @@ class BaseCrud(RouterMixin):
             methods=["POST"],
             response_model=BaseApiOut[Union[int, self.schema_model]],
             dependencies=depends_create,
-            name=CrudEnum.create.value
+            name=CrudEnum.create
         )
         self.router.add_api_route(
             "/item/{item_id}",
@@ -112,7 +112,7 @@ class BaseCrud(RouterMixin):
             methods=["PUT"],
             response_model=BaseApiOut[int],
             dependencies=depends_update,
-            name=CrudEnum.update.value
+            name=CrudEnum.update
         )
         self.router.add_api_route(
             "/item/{item_id}",
@@ -120,7 +120,7 @@ class BaseCrud(RouterMixin):
             methods=["DELETE"],
             response_model=BaseApiOut[int],
             dependencies=depends_delete,
-            name=CrudEnum.delete.value
+            name=CrudEnum.delete
         )
         return self
 
@@ -172,44 +172,44 @@ class BaseCrud(RouterMixin):
         raise NotImplementedError
 
     async def has_list_permission(
-            self,
-            request: Request,
-            paginator: Optional[Paginator],
-            filters: Optional[BaseModel],
-            **kwargs
+        self,
+        request: Request,
+        paginator: Optional[Paginator],
+        filters: Optional[BaseModel],
+        **kwargs
     ) -> bool:
         return True
 
     async def has_create_permission(
-            self,
-            request: Request,
-            obj: Optional[BaseModel],
-            **kwargs
+        self,
+        request: Request,
+        obj: Optional[BaseModel],
+        **kwargs
     ) -> bool:
         return True
 
     async def has_read_permission(
-            self,
-            request: Request,
-            item_id: Optional[List[str]],
-            **kwargs
+        self,
+        request: Request,
+        item_id: Optional[List[str]],
+        **kwargs
     ) -> bool:
         return True
 
     async def has_update_permission(
-            self,
-            request: Request,
-            item_id: Optional[List[str]],
-            obj: Optional[BaseModel],
-            **kwargs
+        self,
+        request: Request,
+        item_id: Optional[List[str]],
+        obj: Optional[BaseModel],
+        **kwargs
     ) -> bool:
         return True
 
     async def has_delete_permission(
-            self,
-            request: Request,
-            item_id: Optional[List[str]],
-            **kwargs
+        self,
+        request: Request,
+        item_id: Optional[List[str]],
+        **kwargs
     ) -> bool:
         return True
 
