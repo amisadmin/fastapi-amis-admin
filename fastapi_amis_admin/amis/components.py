@@ -83,13 +83,13 @@ class Page(AmisNode):
     regions: List[str] = None
 
     def amis_html(
-            self,
-            template_path: str = '',
-            locale: str = 'zh_CN',
-            cdn: str = 'https://unpkg.com',
-            pkg: str = 'amis@1.10.1',
-            site_title: str = 'Amis',
-            site_icon: str = '',
+        self,
+        template_path: str = '',
+        locale: str = 'zh_CN',
+        cdn: str = 'https://unpkg.com',
+        pkg: str = 'amis@2.1.0',
+        site_title: str = 'Amis',
+        site_icon: str = '',
     ):
         """渲染html模板"""
         template_path = template_path or self.__default_template_path__
@@ -791,6 +791,7 @@ class InputFile(FormItem):
     startChunkApi: API = None  # startChunkApi
     chunkApi: API = None  # chunkApi
     finishChunkApi: API = None  # finishChunkApi
+    autoFill: Dict[str, str] = None  # 上传成功后，可以通过配置 autoFill 将上传接口返回的值填充到某个表单项中（在非表单下暂不支持）
 
 
 class InputExcel(FormItem):
@@ -888,6 +889,7 @@ class InputImage(FormItem):
     fixedSize: bool = None  # 是否开启固定尺寸,若开启，需同时设置 fixedSizeClassName
     fixedSizeClassName: str = None  # 开启固定尺寸时，根据此值控制展示尺寸。
     # 例如h-30,即图片框高为 h-30,AMIS 将自动缩放比率设置默认图所占位置的宽度，最终上传图片根据此尺寸对应缩放。
+    autoFill: Dict[str, str] = None  # 上传成功后，可以通过配置 autoFill 将上传接口返回的值填充到某个表单项中（在非表单下暂不支持）
 
 
 class LocationPicker(FormItem):
@@ -994,6 +996,7 @@ class InputRichText(FormItem):
     size: str = None  # 框的大小，可设置为 md 或者 lg
     options: dict = None  # 需要参考 tinymce 或 froala 的文档
     buttons: List[str] = None  # froala 专用，配置显示的按钮，tinymce 可以通过前面的 options 设置 toolbar 字符串
+    vendor: str = None  # "vendor": "froala" ,配置使用 froala 编辑器
 
 
 class Select(FormItem):

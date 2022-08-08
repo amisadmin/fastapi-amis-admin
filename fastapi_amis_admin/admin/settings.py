@@ -15,7 +15,7 @@ class Settings(BaseSettings):
     database_url: str = Field('', env='DATABASE_URL')
     language: str = ''  # 'zh_CN','en_US'
     amis_cdn: str = 'https://unpkg.com'
-    amis_pkg: str = 'amis@1.10.2'
+    amis_pkg: str = 'amis@2.1.0'
 
     @validator('amis_cdn', 'root_path', 'site_url', pre=True)
     def valid_url(url: str):
