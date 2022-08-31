@@ -7,12 +7,9 @@ from fastapi_amis_admin.crud import SQLModelCrud
 from tests.conftest import async_db as db
 from tests.models import User
 
-
-
 class UserFilter(BaseModel):
     id: int = None
     name: str = None
-
 
 async def test_schema_update(app: FastAPI, async_client: AsyncClient, fake_users):
     class UserUpdate(BaseModel):
@@ -33,11 +30,10 @@ async def test_schema_update(app: FastAPI, async_client: AsyncClient, fake_users
     assert "username" not in schemas['UserUpdate']['properties']
 
     # test api
-    res = await async_client.put('/user/item/1', json={"username": "new_name"})
+    res = await async_client.put('/user/item/1', json = {"username": "new_name"})
     assert res.json() == {'detail': 'error data handle'}
-    res = await async_client.put('/user/item/1', json={"password": "new_password"})
+    res = await async_client.put('/user/item/1', json = {"password": "new_password"})
     assert res.json()['data'] == 1
-
 
 async def test_schema_create(app: FastAPI, async_client: AsyncClient):
     class UserCreate(BaseModel):
@@ -61,12 +57,11 @@ async def test_schema_create(app: FastAPI, async_client: AsyncClient):
     assert 'password' not in schemas['UserCreate']['properties']
     # test api
     body = {"username": 'User', "password": "password"}
-    res = await async_client.post('/user/item', json=body)
+    res = await async_client.post('/user/item', json = body)
     data = res.json().get('data')
     assert data['id'] > 0
     assert data["username"] == 'User'
     assert data['password'] == ''
-
 
 async def test_schema_list(app: FastAPI, async_client: AsyncClient, fake_users):
     class UserList(BaseModel):
@@ -88,12 +83,11 @@ async def test_schema_list(app: FastAPI, async_client: AsyncClient, fake_users):
     assert "username" in schemas['UserList']['properties']
 
     # test api
-    res = await async_client.post('/user/list', json={"id": 1})
+    res = await async_client.post('/user/list', json = {"id": 1})
     items = res.json()['data']['items']
     assert items[0]['id'] == 1
     assert "username" in items[0]
     assert 'password' not in items[0]
-
 
 async def test_schema_read(app: FastAPI, async_client: AsyncClient, fake_users):
     class UserRead(BaseModel):
@@ -121,7 +115,6 @@ async def test_schema_read(app: FastAPI, async_client: AsyncClient, fake_users):
     assert "username" in items
     assert 'password' not in items
 
-
 # todo perfect
 async def test_schema_filter(app: FastAPI, async_client: AsyncClient, fake_users):
     class UserFilter(BaseModel):
@@ -143,14 +136,14 @@ async def test_schema_filter(app: FastAPI, async_client: AsyncClient, fake_users
     assert "username" in schemas['UserFilter']['properties']
 
     # test api
-    res = await async_client.post('/user/list', json={"id": 1})
+    res = await async_client.post('/user/list', json = {"id": 1})
     items = res.json()['data']['items']
     assert items[0]['id'] == 1
 
-    res = await async_client.post('/user/list', json={"username": "User_1"})
+    res = await async_client.post('/user/list', json = {"username": "User_1"})
     items = res.json()['data']['items']
     assert items[0]["username"] == "User_1"
 
-    res = await async_client.post('/user/list', json={"password": "new_password"})
+    res = await async_client.post('/user/list', json = {"password": "new_password"})
     items = res.json()['data']['items']
     assert items

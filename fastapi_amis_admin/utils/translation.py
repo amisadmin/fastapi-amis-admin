@@ -4,8 +4,8 @@ from functools import lru_cache
 from gettext import GNUTranslations
 from typing import Dict, Set
 
-
 class I18N:
+
     def __init__(self):
         self._locales: Dict[str, Set[GNUTranslations]] = {}
         self._language: str = self.set_language()
@@ -42,6 +42,5 @@ class I18N:
 
     def __call__(self, value, language: str = None) -> str:
         return self.gettext(str(value), language)
-
 
 i18n = I18N()

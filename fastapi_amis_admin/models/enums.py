@@ -2,7 +2,6 @@ import enum
 
 __all__ = ['Choices', 'IntegerChoices', 'TextChoices']
 
-
 class ChoicesMeta(enum.EnumMeta):
     """A metaclass for creating a enum choices."""
 
@@ -56,8 +55,7 @@ class ChoicesMeta(enum.EnumMeta):
     def values(cls):
         return [value for value, _ in cls.choices]
 
-
-class Choices(enum.Enum, metaclass=ChoicesMeta):
+class Choices(enum.Enum, metaclass = ChoicesMeta):
     """Class for creating enumerated choices."""
 
     def __str__(self):
@@ -67,18 +65,15 @@ class Choices(enum.Enum, metaclass=ChoicesMeta):
         """
         return str(self.value)
 
-
 class IntegerChoices(int, Choices):
     """Class for creating enumerated integer choices."""
     pass
-
 
 class TextChoices(str, Choices):
     """Class for creating enumerated string choices."""
 
     def _generate_next_value_(name, start, count, last_values):
         return name
-
 
 class Promise:
     """

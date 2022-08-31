@@ -12,7 +12,6 @@ Template = Union[str, "Tpl"]
 SchemaNode = Union[Template, "AmisNode", List["AmisNode"], Dict[str, Any], List[Dict[str, Any]]]
 OptionsNode = Union[List[Dict[str, Any]], List[str]]
 
-
 class BaseAmisModel(BaseModel):
     class Config:
         extra = Extra.allow
@@ -20,10 +19,10 @@ class BaseAmisModel(BaseModel):
         json_dumps = json.dumps
 
     def amis_json(self):
-        return self.json(exclude_none=True, by_alias=True)
+        return self.json(exclude_none = True, by_alias = True)
 
     def amis_dict(self):
-        return self.dict(exclude_none=True, by_alias=True)
+        return self.dict(exclude_none = True, by_alias = True)
 
     def update_from_dict(self, kwargs: Dict[str, Any]):
         for k, v in kwargs.items():
@@ -33,13 +32,11 @@ class BaseAmisModel(BaseModel):
     def update_from_kwargs(self, **kwargs):
         return self.update_from_dict(kwargs)
 
-
 class BaseAmisApiOut(BaseAmisModel):
     """api接口输出数据格式"""
     status: int = 0
     msg: str = ''
     data: dict = None
-
 
 class AmisNode(BaseAmisModel):
     """组件配置"""
@@ -51,7 +48,6 @@ class AmisNode(BaseAmisModel):
     id: str = None
     name: str = None
     onEvent: dict = None
-
 
 class AmisAPI(BaseAmisModel):
     url: Template  # 当前接口 Api 地址
@@ -77,15 +73,12 @@ class AmisAPI(BaseAmisModel):
     trackExpression: str = None  # 配置跟踪变量表达式,当开启自动刷新的时候，默认是 api 的 url 来自动跟踪变量变化的。
     # 如果你希望监控 url 外的变量，请配置 traceExpression。
 
-
 API = Union[str, AmisAPI, dict]
-
 
 class Tpl(AmisNode):
     type: str = "tpl"  # 指定为 Tpl 组件
     tpl: str  # 配置模板
     className: str = None  # 外层 Dom 的类名
-
 
 class Event(BaseAmisModel):
     actionType: str = None  # 动作名称

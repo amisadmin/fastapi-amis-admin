@@ -15,7 +15,6 @@ from sqlmodel import SQLModel
 SQLModelField = Union[str, InstrumentedAttribute]
 SQLModelListField = Union[Type[SQLModel], SQLModelField]
 
-
 class SQLModelFieldParser:
     _name_format = '{model_name}_{field_name}'
     _alias_format = '{table_name}__{field_key}'
@@ -56,11 +55,11 @@ class SQLModelFieldParser:
     def get_alias(self, field: Union[Column, SQLModelField, Label]) -> str:
         if isinstance(field, Column):
             return field.name if field.table.name == self.default_model.__tablename__ else self._alias_format.format(
-                table_name=field.table.name, field_key=field.name
+                table_name = field.table.name, field_key = field.name
             )
         elif isinstance(field, InstrumentedAttribute):
             return field.key if field.class_.__tablename__ == self.default_model.__tablename__ else self._alias_format.format(
-                table_name=field.class_.__tablename__, field_key=field.expression.key
+                table_name = field.class_.__tablename__, field_key = field.expression.key
             )
         elif isinstance(field, Label):
             return field.key
@@ -70,7 +69,7 @@ class SQLModelFieldParser:
 
     def get_name(self, field: InstrumentedAttribute) -> str:
         return field.key if field.class_.__tablename__ == self.default_model.__tablename__ else self._name_format.format(
-            model_name=field.class_.__tablename__, field_name=field.key
+            model_name = field.class_.__tablename__, field_name = field.key
         )
 
     def get_row_keys(self, row: Row) -> List[str]:
@@ -117,7 +116,6 @@ class SQLModelFieldParser:
             elif save_class and isinstance(field, save_class):
                 result.append(field)
         return result
-
 
 @lru_cache()
 def get_python_type_parse(field: Union[InstrumentedAttribute, Column]) -> Callable:

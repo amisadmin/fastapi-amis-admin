@@ -5,8 +5,8 @@ except ImportError:
 
     _NOT_FOUND = object()
 
-
     class cached_property:  # noqa: E303
+
         def __init__(self, func):
             self.func = func
             self.attrname = None
@@ -22,7 +22,7 @@ except ImportError:
                     f"({self.attrname!r} and {name!r})."
                 )
 
-        def __get__(self, instance, owner=None):
+        def __get__(self, instance, owner = None):
             if instance is None:
                 return self
             if self.attrname is None:

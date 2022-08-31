@@ -11,20 +11,17 @@ except ImportError:
 
 _T = TypeVar('_T')
 
-
 class BaseApiSchema(BaseModel):
     class Config:
         extra = Extra.allow
         json_loads = json.loads
         json_dumps = json.dumps
 
-
 class BaseApiOut(GenericModel, Generic[_T], BaseApiSchema):
     status: int = 0
     msg: str = 'success'
     data: Optional[_T] = None
     code: int = None
-
 
 class ItemListSchema(GenericModel, Generic[_T], BaseApiSchema):
     """数据查询返回格式"""
@@ -33,14 +30,12 @@ class ItemListSchema(GenericModel, Generic[_T], BaseApiSchema):
     query: Dict[str, Any] = None
     filter: Dict[str, Any] = None
 
-
 class CrudEnum(str, Enum):
     list = 'list'  # 批量查询数据
     create = 'create'  # 新增数据
     read = 'read'  # 查询数据
     update = 'update'  # 更新数据
     delete = 'delete'  # 删除数据
-
 
 class Paginator():
     perPageMax: int = None

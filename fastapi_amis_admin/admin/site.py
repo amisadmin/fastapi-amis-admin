@@ -18,59 +18,55 @@ from fastapi_amis_admin.amis.components import PageSchema, Page, Property
 from fastapi_amis_admin.crud.schema import BaseApiOut
 from fastapi_amis_admin.utils.translation import i18n as _
 
-
 class DocsAdmin(admin.IframeAdmin):
-    group_schema = PageSchema(label='APIDocs', icon='fa fa-book', sort=-100)
-    page_schema = PageSchema(label='AdminDocs', icon='fa fa-book')
+    group_schema = PageSchema(label = 'APIDocs', icon = 'fa fa-book', sort = -100)
+    page_schema = PageSchema(label = 'AdminDocs', icon = 'fa fa-book')
 
     @property
     def src(self):
         return self.app.site.router_path + self.app.site.fastapi.docs_url
 
-
 class ReDocsAdmin(admin.IframeAdmin):
-    group_schema = PageSchema(label='APIDocs', icon='fa fa-book', sort=-100)
-    page_schema = PageSchema(label='AdminRedocs', icon='fa fa-book')
+    group_schema = PageSchema(label = 'APIDocs', icon = 'fa fa-book', sort = -100)
+    page_schema = PageSchema(label = 'AdminRedocs', icon = 'fa fa-book')
 
     @property
     def src(self):
         return self.app.site.router_path + self.app.site.fastapi.redoc_url
 
-
 class HomeAdmin(admin.PageAdmin):
     group_schema = None
-    page_schema = PageSchema(label=_('Home'), icon='fa fa-home', url='/home', isDefaultPage=True, sort=100)
+    page_schema = PageSchema(label = _('Home'), icon = 'fa fa-home', url = '/home', isDefaultPage = True, sort = 100)
     page_path = '/home'
 
     async def get_page(self, request: Request) -> Page:
         page = await super().get_page(request)
         page.body = [
             Property(
-                title='SiteInfo',
-                column=4,
-                items=[
-                    Property.Item(label='title', content=self.site.settings.site_title),
-                    Property.Item(label='version', content=self.site.settings.version),
-                    Property.Item(label='language', content=self.site.settings.language),
-                    Property.Item(label='debug', content=str(self.site.settings.debug)),
+                title = 'SiteInfo',
+                column = 4,
+                items = [
+                    Property.Item(label = 'title', content = self.site.settings.site_title),
+                    Property.Item(label = 'version', content = self.site.settings.version),
+                    Property.Item(label = 'language', content = self.site.settings.language),
+                    Property.Item(label = 'debug', content = str(self.site.settings.debug)),
                 ]
             ),
             amis.Divider(),
             Property(
-                title='FastAPI-Amis-Admin',
-                column=4,
-                items=[
-                    Property.Item(label='system', content=platform.system()),
-                    Property.Item(label='python', content=platform.python_version()),
-                    Property.Item(label='version', content=fastapi_amis_admin.__version__),
-                    Property.Item(label='license', content='Apache2.0'),
-                    Property.Item(label='amis-cdn', content=self.site.settings.amis_cdn),
-                    Property.Item(label='amis-pkg', content=self.site.settings.amis_pkg),
+                title = 'FastAPI-Amis-Admin',
+                column = 4,
+                items = [
+                    Property.Item(label = 'system', content = platform.system()),
+                    Property.Item(label = 'python', content = platform.python_version()),
+                    Property.Item(label = 'version', content = fastapi_amis_admin.__version__),
+                    Property.Item(label = 'license', content = 'Apache2.0'),
+                    Property.Item(label = 'amis-cdn', content = self.site.settings.amis_cdn),
+                    Property.Item(label = 'amis-pkg', content = self.site.settings.amis_pkg),
                 ]
             ),
         ]
         return page
-
 
 class FileAdmin(admin.RouterAdmin):
     # todo perfect: Limit file size/suffixes/content_type
@@ -90,12 +86,12 @@ class FileAdmin(admin.RouterAdmin):
 
     def mount_staticfile(self) -> str:
         os.path.exists(self.file_directory) or os.makedirs(self.file_directory)
-        self.app.site.fastapi.mount(self.file_path, StaticFiles(directory=self.file_directory), self.file_directory)
+        self.app.site.fastapi.mount(self.file_path, StaticFiles(directory = self.file_directory), self.file_directory)
         return self.app.site.router_path + self.file_path
 
     def register_router(self):
 
-        @self.router.post(self.file_path, response_model=BaseApiOut[self.UploadOutSchema])
+        @self.router.post(self.file_path, response_model = BaseApiOut[self.UploadOutSchema])
         async def file_upload(file: UploadFile = File(...)):
             filename = self.get_filename(file)
             file_path = os.path.join(self.file_directory, filename)
@@ -104,20 +100,19 @@ class FileAdmin(admin.RouterAdmin):
             try:
                 res = await file.read()
                 if self.file_max_size and len(res) > self.file_max_size:
-                    return BaseApiOut(status=-2, msg='The file size exceeds the limit')
+                    return BaseApiOut(status = -2, msg = 'The file size exceeds the limit')
                 async with aiofiles.open(file_path, "wb") as f:
                     await f.write(res)
                 return BaseApiOut(
-                    data=self.UploadOutSchema(filename=filename, url=f'{self.static_path}/{filename}'),
+                    data = self.UploadOutSchema(filename = filename, url = f'{self.static_path}/{filename}'),
                 )
 
             except Exception as e:
-                return BaseApiOut(status=-1, msg=str(e))
+                return BaseApiOut(status = -1, msg = str(e))
 
     class UploadOutSchema(BaseModel):
         filename: str = None
         url: str = None
-
 
 class AdminSite(admin.BaseAdminSite):
 

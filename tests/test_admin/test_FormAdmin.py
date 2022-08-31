@@ -9,30 +9,25 @@ from fastapi_amis_admin import admin
 from fastapi_amis_admin.admin import AdminSite
 from fastapi_amis_admin.crud import BaseApiOut
 
-
 class LoginSchema(BaseModel):
     username: str
     password: str
 
-
 class TmpAdmin(admin.FormAdmin):
     page_path = '/test'
-
 
 class TmpAdmin1(TmpAdmin):
     schema = LoginSchema
 
     async def handle(self, request: Request, data: BaseModel, **kwargs) -> BaseApiOut[Any]:
         ret = data.dict()
-        return BaseApiOut(data={**ret, 'extra': 'success'})
-
+        return BaseApiOut(data = {**ret, 'extra': 'success'})
 
 class TmpAdmin2(TmpAdmin1):
     form_init = True
 
     async def get_init_data(self, request: Request, **kwargs) -> BaseApiOut[Any]:
-        return BaseApiOut(data={'username': 'admin', 'password': 'admin'})
-
+        return BaseApiOut(data = {'username': 'admin', 'password': 'admin'})
 
 async def test_form_admin_register(site: AdminSite):
     site.register_admin(TmpAdmin)
@@ -40,7 +35,6 @@ async def test_form_admin_register(site: AdminSite):
     with pytest.raises(AssertionError) as exc:
         ins = site.get_admin_or_create(TmpAdmin)
     assert exc.match('schema is None')
-
 
 async def test_form_admin_route_submit(site: AdminSite, async_client: AsyncClient):
     site.register_admin(TmpAdmin1)
@@ -55,9 +49,8 @@ async def test_form_admin_route_submit(site: AdminSite, async_client: AsyncClien
     assert res.text.find('username') and res.text.find('password')
     # test form api submit
     data = {'username': 'admin', 'password': 'admin'}
-    res = await async_client.post(ins.router_path + ins.form_path, json=data)
+    res = await async_client.post(ins.router_path + ins.form_path, json = data)
     assert res.json()['data'] == {'username': 'admin', 'password': 'admin', 'extra': 'success'}
-
 
 async def test_form_admin_route_init(site: AdminSite, async_client: AsyncClient):
     site.register_admin(TmpAdmin2)

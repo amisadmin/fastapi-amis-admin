@@ -5,7 +5,6 @@ from fastapi_amis_admin.crud import SQLModelCrud
 from tests.conftest import async_db as db
 from tests.models import User
 
-
 async def test_pk_name(app: FastAPI, async_client: AsyncClient, fake_users):
     class UserCrud(SQLModelCrud):
         router_prefix = '/user'
@@ -27,7 +26,6 @@ async def test_pk_name(app: FastAPI, async_client: AsyncClient, fake_users):
     assert users[0]["username"] == "User_1"
     assert users[2]["username"] == "User_4"
 
-
 async def test_readonly_fields(app: FastAPI, async_client: AsyncClient, fake_users):
     class UserCrud(SQLModelCrud):
         router_prefix = '/user'
@@ -44,11 +42,10 @@ async def test_readonly_fields(app: FastAPI, async_client: AsyncClient, fake_use
     assert "username" not in schemas['UserCrudUpdate']['properties']
 
     # test api
-    res = await async_client.put('/user/item/1', json={"username": "new_name"})
+    res = await async_client.put('/user/item/1', json = {"username": "new_name"})
     assert res.json() == {'detail': 'error data handle'}
-    res = await async_client.put('/user/item/1', json={"password": "new_password"})
+    res = await async_client.put('/user/item/1', json = {"password": "new_password"})
     assert res.json()['data'] == 1
-
 
 async def test_update_fields(app: FastAPI, async_client: AsyncClient, fake_users):
     class UserCrud(SQLModelCrud):
@@ -66,12 +63,11 @@ async def test_update_fields(app: FastAPI, async_client: AsyncClient, fake_users
     assert "username" in schemas['UserCrudUpdate']['properties']
 
     # test api
-    res = await async_client.put('/user/item/1', json={"username": "new_name"})
+    res = await async_client.put('/user/item/1', json = {"username": "new_name"})
     assert res.json()['data'] == 1
 
-    res = await async_client.put('/user/item/1', json={"password": "new_password"})
+    res = await async_client.put('/user/item/1', json = {"password": "new_password"})
     assert res.json() == {'detail': 'error data handle'}
-
 
 async def test_list_filter(app: FastAPI, async_client: AsyncClient, fake_users):
     class UserCrud(SQLModelCrud):
@@ -92,18 +88,17 @@ async def test_list_filter(app: FastAPI, async_client: AsyncClient, fake_users):
     assert 'password' not in schemas['UserCrudFilter']['properties']
 
     # test api
-    res = await async_client.post('/user/list', json={"id": 1})
+    res = await async_client.post('/user/list', json = {"id": 1})
     items = res.json()['data']['items']
     assert items[0]['id'] == 1
 
-    res = await async_client.post('/user/list', json={"username": "User_1"})
+    res = await async_client.post('/user/list', json = {"username": "User_1"})
     items = res.json()['data']['items']
     assert items[0]["username"] == "User_1"
 
-    res = await async_client.post('/user/list', json={"password": "new_password"})
+    res = await async_client.post('/user/list', json = {"password": "new_password"})
     items = res.json()['data']['items']
     assert items
-
 
 async def test_create_fields(app: FastAPI, async_client: AsyncClient):
     class UserCrud(SQLModelCrud):
@@ -124,7 +119,7 @@ async def test_create_fields(app: FastAPI, async_client: AsyncClient):
     assert 'password' not in schemas['UserCrudCreate']['properties']
     # test api
     body = {"username": 'User', "password": "password"}
-    res = await async_client.post('/user/item', json=body)
+    res = await async_client.post('/user/item', json = body)
     data = res.json().get('data')
     assert data['id'] > 0
     assert data["username"] == 'User'

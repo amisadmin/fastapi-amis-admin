@@ -5,7 +5,6 @@ from fastapi_amis_admin import admin
 from fastapi_amis_admin.admin import AdminSite
 from tests.models import User, Article
 
-
 async def test_register_router(site: AdminSite):
     site.register_admin(admin.ModelAdmin)
     with pytest.raises(AssertionError) as exc:
@@ -28,7 +27,6 @@ async def test_register_router(site: AdminSite):
     assert f'{ins.router_prefix}/item' in paths
     assert f'{ins.router_prefix}/item/{{item_id}}' in paths
 
-
 async def test_list_display(site: AdminSite, async_client: AsyncClient):
     @site.register_admin
     class UserAdmin(admin.ModelAdmin):
@@ -43,7 +41,6 @@ async def test_list_display(site: AdminSite, async_client: AsyncClient):
     openapi = site.fastapi.openapi()
     schemas = openapi['components']['schemas']
     assert "username" in schemas['UserAdminList']['properties']
-
 
 async def test_list_display_join(site: AdminSite, async_client: AsyncClient):
     @site.register_admin
