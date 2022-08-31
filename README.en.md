@@ -142,8 +142,7 @@ site.mount_app(app)
 # create initial database table
 @app.on_event("startup")
 async def startup():
-    await site.create_db_and_tables()
-
+  await site.db.async_run_sync(SQLModel.metadata.create_all, is_session = False)
 
 if __name__ == '__main__':
     import uvicorn
