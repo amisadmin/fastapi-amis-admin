@@ -36,10 +36,9 @@ classifiers = [
 ]
 dependencies = [
     "fastapi>=0.68.0",
-    "sqlmodel>=0.0.4",
+    "sqlmodel>=0.0.7",
     "python-multipart>=0.0.5",
     "sqlalchemy-database>=0.0.2,<0.1.0",
-    "SQLAlchemy<=1.4.35",
     "aiofiles",
 ]
 
