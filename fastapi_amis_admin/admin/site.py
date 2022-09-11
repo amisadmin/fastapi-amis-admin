@@ -2,11 +2,13 @@ import os.path
 import platform
 import time
 import uuid
+from typing import Union
 
 import aiofiles
 from fastapi import UploadFile, File, FastAPI
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncEngine
+from sqlalchemy.future import Engine
 from starlette.requests import Request
 from starlette.staticfiles import StaticFiles
 
@@ -116,6 +118,6 @@ class FileAdmin(admin.RouterAdmin):
 
 class AdminSite(admin.BaseAdminSite):
 
-    def __init__(self, settings: Settings, fastapi: FastAPI = None, engine: AsyncEngine = None):
+    def __init__(self, settings: Settings, fastapi: FastAPI = None, engine: Union[Engine, AsyncEngine] = None):
         super().__init__(settings, fastapi, engine)
         self.register_admin(HomeAdmin, DocsAdmin, ReDocsAdmin, FileAdmin)
