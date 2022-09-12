@@ -65,7 +65,7 @@ class Choices(enum.Enum, metaclass = ChoicesMeta):
         """
         return str(self.value)
 
-class IntegerChoices(int, Choices):
+class IntegerChoices(enum.IntEnum, Choices):
     """Class for creating enumerated integer choices."""
     pass
 
