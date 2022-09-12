@@ -121,7 +121,7 @@ class AmisParser:
             formitem = InputNumber(validations = Validation(isFloat = True))
         elif issubclass(self.modelfield.type_, datetime.datetime):
             kwargs['type'] = 'input-datetime'
-            kwargs['format'] = 'YYYY-MM-DDTHH:mm:ss'
+            kwargs['format'] = 'YYYY-MM-DD HH:mm:ss'
         elif issubclass(self.modelfield.type_, datetime.date):
             kwargs['type'] = 'input-date'
             kwargs['format'] = 'YYYY-MM-DD'

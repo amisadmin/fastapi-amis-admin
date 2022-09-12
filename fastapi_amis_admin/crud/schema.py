@@ -1,3 +1,4 @@
+from datetime import datetime
 from enum import Enum
 from typing import Dict, TypeVar, Optional, Generic, List, Any, Union
 
@@ -16,6 +17,9 @@ class BaseApiSchema(BaseModel):
         extra = Extra.allow
         json_loads = json.loads
         json_dumps = json.dumps
+        json_encoders = {
+            datetime: lambda v: v.strftime("%Y-%m-%d %H:%M:%S"),
+        }
 
 class BaseApiOut(GenericModel, Generic[_T], BaseApiSchema):
     status: int = 0
