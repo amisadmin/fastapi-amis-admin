@@ -1,4 +1,4 @@
-from typing import Any, Callable, List, Type, Union, Optional
+from typing import Any, Callable, List, Optional, Type, Union
 
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
@@ -7,8 +7,8 @@ from starlette import status
 from starlette.exceptions import HTTPException
 from starlette.requests import Request
 
-from .schema import BaseApiOut, ItemListSchema, CrudEnum, Paginator
-from .utils import schema_create_by_schema, paginator_factory
+from .schema import BaseApiOut, CrudEnum, ItemListSchema, Paginator
+from .utils import schema_create_by_schema
 
 class RouterMixin:
     router: APIRouter = None
@@ -45,7 +45,7 @@ class BaseCrud(RouterMixin):
         schema_model: Type[BaseModel],
         router: APIRouter = None
     ):
-        self.paginator: Type[Paginator] = Paginator
+        self.paginator: Paginator = Paginator()
         self.schema_model = schema_model or self.schema_model
         assert self.schema_model, 'schema_model is None'
         self.router = router
@@ -79,7 +79,7 @@ class BaseCrud(RouterMixin):
         self.schema_read = schema_read or self._create_schema_read()
         self.schema_update = schema_update or self._create_schema_update()
         self.list_per_page_max = list_max_per_page or self.list_per_page_max
-        self.paginator = paginator_factory(perPage_max = self.list_per_page_max)
+        self.paginator = Paginator(perPage_max = self.list_per_page_max)
         self.router.add_api_route(
             "/list",
             self.route_list,

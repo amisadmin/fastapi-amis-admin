@@ -300,7 +300,7 @@ class SQLModelCrud(BaseCrud, SQLModelSelector):
 
         async def route(
             request: Request,
-            paginator: self.paginator = Depends(self.paginator),  # type: ignore
+            paginator: self.paginator = Depends(),  # type: ignore
             filters: self.schema_filter = Body(None),  # type: ignore
             stmt: Select = Depends(self._select_maker),
         ):

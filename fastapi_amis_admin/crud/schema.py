@@ -41,10 +41,13 @@ class CrudEnum(str, Enum):
     update = 'update'  # 更新数据
     delete = 'delete'  # 删除数据
 
-class Paginator():
-    perPageMax: int = None
+class Paginator:
+    """分页器"""
 
-    def __init__(
+    def __init__(self, perPage_max: Optional[int] = None):
+        self.perPageMax = perPage_max
+
+    def __call__(
         self,
         page: Union[int, str] = 1,
         perPage: Union[int, str] = 10,
@@ -55,7 +58,8 @@ class Paginator():
         self.page = page if page and page > 0 else 1
         self.perPage = perPage if perPage and perPage > 0 else 10
         if self.perPageMax:
-            self.perPage = self.perPage if self.perPage <= self.perPageMax else self.perPageMax
+            self.perPage = min(self.perPage, self.perPageMax)
         self.show_total = show_total
         self.orderBy = orderBy
         self.orderDir = orderDir
+        return self

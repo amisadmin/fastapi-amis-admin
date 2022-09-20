@@ -1,12 +1,12 @@
 from enum import Enum
-from typing import Optional, Type, List, Set, Union, Iterable, Dict, Any
+from typing import Any, Dict, Iterable, List, Set, Type, Union
 
 from fastapi.params import Path
-from pydantic import BaseModel, BaseConfig, Extra
+from pydantic import BaseConfig, BaseModel, Extra
 from pydantic.fields import ModelField
 from pydantic.utils import smart_deepcopy
 
-from .schema import Paginator, BaseApiSchema
+from .schema import BaseApiSchema
 
 def validator_skip_blank(cls, v, config: BaseConfig, field: ModelField, *args, **kwargs):
     if isinstance(v, str):
@@ -57,12 +57,6 @@ def schema_create_by_modelfield(
         namespaces['__fields__'][modelfield.name] = modelfield
         namespaces['__annotations__'][modelfield.name] = modelfield.type_
     return type(schema_name, (BaseApiSchema,), namespaces, extra = extra, **kwargs)  # type: ignore
-
-def paginator_factory(perPage_max: Optional[int] = None) -> Type[Paginator]:
-    class PaginatorCls(Paginator):
-        perPageMax = perPage_max
-
-    return PaginatorCls
 
 def parser_str_set_list(set_str: Union[int, str]) -> List[str]:
     if isinstance(set_str, int):
