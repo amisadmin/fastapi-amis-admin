@@ -85,9 +85,11 @@ class Page(AmisNode):
         pkg: str = 'amis@1.10.2',
         site_title: str = 'Amis',
         site_icon: str = '',
+        theme: str = 'cxd',
     ):
         """渲染html模板"""
         template_path = template_path or self.__default_template_path__
+        theme_css = f'<link href="{cdn}/{pkg}/sdk/antd.css" rel="stylesheet"/>' if theme.lower() == 'antd' else ''
         return amis_templates(template_path).safe_substitute(
             {
                 "AmisSchemaJson": self.amis_json(),
@@ -96,6 +98,8 @@ class Page(AmisNode):
                 "pkg": pkg,
                 "site_title": site_title,
                 "site_icon": site_icon,
+                "theme": theme,
+                "theme_css": theme_css,
             }
         )
 

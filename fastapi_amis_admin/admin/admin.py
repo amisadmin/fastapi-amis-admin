@@ -713,6 +713,7 @@ class PageAdmin(PageSchemaAdmin, RouterAdmin):
                 locale = _.get_language(),
                 cdn = self.site.settings.amis_cdn,
                 pkg = self.site.settings.amis_pkg,
+                theme = self.site.settings.amis_theme,
                 site_title = self.site.settings.site_title,
                 site_icon = self.site.settings.site_icon,
             )
