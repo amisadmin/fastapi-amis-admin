@@ -19,10 +19,13 @@ from starlette.responses import HTMLResponse, JSONResponse, Response
 from starlette.templating import Jinja2Templates
 
 import fastapi_amis_admin
+from fastapi_amis_admin.admin.handlers import register_exception_handlers
 from fastapi_amis_admin.admin.parser import AmisParser
 from fastapi_amis_admin.admin.settings import Settings
-from fastapi_amis_admin.amis.components import Page, TableCRUD, Action, ActionType, Dialog, Form, FormItem, Picker, \
-    Remark, Service, Iframe, PageSchema, TableColumn, ColumnOperation, App, Tpl, InputExcel, InputTable
+from fastapi_amis_admin.amis.components import (
+    Page, TableCRUD, Action, ActionType, Dialog, Form, FormItem, Picker,
+    Remark, Service, Iframe, PageSchema, TableColumn, ColumnOperation, App, Tpl, InputExcel, InputTable,
+)
 from fastapi_amis_admin.amis.constants import LevelEnum, DisplayModeEnum, SizeEnum, TabsModeEnum
 from fastapi_amis_admin.amis.types import BaseAmisApiOut, BaseAmisModel, AmisAPI, SchemaNode
 from fastapi_amis_admin.crud import SQLModelCrud, SQLModelSelector, RouterMixin
@@ -1185,6 +1188,7 @@ class BaseAdminSite(AdminApp):
             pass
         self.settings = settings
         self.fastapi = fastapi or FastAPI(debug = settings.debug, reload = settings.debug)
+        register_exception_handlers(self.fastapi, self.settings.logger)
         self.router = self.fastapi.router
         if engine:
             self.engine = engine
