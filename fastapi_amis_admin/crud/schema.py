@@ -1,6 +1,6 @@
 from datetime import datetime
 from enum import Enum
-from typing import Dict, TypeVar, Optional, Generic, List, Any, Union
+from typing import Any, Dict, Generic, List, Optional, TypeVar, Union
 
 from pydantic import BaseModel, Extra
 from pydantic.generics import GenericModel
@@ -10,7 +10,8 @@ try:
 except ImportError:
     import json
 
-_T = TypeVar('_T')
+_T = TypeVar("_T")
+
 
 class BaseApiSchema(BaseModel):
     class Config:
@@ -21,25 +22,30 @@ class BaseApiSchema(BaseModel):
             datetime: lambda v: v.strftime("%Y-%m-%d %H:%M:%S"),
         }
 
+
 class BaseApiOut(GenericModel, Generic[_T], BaseApiSchema):
     status: int = 0
-    msg: str = 'success'
+    msg: str = "success"
     data: Optional[_T] = None
     code: int = None
 
+
 class ItemListSchema(GenericModel, Generic[_T], BaseApiSchema):
     """数据查询返回格式"""
+
     items: List[_T]  # 数据列表
     total: int = None  # 数据总量
     query: Dict[str, Any] = None
     filter: Dict[str, Any] = None
 
+
 class CrudEnum(str, Enum):
-    list = 'list'  # 批量查询数据
-    create = 'create'  # 新增数据
-    read = 'read'  # 查询数据
-    update = 'update'  # 更新数据
-    delete = 'delete'  # 删除数据
+    list = "list"  # 批量查询数据
+    create = "create"  # 新增数据
+    read = "read"  # 查询数据
+    update = "update"  # 更新数据
+    delete = "delete"  # 删除数据
+
 
 class Paginator:
     """分页器"""
@@ -53,7 +59,7 @@ class Paginator:
         perPage: Union[int, str] = 10,
         show_total: int = 1,
         orderBy: str = None,
-        orderDir: str = 'asc'
+        orderDir: str = "asc",
     ):
         self.page = page if page and page > 0 else 1
         self.perPage = perPage if perPage and perPage > 0 else 10

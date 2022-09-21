@@ -53,3 +53,13 @@
 - 当前管理站点Amis版本, 例如: `amis@beta` , `amis@1.9.0`
 - 默认: `amis@1.10.1`
 - 默认值在`FastAPI-Amis-Admin`每次发布新版本后可能会改变,建议项目设置自己的稳定的Amis版本.
+
+#### amis_theme
+
+- 当前管理站点Amis模板主题, 可选: `cxd` , `antd`
+- 默认: `cxd`
+
+#### logger
+
+- 当前管理站点日志记录器,支持: `logging` , `loguru`
+- 默认: `logging.getLogger("fastapi_amis_admin")`

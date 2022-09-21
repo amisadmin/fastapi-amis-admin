@@ -19,10 +19,4 @@ from .admin import (
 )
 from .parser import AmisParser
 from .settings import Settings
-from .site import (
-    AdminSite,
-    DocsAdmin,
-    FileAdmin,
-    HomeAdmin,
-    ReDocsAdmin,
-)
+from .site import AdminSite, DocsAdmin, FileAdmin, HomeAdmin, ReDocsAdmin

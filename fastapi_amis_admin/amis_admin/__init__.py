@@ -2,6 +2,5 @@
 import logging
 
 logging.warning(
-    'The `fastapi_amis_admin.amis_admin` package is deprecated, '
-    'please migrate to the `fastapi_amis_admin.admin` package'
+    "The `fastapi_amis_admin.amis_admin` package is deprecated, " "please migrate to the `fastapi_amis_admin.admin` package"
 )

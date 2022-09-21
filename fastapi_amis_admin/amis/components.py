@@ -676,7 +676,7 @@ class Checkboxes(FormItem):
 class InputCity(FormItem):
     """城市选择器"""
 
-    type: str = "location-city"
+    type: str = "input-city"
     allowCity: bool = None  # True  # 允许选择城市
     allowDistrict: bool = None  # True  # 允许选择区域
     searchable: bool = None  # False  # 是否出搜索框
@@ -1393,6 +1393,16 @@ class Carousel(AmisNode):
     thumbMode: str = None  # "cover"|"contain"  # 图片默认缩放模式
 
 
+class Mapping(AmisNode):
+    """映射"""
+
+    type: str = "mapping"  # 如果在 Table、Card 和 List 中，为"mapping"；在 Form 中用作静态展示，为"static-mapping"
+    className: str = None  # 外层 CSS 类名
+    placeholder: str = None  # 占位文本
+    map: dict = None  # 映射配置
+    source: API = None  # API 或 数据映射
+
+
 class CRUD(AmisNode):
     """增删改查"""
 
@@ -1464,10 +1474,10 @@ class TableColumn(AmisNode):
     copyable: Union[bool, dict] = None  # 是否可复制  boolean 或 {icon: string, content:string}
     sortable: bool = None  # False  # 是否可排序
     searchable: Union[bool, SchemaNode] = None  # False  # 是否可快速搜索  boolean|Schema
-    filterable: Dict[str, list] = None  # 过滤选项 {"options": ["A", "B", "C"]}
     width: Union[str, int] = None  # 列宽
     remark: Remark = None  # 提示信息
     breakpoint: str = None  # *,ls
+    filterable: Dict[str, Any] = None  # 过滤器配置
 
 
 class ColumnOperation(TableColumn):
@@ -1487,6 +1497,12 @@ class ColumnImage(Image, TableColumn):
 
 class ColumnImages(Images, TableColumn):
     """图片集列"""
+
+    pass
+
+
+class ColumnMapping(Mapping, TableColumn):
+    """映射列"""
 
     pass
 
@@ -1590,16 +1606,6 @@ class Log(AmisNode):
     autoScroll: bool = None  # True  # 是否自动滚动
     placeholder: str = None  # 加载中的文字
     encoding: str = None  # "utf-8"  # 返回内容的字符编码
-
-
-class Mapping(AmisNode):
-    """映射"""
-
-    type: str = "mapping"  # 如果在 Table、Card 和 List 中，为"mapping"；在 Form 中用作静态展示，为"static-mapping"
-    className: str = None  # 外层 CSS 类名
-    placeholder: str = None  # 占位文本
-    map: dict = None  # 映射配置
-    source: API = None  # API 或 数据映射
 
 
 class Property(AmisNode):

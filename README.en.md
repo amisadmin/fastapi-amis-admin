@@ -92,15 +92,15 @@ from fastapi_amis_admin.admin.site import AdminSite
 app = FastAPI()
 
 # create AdminSite instance
-site = AdminSite(settings=Settings(database_url_async='sqlite+aiosqlite:///amisadmin.db'))
+site = AdminSite(settings = Settings(database_url_async = 'sqlite+aiosqlite:///amisadmin.db'))
 
 # mount AdminSite instance
 site.mount_app(app)
 
 if __name__ == '__main__':
-    import uvicorn
+  import uvicorn
 
-    uvicorn.run(app, debug=True)
+  uvicorn.run(app, debug = True)
 ```
 
 ## ModelAdmin Example
@@ -117,27 +117,23 @@ from fastapi_amis_admin.models.fields import Field
 app = FastAPI()
 
 # create AdminSite instance
-site = AdminSite(settings=Settings(database_url_async='sqlite+aiosqlite:///amisadmin.db'))
-
+site = AdminSite(settings = Settings(database_url_async = 'sqlite+aiosqlite:///amisadmin.db'))
 
 # Create an SQLModel, see document for details: https://sqlmodel.tiangolo.com/
-class Category(SQLModel, table=True):
-    id: int = Field(default=None, primary_key=True, nullable=False)
-    name: str = Field(title='CategoryName')
-    description: str = Field(default='', title='Description')
-
+class Category(SQLModel, table = True):
+  id: int = Field(default = None, primary_key = True, nullable = False)
+  name: str = Field(title = 'CategoryName')
+  description: str = Field(default = '', title = 'Description')
 
 # register ModelAdmin
 @site.register_admin
 class CategoryAdmin(admin.ModelAdmin):
-    page_schema = 'Category'
-    # set model
-    model = Category
-
+  page_schema = 'Category'
+  # set model
+  model = Category
 
 # mount AdminSite instance
 site.mount_app(app)
-
 
 # create initial database table
 @app.on_event("startup")
@@ -145,9 +141,9 @@ async def startup():
   await site.db.async_run_sync(SQLModel.metadata.create_all, is_session = False)
 
 if __name__ == '__main__':
-    import uvicorn
+  import uvicorn
 
-    uvicorn.run(app, debug=True)
+  uvicorn.run(app, debug = True)
 ```
 
 ## FormAdmin Example
@@ -168,35 +164,33 @@ from fastapi_amis_admin.models.fields import Field
 app = FastAPI()
 
 # create AdminSite instance
-site = AdminSite(settings=Settings(database_url_async='sqlite+aiosqlite:///amisadmin.db'))
-
+site = AdminSite(settings = Settings(database_url_async = 'sqlite+aiosqlite:///amisadmin.db'))
 
 # register FormAdmin
 @site.register_admin
 class UserLoginFormAdmin(admin.FormAdmin):
-    page_schema = 'UserLoginForm'
-    # set form information, optional
-    form = Form(title='This is a test login form', submitText='login')
+  page_schema = 'UserLoginForm'
+  # set form information, optional
+  form = Form(title = 'This is a test login form', submitText = 'login')
 
-    # create form schema
-    class schema(BaseModel):
-        username: str = Field(..., title='username', min_length=3, max_length=30)
-        password: str = Field(..., title='password')
+  # create form schema
+  class schema(BaseModel):
+    username: str = Field(..., title = 'username', min_length = 3, max_length = 30)
+    password: str = Field(..., title = 'password')
 
-    # handle form submission data
-    async def handle(self, request: Request, data: BaseModel, **kwargs) -> BaseApiOut[Any]:
-        if data.username == 'amisadmin' and data.password == 'amisadmin':
-            return BaseApiOut(msg='Login successfully!', data={'token': 'xxxxxx'})
-        return BaseApiOut(status=-1, msg='Incorrect username or password!')
-
+  # handle form submission data
+  async def handle(self, request: Request, data: BaseModel, **kwargs) -> BaseApiOut[Any]:
+    if data.username == 'amisadmin' and data.password == 'amisadmin':
+      return BaseApiOut(msg = 'Login successfully!', data = {'token': 'xxxxxx'})
+    return BaseApiOut(status = -1, msg = 'Incorrect username or password!')
 
 # mount AdminSite instance
 site.mount_app(app)
 
 if __name__ == '__main__':
-    import uvicorn
+  import uvicorn
 
-    uvicorn.run(app, debug=True)
+  uvicorn.run(app, debug = True)
 ```
 
 ## Working with Command

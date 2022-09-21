@@ -11,9 +11,9 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 i18n.load_translations(
     {
         "zh_CN": gettext.translation(
-            domain = 'messages',
-            localedir = os.path.join(BASE_DIR, "locale"),
-            languages = ['zh_CN']
+            domain="messages",
+            localedir=os.path.join(BASE_DIR, "locale"),
+            languages=["zh_CN"],
         )
     }
 )

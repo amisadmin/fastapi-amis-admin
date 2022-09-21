@@ -1,4 +1,4 @@
-from typing import Dict, Any, AbstractSet, Mapping, Union, Optional, Sequence
+from typing import AbstractSet, Any, Dict, Mapping, Optional, Sequence, Union
 
 from pydantic.fields import Undefined, UndefinedType
 from pydantic.typing import NoArgAnyCallable
@@ -7,6 +7,7 @@ from sqlmodel.main import FieldInfo
 
 from fastapi_amis_admin.amis.components import FormItem, TableColumn
 
+
 def Field(
     default: Any = Undefined,
     *,
@@ -14,12 +15,8 @@ def Field(
     alias: str = None,
     title: str = None,
     description: str = None,
-    exclude: Union[
-        AbstractSet[Union[int, str]], Mapping[Union[int, str], Any], Any
-    ] = None,
-    include: Union[
-        AbstractSet[Union[int, str]], Mapping[Union[int, str], Any], Any
-    ] = None,
+    exclude: Union[AbstractSet[Union[int, str]], Mapping[Union[int, str], Any], Any] = None,
+    include: Union[AbstractSet[Union[int, str]], Mapping[Union[int, str], Any], Any] = None,
     const: bool = None,
     gt: float = None,
     ge: float = None,
@@ -47,39 +44,39 @@ def Field(
 ) -> Any:
     current_schema_extra = schema_extra or {}
     if amis_form_item:
-        current_schema_extra['amis_form_item'] = amis_form_item
+        current_schema_extra["amis_form_item"] = amis_form_item
     if amis_filter_item:
-        current_schema_extra['amis_filter_item'] = amis_filter_item
+        current_schema_extra["amis_filter_item"] = amis_filter_item
     if amis_table_column:
-        current_schema_extra['amis_table_column'] = amis_table_column
+        current_schema_extra["amis_table_column"] = amis_table_column
     field_info = FieldInfo(
         default,
-        default_factory = default_factory,
-        alias = alias,
-        title = title,
-        description = description,
-        exclude = exclude,
-        include = include,
-        const = const,
-        gt = gt,
-        ge = ge,
-        lt = lt,
-        le = le,
-        multiple_of = multiple_of,
-        min_items = min_items,
-        max_items = max_items,
-        min_length = min_length,
-        max_length = max_length,
-        allow_mutation = allow_mutation,
-        regex = regex,
-        primary_key = primary_key,
-        foreign_key = foreign_key,
-        unique = unique,
-        nullable = nullable,
-        index = index,
-        sa_column = sa_column,
-        sa_column_args = sa_column_args,
-        sa_column_kwargs = sa_column_kwargs,
+        default_factory=default_factory,
+        alias=alias,
+        title=title,
+        description=description,
+        exclude=exclude,
+        include=include,
+        const=const,
+        gt=gt,
+        ge=ge,
+        lt=lt,
+        le=le,
+        multiple_of=multiple_of,
+        min_items=min_items,
+        max_items=max_items,
+        min_length=min_length,
+        max_length=max_length,
+        allow_mutation=allow_mutation,
+        regex=regex,
+        primary_key=primary_key,
+        foreign_key=foreign_key,
+        unique=unique,
+        nullable=nullable,
+        index=index,
+        sa_column=sa_column,
+        sa_column_args=sa_column_args,
+        sa_column_kwargs=sa_column_kwargs,
         **current_schema_extra,
     )
     field_info._validate()
