@@ -1,4 +1,7 @@
-from pydantic import BaseSettings, Field, validator, root_validator
+import logging
+from typing import Any, Union
+
+from pydantic import BaseSettings, Field, root_validator, validator
 
 class Settings(BaseSettings):
     """项目配置"""
@@ -16,9 +19,10 @@ class Settings(BaseSettings):
     amis_cdn: str = 'https://unpkg.com'
     amis_pkg: str = 'amis@1.10.2'
     amis_theme: str = 'cxd'  # 'antd', 'cxd'
+    logger: Union[logging.Logger, Any] = logging.getLogger('fastapi_amis_admin')
 
     @validator('amis_cdn', 'root_path', 'site_url', pre = True)
-    def valid_url(url: str):
+    def valid_url(cls, url: str):
         return url[:-1] if url.endswith('/') else url
 
     @root_validator(pre = True)
