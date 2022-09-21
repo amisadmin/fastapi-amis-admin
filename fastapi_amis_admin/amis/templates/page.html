@@ -10,9 +10,7 @@
     <link href="${cdn}/${pkg}/sdk/sdk.css" rel="stylesheet" title="default"/>
     <link href="${cdn}/${pkg}/sdk/helper.css" rel="stylesheet"/>
     <link href="${cdn}/${pkg}/sdk/iconfont.css" rel="stylesheet"/>
-    {% if theme == "antd" %}
-    <link href="${cdn}/${pkg}/sdk/antd.css" rel="stylesheet"/>
-    {% endif %}
+    ${theme_css}
     <script src="${cdn}/${pkg}/sdk/sdk.js"></script>
     <script src="${cdn}/vue@2.6.14/dist/vue.js"></script>
     <script src="${cdn}/history@4.10.1/umd/history.js"></script>
@@ -31,7 +29,7 @@
 <div class="amiss" id="amisId"></div>
 <script type="text/javascript">
     let amis = amisRequire('amis/embed')
-    let amisData = amis.embed('#amisId', ${AmisSchemaJson}, {locale: "${locale}"});
+    let amisData = amis.embed('#amisId', ${AmisSchemaJson}, {locale: "${locale}"}, {theme: "${theme}"});
 </script>
 </body>
 </html>

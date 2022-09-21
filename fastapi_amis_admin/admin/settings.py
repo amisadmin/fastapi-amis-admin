@@ -15,7 +15,7 @@ class Settings(BaseSettings):
     language: str = ''  # 'zh_CN','en_US'
     amis_cdn: str = 'https://unpkg.com'
     amis_pkg: str = 'amis@1.10.2'
-    amis_theme: str = 'cxd'
+    amis_theme: str = 'cxd'  # 'antd', 'cxd'
 
     @validator('amis_cdn', 'root_path', 'site_url', pre = True)
     def valid_url(url: str):
