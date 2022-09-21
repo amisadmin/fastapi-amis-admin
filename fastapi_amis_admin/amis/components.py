@@ -85,6 +85,7 @@ class Page(AmisNode):
         pkg: str = 'amis@1.10.2',
         site_title: str = 'Amis',
         site_icon: str = '',
+        theme: str = 'cxd',
     ):
         """渲染html模板"""
         template_path = template_path or self.__default_template_path__
@@ -96,6 +97,7 @@ class Page(AmisNode):
                 "pkg": pkg,
                 "site_title": site_title,
                 "site_icon": site_icon,
+                "theme": theme,
             }
         )
 
