@@ -4,8 +4,8 @@ from functools import lru_cache
 from gettext import GNUTranslations
 from typing import Dict, Set
 
-class I18N:
 
+class I18N:
     def __init__(self):
         self._locales: Dict[str, Set[GNUTranslations]] = {}
         self._language: str = self.set_language()
@@ -23,8 +23,8 @@ class I18N:
         :param language: 尝试设置的语言
         :return: 设置成功后的语言
         """
-        language = language or os.getenv('LANGUAGE') or os.getenv('LANG') or locale.getdefaultlocale()[0]
-        self._language = 'zh_CN' if language.lower().startswith('zh') else 'en_US'
+        language = language or os.getenv("LANGUAGE") or os.getenv("LANG") or locale.getdefaultlocale()[0]
+        self._language = "zh_CN" if language.lower().startswith("zh") else "en_US"
         return self._language
 
     def get_language(self):
@@ -42,5 +42,6 @@ class I18N:
 
     def __call__(self, value, language: str = None) -> str:
         return self.gettext(str(value), language)
+
 
 i18n = I18N()

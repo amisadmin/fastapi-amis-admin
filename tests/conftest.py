@@ -1,8 +1,8 @@
-from sqlalchemy_database import Database, AsyncDatabase
+from sqlalchemy_database import AsyncDatabase, Database
 
 # sqlite
-sync_db = Database.create('sqlite:///amisadmin.db?check_same_thread=False')
-async_db = AsyncDatabase.create('sqlite+aiosqlite:///amisadmin.db?check_same_thread=False')
+sync_db = Database.create("sqlite:///amisadmin.db?check_same_thread=False")
+async_db = AsyncDatabase.create("sqlite+aiosqlite:///amisadmin.db?check_same_thread=False")
 
 # mysql
 # sync_db = Database.create('mysql+pymysql://root:123456@127.0.0.1:3306/amisadmin?charset=utf8mb4')
