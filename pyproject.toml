@@ -93,3 +93,6 @@ filter_files = true
 [tool.black]
 line-length = 130
 include = '\.pyi?$'
+
+[tool.pdm]
+[tool.pdm.dev-dependencies]
