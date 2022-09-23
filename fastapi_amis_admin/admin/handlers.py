@@ -30,7 +30,7 @@ except ImportError:  # fastapi < 0.83.0
 try:
     import ujson
     from fastapi.responses import UJSONResponse as JSONResponse
-except ImportError:  # pragma: nocover
+except ImportError:
     ujson = None
     from fastapi.responses import JSONResponse
 
@@ -45,10 +45,7 @@ def register_exception_handlers(app: FastAPI, logger: logging.Logger = None):
         RequestValidationError,
         handler=log_exception(logging.WARNING, logger)(request_validation_exception_handler),
     )
-    app.add_exception_handler(
-        HTTPException,
-        handler=log_exception(logging.ERROR, logger)(http_exception_handler),
-    )
+    app.add_exception_handler(HTTPException, handler=http_exception_handler)
     app.add_exception_handler(Exception, handler=log_exception(logging.ERROR, logger)(all_exception_handler))
 
 
