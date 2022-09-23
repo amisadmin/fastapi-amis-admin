@@ -30,7 +30,7 @@ class I18N:
     def get_language(self):
         return self._language
 
-    @lru_cache()
+    @lru_cache()  # noqa: B019
     def gettext(self, value: str, language: str = None) -> str:
         language = language or self._language
         if language in self._locales:

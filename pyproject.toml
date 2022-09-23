@@ -96,3 +96,6 @@ include = '\.pyi?$'
 
 [tool.pdm]
 [tool.pdm.dev-dependencies]
+[tool.pdm.scripts]
+lint = "pre-commit run --all-files"
+test= "pytest"

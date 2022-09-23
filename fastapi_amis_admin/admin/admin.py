@@ -1240,7 +1240,7 @@ class AdminApp(PageAdmin, AdminGroup):
             self.__register_lock = True
         return self
 
-    @lru_cache()
+    @lru_cache()  # noqa: B019
     def get_model_admin(self, table_name: str) -> Optional[ModelAdmin]:
         for admin_cls, admin in self._registered.items():
             if issubclass(admin_cls, ModelAdmin) and admin_cls.bind_model and admin_cls.model.__tablename__ == table_name:
