@@ -1271,6 +1271,7 @@ class AdminApp(PageAdmin, AdminGroup):
     async def _get_page_as_app(self, request: Request) -> App:
         app = App()
         app.brandName = self.site.settings.site_title
+        app.logo = self.site.settings.site_icon
         app.header = Tpl(
             className="w-full",
             tpl='<div class="flex justify-between"><div></div>'
