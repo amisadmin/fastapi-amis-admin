@@ -340,6 +340,7 @@ class BaseModelAdmin(SQLModelCrud):
     link_model_fields: List[InstrumentedAttribute] = []  # 内联字段
     link_model_forms: List[LinkModelForm] = []
     bulk_update_fields: List[Union[SQLModelListField, FormItem]] = []  # 批量编辑字段
+    enable_bulk_create: bool = False  # 是否启用批量创建
     search_fields: List[SQLModelField] = []  # 模糊搜索字段
 
     def __init__(self, app: "AdminApp"):
@@ -667,8 +668,9 @@ class BaseModelAdmin(SQLModelCrud):
     async def get_actions_on_header_toolbar(self, request: Request) -> List[Action]:
         actions = [
             await self.get_create_action(request, bulk=False),
-            await self.get_create_action(request, bulk=True),
         ]
+        if self.enable_bulk_create:
+            actions.append(await self.get_create_action(request, bulk=True))
         return list(filter(None, actions))
 
     async def get_actions_on_item(self, request: Request) -> List[Action]:
