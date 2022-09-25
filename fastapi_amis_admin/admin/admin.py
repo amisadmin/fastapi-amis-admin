@@ -347,6 +347,7 @@ class BaseModelAdmin(SQLModelCrud):
         assert app, "app is None"
         self.app = app
         self.engine = self.engine or self.app.db.engine
+        self.amis_parser = self.app.site.amis_parser
         self.parser = SQLModelFieldParser(default_model=self.model)
         list_display_insfield = self.parser.filter_insfield(self.list_display)
         self.list_filter = self.list_filter or list_display_insfield
@@ -374,7 +375,7 @@ class BaseModelAdmin(SQLModelCrud):
         return self.list_filter or list(self.schema_filter.__fields__.values())
 
     async def get_list_column(self, request: Request, modelfield: ModelField) -> TableColumn:
-        column = AmisParser(modelfield).as_table_column()
+        column = self.amis_parser.as_table_column(modelfield)
         if await self.has_update_permission(request, None, None) and modelfield.name in self.schema_update.__fields__:
             item = await self.get_form_item(request, modelfield, action=CrudEnum.update)
             if isinstance(item, BaseModel):
@@ -514,9 +515,9 @@ class BaseModelAdmin(SQLModelCrud):
     ) -> Union[FormItem, SchemaNode, None]:
         is_filter = action == CrudEnum.list
         set_default = action == CrudEnum.create
-        return await self.get_form_item_on_foreign_key(request, modelfield, is_filter=is_filter) or AmisParser(
-            modelfield
-        ).as_form_item(is_filter=is_filter, set_default=set_default)
+        return await self.get_form_item_on_foreign_key(request, modelfield, is_filter=is_filter) or self.amis_parser.as_form_item(
+            modelfield, is_filter=is_filter, set_default=set_default
+        )
 
     async def get_list_filter_form(self, request: Request) -> Form:
         body = await self._conv_modelfields_to_formitems(request, await self.get_list_filter(request), CrudEnum.list)
@@ -935,7 +936,7 @@ class BaseFormAdmin(PageAdmin):
         return page
 
     async def get_form_item(self, request: Request, modelfield: ModelField) -> Union[FormItem, SchemaNode]:
-        return AmisParser(modelfield).as_form_item(set_default=True)
+        return self.site.amis_parser.as_form_item(modelfield, set_default=True)
 
     async def get_form(self, request: Request) -> Form:
         form = self.form or Form()
@@ -1313,6 +1314,10 @@ class BaseAdminSite(AdminApp):
         except ImportError:
             pass
         self.settings = settings
+        self.amis_parser = AmisParser(
+            image_receiver=self.settings.amis_image_receiver,
+            file_receiver=self.settings.amis_file_receiver,
+        )
         self.fastapi = fastapi or FastAPI(debug=settings.debug, reload=settings.debug)
         register_exception_handlers(self.fastapi, self.settings.logger)
         self.router = self.fastapi.router

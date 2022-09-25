@@ -3,6 +3,8 @@ from typing import Any, Union
 
 from pydantic import BaseSettings, Field, root_validator, validator
 
+from fastapi_amis_admin.amis import API
+
 
 class Settings(BaseSettings):
     """项目配置"""
@@ -21,6 +23,8 @@ class Settings(BaseSettings):
     amis_cdn: str = "https://unpkg.com"
     amis_pkg: str = "amis@1.10.2"
     amis_theme: str = "cxd"  # 'antd', 'cxd'
+    amis_image_receiver: API = None  # 图片上传接口
+    amis_file_receiver: API = None  # 文件上传接口
     logger: Union[logging.Logger, Any] = logging.getLogger("fastapi_amis_admin")
 
     @validator("amis_cdn", "root_path", "site_url", pre=True)
@@ -35,3 +39,7 @@ class Settings(BaseSettings):
                 "sqlite+aiosqlite:///amisadmin.db?check_same_thread=False",
             )
         return values
+
+    @validator("amis_image_receiver", "amis_file_receiver", pre=True)
+    def valid_receiver(cls, v, values):
+        return v if v else f"post:{values.get('root_path', '')}/file/upload"
