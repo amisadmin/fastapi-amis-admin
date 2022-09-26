@@ -38,6 +38,7 @@ class Icon(AmisNode):
     type: str = "icon"  # 指定组件类型
     className: str = None  # 外层 CSS 类名
     icon: str = None  # icon 名，支持 fontawesome v4 或使用 url
+    vendor: str = None  # icon 厂商，icon默认支持fontawesome v4，如果想要支持 v5 以及 v6 版本的 fontawesome 请设置vendor为空字符串。
 
 
 class Remark(AmisNode):
@@ -314,7 +315,7 @@ class PageSchema(AmisNode):
     """页面配置"""
 
     label: str = None  # 菜单名称。
-    icon: str = "fa fa-flash"  # 菜单图标，比如：'fa fa-file'.
+    icon: str = "fa fa-flash"  # 菜单图标，比如：'fa fa-file'. 详细图标参考：http://www.fontawesome.com.cn/faicons/
     url: str = None  # 页面路由路径，当路由命中该路径时，启用当前页面。当路径不是 / 打头时，会连接父级路径。
     # 比如：父级的路径为 folder，而此时配置 pageA, 那么当页面地址为 /folder/pageA 时才会命中此页面。
     # 当路径是 / 开头如： /crud/list 时，则不会拼接父级路径。
@@ -1476,16 +1477,16 @@ class TableColumn(AmisNode):
     searchable: Union[bool, SchemaNode] = None  # False  # 是否可快速搜索  boolean|Schema
     width: Union[str, int] = None  # 列宽
     remark: Remark = None  # 提示信息
-    breakpoint: str = None  # *,ls
+    breakpoint: str = None  # *,ls. 列太多时，内容没办法全部显示完，可以让部分信息在底部显示，可以让用户展开查看详情
     filterable: Dict[str, Any] = None  # 过滤器配置
+    toggled: bool = None  # 是否默认展开,在列配置中可以通过配置 toggled 为 false 默认不展示这列
+    backgroundScale: int = None  # 可以用来根据数据控制自动分配色阶
 
 
 class ColumnOperation(TableColumn):
     """操作列"""
 
     type: str = "operation"
-    label: Template = None  # "操作"
-    toggled: bool = None  # True
     buttons: List[Union[Action, AmisNode]] = None
 
 
