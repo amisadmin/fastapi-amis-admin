@@ -6,7 +6,7 @@ from fastapi import FastAPI
 from fastapi.exceptions import RequestValidationError
 from pydantic import ValidationError
 from starlette.exceptions import HTTPException
-from starlette.requests import Request
+from starlette.requests import ClientDisconnect, Request
 from starlette.responses import Response
 from starlette.status import (
     HTTP_417_EXPECTATION_FAILED,
@@ -55,6 +55,8 @@ def log_exception(level: Union[int, str] = logging.ERROR, logger: logging.Logger
 
     def wrapper(func):
         async def function(request: Request, exc: Exception):
+            if isinstance(exc, (ClientDisconnect,)):  # 忽略客户端断开连接
+                return None
             logger.log(level, f"Error: {exc}\nTraceback: {traceback.format_exc()}")
             return await func(request, exc)
 
