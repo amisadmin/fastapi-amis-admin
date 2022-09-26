@@ -1,6 +1,7 @@
 import datetime
 import re
 from enum import Enum
+from functools import cached_property
 from typing import Any, Callable, Dict, List, Optional, Pattern, Tuple, Type, Union
 
 from fastapi import APIRouter, Body, Depends, Query
@@ -11,13 +12,14 @@ from sqlalchemy.ext.asyncio import AsyncEngine
 from sqlalchemy.future import select
 from sqlalchemy.orm import InstrumentedAttribute, Session
 from sqlalchemy.sql import Select
-from sqlalchemy.sql.elements import BinaryExpression, UnaryExpression
+from sqlalchemy.sql.elements import BinaryExpression, Label, UnaryExpression
 from sqlalchemy_database import AsyncDatabase, Database
 from sqlmodel import SQLModel
 from starlette.requests import Request
 
 from .base import BaseCrud
 from .parser import (
+    SqlField,
     SQLModelField,
     SQLModelFieldParser,
     SQLModelListField,
@@ -45,12 +47,13 @@ sql_operator_map: Dict[str, str] = {
 
 
 class SQLModelSelector:
-    model: Type[SQLModel] = None
-    fields: List[SQLModelListField] = []
-    exclude: List[SQLModelListField] = []
-    ordering: List[Union[SQLModelListField, UnaryExpression]] = []
-    link_models: Dict[str, Tuple[Type[Table], Column, Column]] = {}
-    pk_name: str = "id"
+    model: Type[SQLModel] = None  # SQLModel模型
+    fields: List[SQLModelListField] = []  # 需要查询的字段
+    list_filter: List[SQLModelListField] = []  # 查询可过滤的字段
+    exclude: List[SQLModelField] = []  # 不需要查询的字段
+    ordering: List[Union[SQLModelListField, UnaryExpression]] = []  # 默认排序字段
+    link_models: Dict[str, Tuple[Type[Table], Column, Column]] = {}  # 关联模型
+    pk_name: str = "id"  # 主键名称
 
     def __init__(self, model: Type[SQLModel] = None, fields: List[SQLModelListField] = None) -> None:
         self.model = model or self.model
@@ -59,28 +62,43 @@ class SQLModelSelector:
         self.pk: InstrumentedAttribute = self.model.__dict__[self.pk_name]
         self.parser = SQLModelFieldParser(self.model)
         self.fields = fields or self.fields or [self.model]
-        self.fields = list(
-            filter(
-                lambda x: x not in self.parser.filter_insfield(self.exclude),
-                self.parser.filter_insfield(self.fields),
-            )
-        )
-        self._list_fields_ins: Dict[str, InstrumentedAttribute] = {
-            self.parser.get_name(insfield): insfield for insfield in self.fields
+        exclude = self.parser.filter_insfield(self.exclude)
+        self.fields = [
+            sqlfield
+            for sqlfield in self.parser.filter_insfield(self.fields + [self.pk], save_class=(Label,))
+            if sqlfield not in exclude
+        ]
+        assert self.fields, "fields is None"
+        self.list_filter = self.list_filter or self.fields
+
+    @cached_property
+    def _select_entities(self) -> Dict[str, SqlField]:
+        return {self.parser.get_alias(insfield): insfield for insfield in self.fields}
+
+    @cached_property
+    def _filter_entities(self) -> Dict[str, SqlField]:
+        return {
+            self.parser.get_alias(sqlfield): sqlfield
+            for sqlfield in self.parser.filter_insfield(self.list_filter, save_class=(Label,))
         }
-        assert self._list_fields_ins, "fields is None"
 
     async def get_select(self, request: Request) -> Select:
-        return select(*self._list_fields_ins.values()) if self._list_fields_ins else select(self.model)
+        return select(*self._select_entities.values())
 
     def _calc_ordering(self, orderBy, orderDir):
-        insfield = self._list_fields_ins.get(orderBy)
+        sqlfield = self._select_entities.get(orderBy) or self._filter_entities.get(orderBy)
         order = None
-        if insfield:
-            order = insfield.desc() if orderDir == "desc" else insfield.asc()
+        if sqlfield is not None:
+            order = sqlfield.desc() if orderDir == "desc" else sqlfield.asc()
             return [order]
-        elif self.ordering:
-            order = self.parser.filter_insfield(self.ordering, save_class=(UnaryExpression,))
+        elif self.ordering is not None:
+            order = self.parser.filter_insfield(
+                self.ordering,
+                save_class=(
+                    UnaryExpression,
+                    Label,
+                ),
+            )
         return order
 
     @property
@@ -160,11 +178,11 @@ class SQLModelSelector:
     def calc_filter_clause(self, data: Dict[str, Any]) -> List[BinaryExpression]:
         lst = []
         for k, v in data.items():
-            insfield = self._list_fields_ins.get(k)
-            if insfield:
-                operator, val = self._parser_query_value(v, python_type_parse=get_python_type_parse(insfield))
+            sqlfield = self._filter_entities.get(k)
+            if sqlfield is not None:
+                operator, val = self._parser_query_value(v, python_type_parse=get_python_type_parse(sqlfield))
                 if operator:
-                    lst.append(getattr(insfield, operator)(*val))
+                    lst.append(getattr(sqlfield, operator)(*val))
         return lst
 
 
@@ -173,7 +191,6 @@ class SQLModelCrud(BaseCrud, SQLModelSelector):
     create_fields: List[SQLModelField] = []  # 新增数据字段
     readonly_fields: List[SQLModelListField] = []  # 只读字段
     update_fields: List[SQLModelListField] = []  # 可编辑字段
-    list_filter: List[SQLModelListField] = []  # 需要查询的字段
 
     def __init__(
         self,
@@ -194,7 +211,7 @@ class SQLModelCrud(BaseCrud, SQLModelSelector):
         modelfields = list(
             filter(
                 None,
-                [self.parser.get_modelfield(insfield, deepcopy=True) for insfield in self._list_fields_ins.values()],
+                [self.parser.get_modelfield(sqlfield, deepcopy=True) for sqlfield in self._select_entities.values()],
             )
         )
         return schema_create_by_modelfield(
@@ -207,13 +224,13 @@ class SQLModelCrud(BaseCrud, SQLModelSelector):
     def _create_schema_filter(self):
         if self.schema_filter:
             return self.schema_filter
-        self.list_filter = self.list_filter or self._list_fields_ins.values()
+        self.list_filter = self.list_filter or self._select_entities.values()
         modelfields = list(
             filter(
                 None,
                 [
-                    self.parser.get_modelfield(insfield, deepcopy=True)
-                    for insfield in self.parser.filter_insfield(self.list_filter)
+                    self.parser.get_modelfield(sqlfield, deepcopy=True)
+                    for sqlfield in self.parser.filter_insfield(self.list_filter, save_class=(Label,))
                 ],
             )
         )
@@ -239,15 +256,10 @@ class SQLModelCrud(BaseCrud, SQLModelSelector):
             return super(SQLModelCrud, self)._create_schema_update()
         self.update_fields = self.parser.filter_insfield(self.update_fields) or self.schema_model.__fields__.values()
         modelfields = {self.parser.get_modelfield(ins, deepcopy=True) for ins in self.update_fields}
-        modelfields = {
-            field
-            for field in modelfields
-            if field.name
-            not in {
-                self.parser.get_modelfield(ins, deepcopy=True).name for ins in self.parser.filter_insfield(self.readonly_fields)
-            }
-            | {self.pk_name}
-        }
+        readonly_fields = {
+            self.parser.get_modelfield(ins, deepcopy=True).name for ins in self.parser.filter_insfield(self.readonly_fields)
+        } | {self.pk_name}
+        modelfields = {field for field in modelfields if field.name not in readonly_fields}
         return schema_create_by_modelfield(f"{self.schema_name_prefix}Update", modelfields, set_none=True)
 
     def _create_schema_create(self):

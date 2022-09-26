@@ -2,8 +2,9 @@ import datetime
 from functools import lru_cache
 from typing import Any, Callable, Dict, Iterable, List, Optional, Tuple, Type, Union
 
+from pydantic import BaseConfig
 from pydantic.datetime_parse import parse_date, parse_datetime
-from pydantic.fields import ModelField
+from pydantic.fields import FieldInfo, ModelField
 from pydantic.utils import smart_deepcopy
 from sqlalchemy import Column
 from sqlalchemy.engine import Row
@@ -13,7 +14,8 @@ from sqlalchemy.sql.elements import Label
 from sqlmodel import SQLModel
 
 SQLModelField = Union[str, InstrumentedAttribute]
-SQLModelListField = Union[Type[SQLModel], SQLModelField]
+SqlField = Union[InstrumentedAttribute, Label]
+SQLModelListField = Union[Type[SQLModel], SQLModelField, SqlField]
 
 
 class SQLModelFieldParser:
@@ -23,7 +25,7 @@ class SQLModelFieldParser:
     def __init__(self, default_model: Type[SQLModel]):
         self.default_model = default_model
 
-    def get_modelfield(self, field: Union[ModelField, SQLModelField], deepcopy: bool = False) -> Optional[ModelField]:
+    def get_modelfield(self, field: Union[ModelField, SQLModelField, Label], deepcopy: bool = False) -> Optional[ModelField]:
         """pydantic ModelField"""
         modelfield = None
         if isinstance(field, InstrumentedAttribute):
@@ -39,6 +41,8 @@ class SQLModelFieldParser:
                 modelfield = self.default_model.__fields__[field]
         elif isinstance(field, ModelField):
             modelfield = field
+        elif isinstance(field, Label):
+            return get_label_model_field(field)
         else:  # other
             return None
         if deepcopy:
@@ -117,7 +121,7 @@ class SQLModelFieldParser:
     def filter_insfield(
         self,
         fields: Iterable[Union[SQLModelListField, Any]],
-        save_class: Tuple[type] = None,
+        save_class: Tuple[Union[type, Tuple[Any, ...]], ...] = None,
     ) -> List[Union[InstrumentedAttribute, Any]]:
         result = []
         for field in fields:
@@ -128,11 +132,11 @@ class SQLModelFieldParser:
                 result.extend(self.get_sqlmodel_insfield(field))
             elif save_class and isinstance(field, save_class):
                 result.append(field)
-        return result
+        return sorted(set(result), key=result.index)  # 去重复并保持原顺序
 
 
 @lru_cache()
-def get_python_type_parse(field: Union[InstrumentedAttribute, Column]) -> Callable:
+def get_python_type_parse(field: Union[InstrumentedAttribute, Column, Label]) -> Callable:
     try:
         python_type = field.expression.type.python_type
         if issubclass(python_type, datetime.date):
@@ -142,3 +146,23 @@ def get_python_type_parse(field: Union[InstrumentedAttribute, Column]) -> Callab
         return python_type
     except NotImplementedError:
         return str
+
+
+def get_label_model_field(label: Label) -> ModelField:
+    modelfield = getattr(label, "__ModelField__", None)
+    if modelfield is None:
+        try:
+            python_type = label.expression.type.python_type
+        except NotImplementedError:
+            python_type = str
+        modelfield = ModelField(name=label.key, type_=python_type, class_validators={}, model_config=BaseConfig)
+        label.__ModelField__ = modelfield
+    return modelfield
+
+
+def LabelField(label: Label, field: FieldInfo) -> Label:
+    modelfield = get_label_model_field(label)
+    field.alias = label.key
+    modelfield.field_info = field
+    label.__ModelField__ = modelfield
+    return label

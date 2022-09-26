@@ -41,7 +41,7 @@ def Field(
     amis_form_item: Union[FormItem, dict, str] = None,
     amis_filter_item: Union[FormItem, dict, str] = None,
     amis_table_column: Union[TableColumn, dict, str] = None,
-) -> Any:
+) -> FieldInfo:
     current_schema_extra = schema_extra or {}
     if amis_form_item:
         current_schema_extra["amis_form_item"] = amis_form_item

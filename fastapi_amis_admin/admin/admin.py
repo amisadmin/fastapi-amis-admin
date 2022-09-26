@@ -23,6 +23,7 @@ from sqlalchemy import Column, Table, create_engine, delete, insert
 from sqlalchemy.engine import Engine
 from sqlalchemy.ext.asyncio import AsyncEngine, create_async_engine
 from sqlalchemy.orm import InstrumentedAttribute, RelationshipProperty
+from sqlalchemy.sql.elements import Label
 from sqlalchemy.util import md5_hex
 from sqlalchemy_database import AsyncDatabase, Database
 from sqlmodel import SQLModel, select
@@ -68,7 +69,6 @@ from fastapi_amis_admin.amis.types import (
 )
 from fastapi_amis_admin.crud import RouterMixin, SQLModelCrud, SQLModelSelector
 from fastapi_amis_admin.crud.parser import (
-    SQLModelField,
     SQLModelFieldParser,
     SQLModelListField,
     get_python_type_parse,
@@ -336,12 +336,13 @@ class LinkModelForm:
 
 class BaseModelAdmin(SQLModelCrud):
     list_display: List[Union[SQLModelListField, TableColumn]] = []  # 需要显示的字段
+    list_filter: List[Union[SQLModelListField, FormItem]] = []  # 查询可过滤的字段
     list_per_page: int = 10  # 每页数据量
     link_model_fields: List[InstrumentedAttribute] = []  # 内联字段
     link_model_forms: List[LinkModelForm] = []
     bulk_update_fields: List[Union[SQLModelListField, FormItem]] = []  # 批量编辑字段
     enable_bulk_create: bool = False  # 是否启用批量创建
-    search_fields: List[SQLModelField] = []  # 模糊搜索字段
+    search_fields: List[SQLModelListField] = []  # 模糊搜索字段
 
     def __init__(self, app: "AdminApp"):
         assert self.model, "model is None"
@@ -350,11 +351,11 @@ class BaseModelAdmin(SQLModelCrud):
         self.engine = self.engine or self.app.db.engine
         self.amis_parser = self.app.site.amis_parser
         self.parser = SQLModelFieldParser(default_model=self.model)
-        list_display_insfield = self.parser.filter_insfield(self.list_display)
+        list_display_insfield = self.parser.filter_insfield(self.list_display, save_class=(Label,))
         self.list_filter = self.list_filter or list_display_insfield
-        self.fields = self.fields or [self.model]
-        self.fields.extend(list_display_insfield)
+        self.list_filter.extend(self.search_fields)
         super().__init__(self.model, self.engine)
+        self.fields.extend(list_display_insfield)
 
     @cached_property
     def router_path(self) -> str:
@@ -395,10 +396,12 @@ class BaseModelAdmin(SQLModelCrud):
                 columns.append(field)
             elif isinstance(field, type) and issubclass(field, SQLModel):
                 ins_list = self.parser.get_sqlmodel_insfield(field)
-                modelfield_list = [self.parser.get_modelfield(ins, deepcopy=True) for ins in ins_list]
-                columns.extend([await self.get_list_column(request, modelfield) for modelfield in modelfield_list])
+                modelfields = [self.parser.get_modelfield(ins, deepcopy=True) for ins in ins_list]
+                columns.extend([await self.get_list_column(request, modelfield) for modelfield in modelfields])
             else:
-                columns.append(await self.get_list_column(request, self.parser.get_modelfield(field, deepcopy=True)))
+                modelfield = self.parser.get_modelfield(field, deepcopy=True)
+                if modelfield:
+                    columns.append(await self.get_list_column(request, modelfield))
         for link_form in self.link_model_forms:
             form = await link_form.get_form_item(request)
             if form:

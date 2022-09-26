@@ -43,6 +43,7 @@ class BaseCrud(RouterMixin):
     list_per_page_max: int = None
 
     def __init__(self, schema_model: Type[BaseModel], router: APIRouter = None):
+        self.paginator = Paginator()
         self.schema_model = schema_model or self.schema_model
         assert self.schema_model, "schema_model is None"
         self.router = router
