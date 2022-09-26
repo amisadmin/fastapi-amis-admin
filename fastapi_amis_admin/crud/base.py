@@ -43,7 +43,6 @@ class BaseCrud(RouterMixin):
     list_per_page_max: int = None
 
     def __init__(self, schema_model: Type[BaseModel], router: APIRouter = None):
-        self.paginator: Paginator = Paginator()
         self.schema_model = schema_model or self.schema_model
         assert self.schema_model, "schema_model is None"
         self.router = router
@@ -64,7 +63,7 @@ class BaseCrud(RouterMixin):
         schema_create: Type[BaseModel] = None,
         schema_read: Type[BaseModel] = None,
         schema_update: Type[BaseModel] = None,
-        list_max_per_page: int = None,
+        list_per_page_max: int = None,
         depends_list: List[Depends] = None,
         depends_read: List[Depends] = None,
         depends_create: List[Depends] = None,
@@ -76,7 +75,7 @@ class BaseCrud(RouterMixin):
         self.schema_create = schema_create or self._create_schema_create()
         self.schema_read = schema_read or self._create_schema_read()
         self.schema_update = schema_update or self._create_schema_update()
-        self.list_per_page_max = list_max_per_page or self.list_per_page_max
+        self.list_per_page_max = list_per_page_max or self.list_per_page_max
         self.paginator = Paginator(perPage_max=self.list_per_page_max)
         self.router.add_api_route(
             "/list",
