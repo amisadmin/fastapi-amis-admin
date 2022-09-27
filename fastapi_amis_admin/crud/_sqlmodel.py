@@ -1,7 +1,6 @@
 import datetime
 import re
 from enum import Enum
-from functools import cached_property
 from typing import Any, Callable, Dict, List, Optional, Pattern, Tuple, Type, Union
 
 from fastapi import APIRouter, Body, Depends, Query
@@ -16,6 +15,8 @@ from sqlalchemy.sql.elements import BinaryExpression, Label, UnaryExpression
 from sqlalchemy_database import AsyncDatabase, Database
 from sqlmodel import SQLModel
 from starlette.requests import Request
+
+from fastapi_amis_admin.utils.functools import cached_property
 
 from .base import BaseCrud
 from .parser import (
