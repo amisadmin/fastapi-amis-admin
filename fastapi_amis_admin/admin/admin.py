@@ -28,6 +28,7 @@ from sqlalchemy.util import md5_hex
 from sqlalchemy_database import AsyncDatabase, Database
 from sqlmodel import SQLModel, select
 from starlette import status
+from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import HTMLResponse, JSONResponse, Response
 from starlette.templating import Jinja2Templates
 
@@ -1315,7 +1316,7 @@ class BaseAdminSite(AdminApp):
         try:
             from fastapi_user_auth.auth import Auth
 
-            self.auth: Auth = None
+            self.auth: Auth
         except ImportError:
             pass
         self.settings = settings
@@ -1333,6 +1334,8 @@ class BaseAdminSite(AdminApp):
         elif settings.database_url:
             self.engine = create_engine(settings.database_url, echo=settings.debug, future=True)
         super().__init__(self)
+        # 注册sqlalchemy session中间件, 每个请求绑定一个session对象
+        self.fastapi.add_middleware(BaseHTTPMiddleware, dispatch=self.db.asgi_dispatch)
 
     @cached_property
     def router_path(self) -> str:
