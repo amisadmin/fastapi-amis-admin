@@ -55,7 +55,13 @@ def log_exception(level: Union[int, str] = logging.ERROR, logger: logging.Logger
 
     def wrapper(func):
         async def function(request: Request, exc: Exception):
-            if isinstance(exc, (ClientDisconnect,)):  # 忽略客户端断开连接
+            if isinstance(
+                exc,
+                (
+                    ClientDisconnect,
+                    Warning,
+                ),
+            ):  # 忽略客户端断开连接;暂时忽略警告
                 return None
             logger.log(level, f"Error: {exc}\nTraceback: {traceback.format_exc()}")
             return await func(request, exc)
