@@ -1,8 +1,12 @@
 import pytest
 from httpx import AsyncClient
+from sqlmodel.sql.expression import Select
+from starlette.requests import Request
 
 from fastapi_amis_admin import admin
 from fastapi_amis_admin.admin import AdminSite
+from fastapi_amis_admin.crud.parser import LabelField
+from fastapi_amis_admin.models import Field
 from tests.models import Article, User
 
 
@@ -49,16 +53,41 @@ async def test_list_display_join(site: AdminSite, async_client: AsyncClient):
     @site.register_admin
     class ArticleAdmin(admin.ModelAdmin):
         model = Article
-        list_display = [Article.title, User.username, "description"]
+        list_display = [
+            Article.title,
+            User.username,
+            "description",
+            User.username.label("nickname"),
+            LabelField(
+                label=User.password.label("pwd"),
+                field=Field(None, title="pwd_title"),
+            ),
+        ]
+
+        async def get_select(self, request: Request) -> Select:
+            sel = await super().get_select(request)
+            return sel.outerjoin(User, User.id == Article.user_id)
 
     site.register_router()
 
     ins = site.get_admin_or_create(ArticleAdmin)
+    # test schemas
+    assert "id" in ins.schema_list.__fields__
     assert "user_username" in ins.schema_list.__fields__
     assert "description" in ins.schema_list.__fields__
+    assert "nickname" in ins.schema_list.__fields__
+    assert "pwd" in ins.schema_list.__fields__
+    assert ins.schema_list.__fields__["pwd"].field_info.title == "pwd_title"
 
-    # test schemas
+    assert "user_username" in ins.schema_filter.__fields__
+    assert "nickname" in ins.schema_filter.__fields__
+    assert "pwd" in ins.schema_filter.__fields__
+
+    # test openapi
     site.fastapi.openapi_schema = None
     openapi = site.fastapi.openapi()
     schemas = openapi["components"]["schemas"]
     assert "user__username" in schemas["ArticleAdminList"]["properties"]
+    assert "description" in schemas["ArticleAdminList"]["properties"]
+    assert "nickname" in schemas["ArticleAdminList"]["properties"]
+    assert "pwd" in schemas["ArticleAdminList"]["properties"]
