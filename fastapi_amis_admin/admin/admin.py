@@ -1250,7 +1250,8 @@ class AdminApp(PageAdmin, AdminGroup):
     @lru_cache()  # noqa: B019
     def get_model_admin(self, table_name: str) -> Optional[ModelAdmin]:
         for admin_cls, admin in self._registered.items():
-            if issubclass(admin_cls, ModelAdmin) and admin_cls.bind_model and admin_cls.model.__tablename__ == table_name:
+            admin = admin or self.get_admin_or_create(admin_cls)
+            if issubclass(admin_cls, ModelAdmin) and admin.bind_model and admin.model.__tablename__ == table_name:
                 return admin
             elif isinstance(admin, AdminApp) and self.engine.url == admin.engine.url:
                 admin = admin.get_model_admin(table_name)
