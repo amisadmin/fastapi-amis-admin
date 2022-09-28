@@ -1316,7 +1316,7 @@ class BaseAdminSite(AdminApp):
         try:
             from fastapi_user_auth.auth import Auth
 
-            self.auth: Auth
+            self.auth: Auth = None
         except ImportError:
             pass
         self.settings = settings
