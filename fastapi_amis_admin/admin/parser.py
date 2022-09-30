@@ -19,6 +19,8 @@ from fastapi_amis_admin.utils.translation import i18n as _
 
 
 class ModelFieldParser:
+    """AmisParser,used to parse pydantic fields to amis form item or table column."""
+
     def __init__(self, modelfield: ModelField):
         self.modelfield = modelfield  # read only
 
@@ -169,11 +171,20 @@ def cyclic_generator(iterable: Iterable):
 
 
 class AmisParser:
+    """AmisParser,used to parse pydantic fields to amis form item or table column.
+    Compared with ModelFieldParser, AmisParser can set the default image and file upload receiver.
+    """
+
     def __init__(
         self,
         image_receiver: amis.API = None,
         file_receiver: amis.API = None,
     ):
+        """
+        Args:
+            image_receiver: Image upload receiver, used to upload images to a specified location and return the image address
+            file_receiver: File upload receiver, used to upload files to a specified location and return the file address
+        """
         self.image_receiver = image_receiver
         self.file_receiver = file_receiver
 
