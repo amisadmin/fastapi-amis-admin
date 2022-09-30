@@ -19,9 +19,7 @@ from fastapi import Body, Depends, FastAPI, HTTPException, Query, Request
 from pydantic import BaseModel
 from pydantic.fields import ModelField
 from pydantic.utils import deep_update
-from sqlalchemy import Column, Table, create_engine, delete, insert
-from sqlalchemy.engine import Engine
-from sqlalchemy.ext.asyncio import AsyncEngine, create_async_engine
+from sqlalchemy import Column, Table, delete, insert
 from sqlalchemy.orm import InstrumentedAttribute, RelationshipProperty
 from sqlalchemy.sql.elements import Label
 from sqlalchemy.util import md5_hex
@@ -76,6 +74,8 @@ from fastapi_amis_admin.crud.parser import (
 )
 from fastapi_amis_admin.crud.schema import BaseApiOut, CrudEnum, Paginator
 from fastapi_amis_admin.crud.utils import (
+    SqlalchemyDatabase,
+    get_engine_db,
     parser_item_id,
     parser_str_set_list,
     schema_create_by_schema,
@@ -349,7 +349,7 @@ class BaseModelAdmin(SQLModelCrud):
         assert self.model, "model is None"
         assert app, "app is None"
         self.app = app
-        self.engine = self.engine or self.app.db.engine
+        self.engine = self.engine or self.app.engine
         self.amis_parser = self.app.site.amis_parser
         self.parser = SQLModelFieldParser(default_model=self.model)
         list_display_insfield = self.parser.filter_insfield(self.list_display, save_class=(Label,))
@@ -1197,7 +1197,7 @@ class AdminGroup(PageSchemaAdmin):
 class AdminApp(PageAdmin, AdminGroup):
     """管理应用"""
 
-    engine: Union[Engine, AsyncEngine] = None
+    engine: SqlalchemyDatabase = None
     page_path = "/"
     tabs_mode: TabsModeEnum = None
 
@@ -1205,8 +1205,7 @@ class AdminApp(PageAdmin, AdminGroup):
         PageAdmin.__init__(self, app)
         AdminGroup.__init__(self, app)
         self.engine = self.engine or self.app.engine
-        assert self.engine, "engine is None"
-        self.db = AsyncDatabase(self.engine) if isinstance(self.engine, AsyncEngine) else Database(self.engine)
+        self.db = get_engine_db(self.engine)
         self._registered: Dict[Type[_BaseAdminT], Optional[_BaseAdminT]] = {}
         self.__register_lock = False
 
@@ -1253,7 +1252,7 @@ class AdminApp(PageAdmin, AdminGroup):
             admin = admin or self.get_admin_or_create(admin_cls)
             if issubclass(admin_cls, ModelAdmin) and admin.bind_model and admin.model.__tablename__ == table_name:
                 return admin
-            elif isinstance(admin, AdminApp) and self.engine.url == admin.engine.url:
+            elif isinstance(admin, AdminApp) and self.engine is admin.engine:
                 admin = admin.get_model_admin(table_name)
                 if admin:
                     return admin
@@ -1312,7 +1311,7 @@ class BaseAdminSite(AdminApp):
         self,
         settings: Settings,
         fastapi: FastAPI = None,
-        engine: Union[Engine, AsyncEngine] = None,
+        engine: SqlalchemyDatabase = None,
     ):
         try:
             from fastapi_user_auth.auth import Auth
@@ -1331,17 +1330,27 @@ class BaseAdminSite(AdminApp):
         if engine:
             self.engine = engine
         elif settings.database_url_async:
-            self.engine = create_async_engine(settings.database_url_async, echo=settings.debug, future=True)
+            self.engine = AsyncDatabase.create(settings.database_url_async, echo=settings.debug)
         elif settings.database_url:
-            self.engine = create_engine(settings.database_url, echo=settings.debug, future=True)
+            self.engine = Database.create(settings.database_url, echo=settings.debug)
         super().__init__(self)
-        # 注册sqlalchemy session中间件, 每个请求绑定一个session对象
-        self.fastapi.add_middleware(BaseHTTPMiddleware, dispatch=self.db.asgi_dispatch)
 
     @cached_property
     def router_path(self) -> str:
         return self.settings.site_url + self.settings.root_path + self.router.prefix
 
     def mount_app(self, fastapi: FastAPI, name: str = "admin") -> None:
+        """mount app to fastapi, the path is: site.settings.root_path.
+        once mount, the site will create all registered admin instance and register router.
+        """
         self.register_router()
         fastapi.mount(self.settings.root_path, self.fastapi, name=name)
+        fastapi.add_middleware(BaseHTTPMiddleware, dispatch=self.db.asgi_dispatch)
+        """Add SQLAlchemy Session middleware to the main application, and the session object will be bound to each request.
+        Note:
+        1. The session will be automatically closed when the request ends, so you don't need to close it manually.
+        2. In the sub-application, you can also use this middleware, but you need to pay attention that the session object
+        in the sub-application will be closed in the main application.
+        3. If the sub-application needs to use its own session object, you need to add this middleware to the sub-application.
+        4. Middleware or routes after this middleware can get the session object through `db.session`.
+        """

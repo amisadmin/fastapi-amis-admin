@@ -6,13 +6,10 @@ from typing import Any, Callable, Dict, List, Optional, Pattern, Tuple, Type, Un
 from fastapi import APIRouter, Body, Depends, Query
 from pydantic import BaseModel, Extra, Json
 from sqlalchemy import Column, Table, delete, func, insert, update
-from sqlalchemy.engine import Engine
-from sqlalchemy.ext.asyncio import AsyncEngine
 from sqlalchemy.future import select
 from sqlalchemy.orm import InstrumentedAttribute, Session
 from sqlalchemy.sql import Select
 from sqlalchemy.sql.elements import BinaryExpression, Label, UnaryExpression
-from sqlalchemy_database import AsyncDatabase, Database
 from sqlmodel import SQLModel
 from starlette.requests import Request
 
@@ -27,7 +24,13 @@ from .parser import (
     get_python_type_parse,
 )
 from .schema import BaseApiOut, ItemListSchema
-from .utils import parser_item_id, parser_str_set_list, schema_create_by_modelfield
+from .utils import (
+    SqlalchemyDatabase,
+    get_engine_db,
+    parser_item_id,
+    parser_str_set_list,
+    schema_create_by_modelfield,
+)
 
 sql_operator_pattern: Pattern = re.compile(r"^\[(=|<=|<|>|>=|!|!=|<>|\*|!\*|~|!~|-)]")
 sql_operator_map: Dict[str, str] = {
@@ -188,7 +191,7 @@ class SQLModelSelector:
 
 
 class SQLModelCrud(BaseCrud, SQLModelSelector):
-    engine: Union[Engine, AsyncEngine] = None
+    engine: SqlalchemyDatabase = None
     create_fields: List[SQLModelField] = []  # 新增数据字段
     readonly_fields: List[SQLModelListField] = []  # 只读字段
     update_fields: List[SQLModelListField] = []  # 可编辑字段
@@ -196,13 +199,13 @@ class SQLModelCrud(BaseCrud, SQLModelSelector):
     def __init__(
         self,
         model: Type[SQLModel],
-        engine: Union[Engine, AsyncEngine],
+        engine: SqlalchemyDatabase,
         fields: List[SQLModelListField] = None,
         router: APIRouter = None,
     ) -> None:
         self.engine = engine or self.engine
         assert self.engine, "engine is None"
-        self.db = AsyncDatabase(self.engine) if isinstance(self.engine, AsyncEngine) else Database(self.engine)
+        self.db = get_engine_db(self.engine)
         SQLModelSelector.__init__(self, model, fields)
         BaseCrud.__init__(self, self.model, router)
 
@@ -357,7 +360,7 @@ class SQLModelCrud(BaseCrud, SQLModelSelector):
             if not values:
                 return self.error_data_handle(request)
             stmt = insert(self.model).values(values)
-            if not is_bulk and self.engine.dialect.name == "postgresql":
+            if not is_bulk and self.db.engine.dialect.name == "postgresql":
                 stmt = stmt.returning(self.pk)
             try:
                 result = await self.db.async_execute(stmt)
@@ -366,7 +369,7 @@ class SQLModelCrud(BaseCrud, SQLModelSelector):
             if is_bulk:
                 return BaseApiOut(data=getattr(result, "rowcount", None))
             data = values[0]
-            if self.engine.dialect.name == "postgresql":
+            if self.db.engine.dialect.name == "postgresql":
                 data[self.pk_name] = result.scalar()
             else:
                 data[self.pk_name] = getattr(result, "lastrowid", None)
