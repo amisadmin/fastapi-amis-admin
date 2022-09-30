@@ -46,7 +46,7 @@ app.include_router(article_crud.router)
 @app.on_event("startup")
 async def startup():
     async with engine.begin() as conn:
-        await conn.run_sync(SQLModel.metadata.create_all, is_session=False)
+        await conn.run_sync(SQLModel.metadata.create_all)
 
 ```
 
