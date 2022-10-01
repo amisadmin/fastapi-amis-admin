@@ -53,6 +53,7 @@ class AmisNode(BaseAmisModel):
     id: str = None
     name: str = None
     onEvent: dict = None
+    events: Dict[str, Any] = None  # 指明组件触发的 amis 行为
 
 
 class AmisAPI(BaseAmisModel):

@@ -1714,6 +1714,9 @@ class Iframe(AmisNode):
     frameBorder: list = None  # frameBorder
     style: dict = None  # 样式对象
     src: str = None  # iframe 地址
+    allow: str = None  # allow 配置
+    sandbox: str = None  # sandbox 配置
+    referrerpolicy: str = None  # referrerpolicy 配置
     height: Union[int, str] = None  # "100%"#  iframe 高度
     width: Union[int, str] = None  # "100%" # iframe 宽度
 
