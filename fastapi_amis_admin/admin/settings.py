@@ -2,6 +2,7 @@ import logging
 from typing import Any, Union
 
 from pydantic import BaseSettings, Field, root_validator, validator
+from typing_extensions import Literal
 
 from fastapi_amis_admin.amis import API
 
@@ -19,10 +20,10 @@ class Settings(BaseSettings):
     root_path: str = "/admin"
     database_url_async: str = Field("", env="DATABASE_URL_ASYNC")
     database_url: str = Field("", env="DATABASE_URL")
-    language: str = ""  # 'zh_CN','en_US'
+    language: Literal["zh_CN", "en_US", ""] = ""
     amis_cdn: str = "https://unpkg.com"
     amis_pkg: str = "amis@1.10.2"
-    amis_theme: str = "cxd"  # 'antd', 'cxd'
+    amis_theme: Literal["cxd", "antd", "dark", "ang"] = "cxd"
     amis_image_receiver: API = None  # 图片上传接口
     amis_file_receiver: API = None  # 文件上传接口
     logger: Union[logging.Logger, Any] = logging.getLogger("fastapi_amis_admin")

@@ -109,11 +109,11 @@ class Page(AmisNode):
     ):
         """渲染html模板"""
         template_path = template_path or self.__default_template_path__
-        theme_css = f'<link href="{cdn}/{pkg}/sdk/antd.css" rel="stylesheet"/>' if theme.lower() == "antd" else ""
+        theme_css = f'<link href="{cdn}/{pkg}/sdk/{theme}.css" rel="stylesheet"/>' if theme != "cxd" else ""
         return amis_templates(template_path).safe_substitute(
             {
                 "AmisSchemaJson": self.amis_json(),
-                "locale": locale,
+                "locale": locale.replace("_", "-"),  # Fix #50
                 "cdn": cdn,
                 "pkg": pkg,
                 "site_title": site_title,
