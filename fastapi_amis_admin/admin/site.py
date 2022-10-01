@@ -66,6 +66,7 @@ class HomeAdmin(admin.PageAdmin):
                     Property.Item(label="license", content="Apache2.0"),
                     Property.Item(label="amis-cdn", content=self.site.settings.amis_cdn),
                     Property.Item(label="amis-pkg", content=self.site.settings.amis_pkg),
+                    Property.Item(label="amis-theme", content=self.site.settings.amis_theme),
                 ],
             ),
         ]
