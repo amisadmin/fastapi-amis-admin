@@ -20,7 +20,7 @@ class Settings(BaseSettings):
     root_path: str = "/admin"
     database_url_async: str = Field("", env="DATABASE_URL_ASYNC")
     database_url: str = Field("", env="DATABASE_URL")
-    language: Literal["zh_CN", "en_US", ""] = ""
+    language: Union[Literal["zh_CN", "en_US", "de_DE"], str] = ""
     amis_cdn: str = "https://unpkg.com"
     amis_pkg: str = "amis@1.10.2"
     amis_theme: Literal["cxd", "antd", "dark", "ang"] = "cxd"
