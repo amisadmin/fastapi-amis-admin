@@ -336,7 +336,7 @@ class BaseModelAdmin(SQLModelCrud):
         self.amis_parser = self.app.site.amis_parser
         self.parser = SQLModelFieldParser(default_model=self.model)
         list_display_insfield = self.parser.filter_insfield(self.list_display, save_class=(Label,))
-        self.list_filter = self.list_filter or list_display_insfield
+        self.list_filter = self.list_filter or list_display_insfield or [self.model]
         self.list_filter.extend(self.search_fields)
         super().__init__(self.model, self.engine)
         self.fields.extend(list_display_insfield)
