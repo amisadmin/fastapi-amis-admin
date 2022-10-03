@@ -259,11 +259,11 @@ class SQLModelCrud(BaseCrud, SQLModelSelector):
         if not self.readonly_fields and not self.update_fields:
             return super(SQLModelCrud, self)._create_schema_update()
         self.update_fields = self.parser.filter_insfield(self.update_fields) or self.schema_model.__fields__.values()
-        modelfields = {self.parser.get_modelfield(ins, deepcopy=True) for ins in self.update_fields}
+        modelfields = [self.parser.get_modelfield(ins, deepcopy=True) for ins in self.update_fields]
         readonly_fields = {
-            self.parser.get_modelfield(ins, deepcopy=True).name for ins in self.parser.filter_insfield(self.readonly_fields)
+            self.parser.get_modelfield(ins, deepcopy=False).name for ins in self.parser.filter_insfield(self.readonly_fields)
         } | {self.pk_name}
-        modelfields = {field for field in modelfields if field.name not in readonly_fields}
+        modelfields = [field for field in modelfields if field.name not in readonly_fields]
         return schema_create_by_modelfield(f"{self.schema_name_prefix}Update", modelfields, set_none=True)
 
     def _create_schema_create(self):
