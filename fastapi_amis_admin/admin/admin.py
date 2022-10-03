@@ -590,7 +590,7 @@ class BaseModelAdmin(SQLModelCrud):
                 label=_("Create"),
                 level=LevelEnum.primary,
                 dialog=Dialog(
-                    title=_("Create"),
+                    title=_("Create") + " - " + _(self.page_schema.label),
                     size=SizeEnum.lg,
                     body=await self.get_create_form(request, bulk=bulk),
                 ),
@@ -600,7 +600,7 @@ class BaseModelAdmin(SQLModelCrud):
             label=_("Bulk Create"),
             level=LevelEnum.primary,
             dialog=Dialog(
-                title=_("Bulk Create"),
+                title=_("Bulk Create") + " - " + _(self.page_schema.label),
                 size=SizeEnum.full,
                 body=await self.get_create_form(request, bulk=bulk),
             ),
@@ -615,7 +615,7 @@ class BaseModelAdmin(SQLModelCrud):
                 icon="fa fa-pencil",
                 tooltip=_("Update"),
                 dialog=Dialog(
-                    title=_("Update"),
+                    title=_("Update") + " - " + _(self.page_schema.label),
                     size=SizeEnum.lg,
                     body=await self.get_update_form(request, bulk=bulk),
                 ),
@@ -625,7 +625,7 @@ class BaseModelAdmin(SQLModelCrud):
             return ActionType.Dialog(
                 label=_("Bulk Update"),
                 dialog=Dialog(
-                    title=_("Bulk Update"),
+                    title=_("Bulk Update") + " - " + _(self.page_schema.label),
                     size=SizeEnum.lg,
                     body=await self.get_update_form(request, bulk=True),
                 ),
