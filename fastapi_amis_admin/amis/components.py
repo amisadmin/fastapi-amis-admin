@@ -547,7 +547,7 @@ class Form(AmisNode):
     initApi: API = None  # Form 用来获取初始数据的 api。
     rules: list = None  # 表单组合校验规则 Array<{rule:string;message:string}>
     interval: int = None  # 刷新时间(最低 3000)
-    silentPolling: bool = False  # 配置刷新时是否显示加载动画
+    silentPolling: bool = None  # False  # 配置刷新时是否显示加载动画
     stopAutoRefreshWhen: str = None  # 通过表达式 来配置停止刷新的条件
     initAsyncApi: API = None  # Form 用来获取初始数据的 api,与 initApi 不同的是，会一直轮询请求该接口，直到返回 finished 属性为 true 才 结束。
     initFetch: bool = None  # 设置了 initApi 或者 initAsyncApi 后，默认会开始就发请求，设置为 false 后就不会起始就请求接口
@@ -578,6 +578,26 @@ class Form(AmisNode):
     debug: bool = None
 
 
+class InputSubForm(FormItem):
+    """子表单"""
+
+    type: str = "input-sub-form"
+    multiple: bool = None  # False # 是否为多选模式
+    labelField: str = None  # 当值中存在这个字段，则按钮名称将使用此字段的值来展示。
+    btnLabel: str = None  # "设置" # 按钮默认名称
+    minLength: int = None  # 0 # 限制最小个数。
+    maxLength: int = None  # 0 # 限制最大个数。
+    draggable: bool = None  # 是否可拖拽排序
+    addable: bool = None  # 是否可新增
+    removable: bool = None  # 是否可删除
+    addButtonClassName: str = None  # "``" # 新增按钮 CSS 类名
+    itemClassName: str = None  # "``" # 值元素 CSS 类名
+    itemsClassName: str = None  # "``" # 值包裹元素 CSS 类名
+    form: Form = None  # 子表单配置，同 Form
+    addButtonText: str = None  # "``" # 自定义新增一项的文本
+    showErrorMsg: bool = None  # True # 是否在左下角显示报错信息
+
+
 class Button(FormItem):
     """按钮"""
 
@@ -603,7 +623,7 @@ class InputArray(FormItem):
     items: FormItem = None  # 配置单项表单类型
     addable: bool = None  # 是否可新增。
     removable: bool = None  # 是否可删除
-    draggable: bool = False  # 是否可以拖动排序, 需要注意的是当启用拖动排序的时候，会多一个$id 字段
+    draggable: bool = None  # False  # 是否可以拖动排序, 需要注意的是当启用拖动排序的时候，会多一个$id 字段
     draggableTip: str = None  # 可拖拽的提示文字，默认为："可通过拖动每行中的【交换】按钮进行顺序调整"
     addButtonText: str = None  # "新增"  # 新增按钮文字
     minLength: int = None  # 限制最小长度

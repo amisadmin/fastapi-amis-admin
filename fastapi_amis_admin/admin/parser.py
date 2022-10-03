@@ -1,14 +1,16 @@
 import datetime
-from typing import Any, Iterable
+from typing import Any, Iterable, Type, Union, get_origin
 
-from pydantic import Json
+from pydantic import BaseModel, Json
 from pydantic.fields import ModelField
-from pydantic.utils import smart_deepcopy
+from pydantic.utils import deep_update, smart_deepcopy
 
 from fastapi_amis_admin import amis
+from fastapi_amis_admin.amis import AmisNode
 from fastapi_amis_admin.amis.components import (
+    Form,
     FormItem,
-    InputNumber,
+    InputArray,
     Remark,
     TableColumn,
     Validation,
@@ -18,161 +20,9 @@ from fastapi_amis_admin.models.enums import Choices
 from fastapi_amis_admin.utils.translation import i18n as _
 
 
-class ModelFieldParser:
-    """AmisParser,used to parse pydantic fields to amis form item or table column."""
-
-    def __init__(self, modelfield: ModelField):
-        self.modelfield = modelfield  # read only
-
-    @property
-    def label(self):
-        return self.modelfield.field_info.title or self.modelfield.name
-
-    @property
-    def remark(self):
-        return Remark(content=self.modelfield.field_info.description) if self.modelfield.field_info.description else None
-
-    def as_form_item(self, set_default: bool = False, is_filter: bool = False) -> FormItem:
-        formitem = self._parse_form_item_from_kwargs(is_filter)
-        if not is_filter:
-            if self.modelfield.field_info.max_length:
-                formitem.maxLength = self.modelfield.field_info.max_length
-            if self.modelfield.field_info.min_length:
-                formitem.minLength = self.modelfield.field_info.min_length
-            formitem.required = self.modelfield.required and not issubclass(self.modelfield.type_, bool)
-            if set_default:
-                formitem.value = self.modelfield.default
-        formitem.name = self.modelfield.alias
-        formitem.label = formitem.label or self.label
-        formitem.labelRemark = formitem.labelRemark or self.remark
-        return formitem
-
-    def as_table_column(self, quick_edit: bool = False) -> TableColumn:
-        column = self._parse_table_column_from_kwargs()
-        column.name = self.modelfield.alias
-        column.label = column.label or self.label
-        column.remark = column.remark or self.remark
-        column.sortable = True
-        if column.type in ["text", None]:
-            column.searchable = True
-        elif column.type in ["switch", "mapping"]:
-            column.sortable = False
-        return column
-
-    def _parse_form_item_from_kwargs(self, is_filter: bool = False) -> FormItem:
-        kwargs = {}
-        formitem = self.modelfield.field_info.extra.get(["amis_form_item", "amis_filter_item"][is_filter])
-        if formitem is not None:
-            formitem = smart_deepcopy(formitem)
-            if isinstance(formitem, FormItem):
-                pass
-            elif isinstance(formitem, dict):
-                kwargs = formitem
-                formitem = FormItem(**kwargs) if kwargs.get("type") else None
-            elif isinstance(formitem, str):
-                formitem = FormItem(type=formitem)
-            else:
-                formitem = None
-        if formitem is not None:
-            pass
-        elif self.modelfield.type_ in [str, Any]:
-            kwargs["type"] = "input-text"
-        elif issubclass(self.modelfield.type_, Choices):
-            kwargs.update(
-                {
-                    "type": "select",
-                    "options": [{"label": l, "value": v} for v, l in self.modelfield.type_.choices],
-                    "extractValue": True,
-                    "joinValues": False,
-                }
-            )
-            if not self.modelfield.required:
-                kwargs["clearable"] = True
-        elif issubclass(self.modelfield.type_, bool):
-            kwargs["type"] = "switch"
-        elif is_filter:
-            if issubclass(self.modelfield.type_, datetime.datetime):
-                kwargs["type"] = "input-datetime-range"
-                kwargs["format"] = "YYYY-MM-DD HH:mm:ss"
-                # 给筛选的 DateTimeRange 添加 today 标签
-                kwargs["ranges"] = "today,yesterday,7daysago,prevweek,thismonth,prevmonth,prevquarter"
-            elif issubclass(self.modelfield.type_, datetime.date):
-                kwargs["type"] = "input-date-range"
-                kwargs["format"] = "YYYY-MM-DD"
-            elif issubclass(self.modelfield.type_, datetime.time):
-                kwargs["type"] = "input-time-range"
-                kwargs["format"] = "HH:mm:ss"
-            else:
-                kwargs["type"] = "input-text"
-        elif issubclass(self.modelfield.type_, int):
-            formitem = InputNumber(precision=0, validations=Validation(isInt=True))
-        elif issubclass(self.modelfield.type_, float):
-            formitem = InputNumber(validations=Validation(isFloat=True))
-        elif issubclass(self.modelfield.type_, datetime.datetime):
-            kwargs["type"] = "input-datetime"
-            kwargs["format"] = "YYYY-MM-DD HH:mm:ss"
-        elif issubclass(self.modelfield.type_, datetime.date):
-            kwargs["type"] = "input-date"
-            kwargs["format"] = "YYYY-MM-DD"
-        elif issubclass(self.modelfield.type_, datetime.time):
-            kwargs["type"] = "input-time"
-            kwargs["format"] = "HH:mm:ss"
-        elif issubclass(self.modelfield.type_, Json):
-            kwargs["type"] = "json-editor"
-        else:
-            kwargs["type"] = "input-text"
-        return formitem or FormItem(**kwargs)
-
-    def _parse_table_column_from_kwargs(self) -> TableColumn:
-        kwargs = {}
-        column = self.modelfield.field_info.extra.get("amis_table_column")
-        if column is not None:
-            column = smart_deepcopy(column)
-            if isinstance(column, TableColumn):
-                pass
-            elif isinstance(column, dict):
-                kwargs = column
-                column = TableColumn(**kwargs) if kwargs.get("type") else None
-            elif isinstance(column, str):
-                column = TableColumn(type=column)
-            else:
-                column = None
-        if column is not None:
-            pass
-        elif self.modelfield.type_ in [str, Any]:
-            pass
-        elif issubclass(self.modelfield.type_, bool):
-            kwargs["type"] = "switch"
-            kwargs["filterable"] = {
-                "options": [
-                    {"label": _("YES"), "value": True},
-                    {"label": _("NO"), "value": False},
-                ]
-            }
-        elif issubclass(self.modelfield.type_, datetime.datetime):
-            kwargs["type"] = "datetime"
-        elif issubclass(self.modelfield.type_, datetime.date):
-            kwargs["type"] = "date"
-        elif issubclass(self.modelfield.type_, datetime.time):
-            kwargs["type"] = "time"
-        elif issubclass(self.modelfield.type_, Choices):
-            kwargs["type"] = "mapping"
-            kwargs["filterable"] = {"options": [{"label": v, "value": k} for k, v in self.modelfield.type_.choices]}
-            kwargs["map"] = {
-                k: f"<span class='label label-{l}'>{v}</span>"
-                for (k, v), l in zip(self.modelfield.type_.choices, cyclic_generator(LabelEnum))
-            }
-        return column or TableColumn(**kwargs)
-
-
-def cyclic_generator(iterable: Iterable):
-    while True:
-        yield from iterable
-
-
 class AmisParser:
     """AmisParser,used to parse pydantic fields to amis form item or table column.
-    Compared with ModelFieldParser, AmisParser can set the default image and file upload receiver.
+    AmisParser can set the default image and file upload receiver.
     """
 
     def __init__(
@@ -189,7 +39,8 @@ class AmisParser:
         self.file_receiver = file_receiver
 
     def as_form_item(self, modelfield: ModelField, set_default: bool = False, is_filter: bool = False) -> FormItem:
-        formitem = ModelFieldParser(modelfield).as_form_item(set_default=set_default, is_filter=is_filter)
+        formitem = self._get_form_item_from_kwargs(modelfield, is_filter=is_filter)
+        formitem = self.update_common_attrs(modelfield, formitem, set_default=set_default, is_filter=is_filter)
         if isinstance(formitem, amis.InputImage) and not formitem.receiver:
             formitem.receiver = self.image_receiver
         elif isinstance(formitem, amis.InputFile) and not formitem.receiver:
@@ -211,7 +62,13 @@ class AmisParser:
         return formitem
 
     def as_table_column(self, modelfield: ModelField, quick_edit: bool = False) -> TableColumn:
-        column = ModelFieldParser(modelfield).as_table_column()
+        column = self._get_table_column_from_kwargs(modelfield)
+        column = self.update_common_attrs(modelfield, column, set_default=False, is_filter=False)
+        column.sortable = True
+        if column.type in ["text", None]:
+            column.searchable = True
+        elif column.type in ["switch", "mapping"]:
+            column.sortable = False
         if quick_edit:
             column.quickEdit = self.as_form_item(modelfield, set_default=True).dict(
                 exclude_none=True, by_alias=True, exclude={"name", "label"}
@@ -220,3 +77,191 @@ class AmisParser:
             if column.quickEdit.get("type") == "switch":
                 column.quickEdit.update({"mode": "inline"})
         return column
+
+    def as_amis_form(self, model: Type[BaseModel], set_default: bool = False, is_filter: bool = False) -> Form:
+        """Get amis form from pydantic model.
+        Args:
+            model: Pydantic model
+        Returns:
+            amis.Form
+        """
+        form = amis.Form(title=model.Config.title)
+        form.body = [
+            self.as_form_item(modelfield, set_default=set_default, is_filter=is_filter)
+            for modelfield in model.__fields__.values()
+        ]
+        # InputSubForm
+        return form
+
+    def update_common_attrs(
+        self, modelfield: ModelField, item: Union[FormItem, TableColumn], set_default: bool = False, is_filter: bool = False
+    ):
+        """Set common attributes for FormItem and TableColumn."""
+        if not is_filter:
+            if modelfield.field_info.max_length:
+                item.maxLength = modelfield.field_info.max_length
+            if modelfield.field_info.min_length:
+                item.minLength = modelfield.field_info.min_length
+            item.required = modelfield.required and not issubclass(modelfield.type_, bool)
+            if set_default:
+                item.value = modelfield.default
+        item.name = modelfield.alias
+        if item.label is None:
+            item.label = modelfield.field_info.title or modelfield.name
+
+        label_name = "labelRemark" if isinstance(item, FormItem) else "remark"
+        if getattr(item, label_name, None) is None:
+            label = Remark(content=modelfield.field_info.description) if modelfield.field_info.description else None
+            setattr(item, label_name, label)
+        return item
+
+    def _get_form_item_from_kwargs(self, modelfield: ModelField, is_filter: bool = False) -> FormItem:
+        formitem = self.get_field_amis_extra(modelfield, ["amis_form_item", "amis_filter_item"][is_filter])
+        # List type parse to InputArray
+        if modelfield.outer_type_ and get_origin(modelfield.outer_type_) is list:
+            if not isinstance(formitem, FormItem):
+                formitem = InputArray(**formitem)
+            kwargs = self.get_field_amis_form_item_type(type_=modelfield.type_, is_filter=is_filter)
+            update = formitem.items.amis_dict() if formitem.items else {}
+            if update:
+                kwargs = deep_update(kwargs, update)
+            formitem.items = FormItem(**kwargs)
+        # other type parse to FormItem
+        if isinstance(formitem, FormItem):
+            return formitem
+        kwargs = self.get_field_amis_form_item_type(
+            type_=modelfield.type_,
+            is_filter=is_filter,
+            required=modelfield.required,
+        )
+        return FormItem(**kwargs).update_from_dict(formitem)
+
+    def _get_table_column_from_kwargs(self, modelfield: ModelField) -> TableColumn:
+        table_column = self.get_field_amis_extra(modelfield, "amis_table_column")
+        if isinstance(table_column, TableColumn):
+            return table_column
+        kwargs = self.get_field_amis_table_column_type(modelfield.type_)
+        return TableColumn(**kwargs).update_from_dict(table_column)
+
+    def get_field_amis_table_column_type(self, type_: Type) -> dict:
+        """Get amis table column type from pydantic model field type."""
+        kwargs = {}
+        if type_ in [str, Any]:
+            pass
+        elif issubclass(type_, bool):
+            kwargs["type"] = "switch"
+            kwargs["filterable"] = {
+                "options": [
+                    {"label": _("YES"), "value": True},
+                    {"label": _("NO"), "value": False},
+                ]
+            }
+        elif issubclass(type_, datetime.datetime):
+            kwargs["type"] = "datetime"
+        elif issubclass(type_, datetime.date):
+            kwargs["type"] = "date"
+        elif issubclass(type_, datetime.time):
+            kwargs["type"] = "time"
+        elif issubclass(type_, Choices):
+            kwargs["type"] = "mapping"
+            kwargs["filterable"] = {"options": [{"label": v, "value": k} for k, v in type_.choices]}
+            kwargs["map"] = {
+                k: f"<span class='label label-{l}'>{v}</span>" for (k, v), l in zip(type_.choices, cyclic_generator(LabelEnum))
+            }
+        return kwargs
+
+    def get_field_amis_form_item_type(self, type_: Any, is_filter: bool, required: bool = False) -> dict:
+        """Get amis form item type from pydantic model field type."""
+        kwargs = {}
+        if type_ in [str, Any]:
+            kwargs["type"] = "input-text"
+        elif issubclass(type_, Choices):
+            kwargs.update(
+                {
+                    "type": "select",
+                    "options": [{"label": l, "value": v} for v, l in type_.choices],
+                    "extractValue": True,
+                    "joinValues": False,
+                }
+            )
+            if not required:
+                kwargs["clearable"] = True
+        elif issubclass(type_, bool):
+            kwargs["type"] = "switch"
+        elif is_filter:
+            if issubclass(type_, datetime.datetime):
+                kwargs["type"] = "input-datetime-range"
+                kwargs["format"] = "YYYY-MM-DD HH:mm:ss"
+                # 给筛选的 DateTimeRange 添加 today 标签
+                kwargs["ranges"] = "today,yesterday,7daysago,prevweek,thismonth,prevmonth,prevquarter"
+            elif issubclass(type_, datetime.date):
+                kwargs["type"] = "input-date-range"
+                kwargs["format"] = "YYYY-MM-DD"
+            elif issubclass(type_, datetime.time):
+                kwargs["type"] = "input-time-range"
+                kwargs["format"] = "HH:mm:ss"
+            else:
+                kwargs["type"] = "input-text"
+        elif issubclass(type_, int):
+            kwargs["type"] = "input-number"
+            kwargs["precision"] = 0
+            kwargs["validations"] = Validation(isInt=True)
+        elif issubclass(type_, float):
+            kwargs["type"] = "input-number"
+            kwargs["validations"] = Validation(isFloat=True)
+        elif issubclass(type_, datetime.datetime):
+            kwargs["type"] = "input-datetime"
+            kwargs["format"] = "YYYY-MM-DD HH:mm:ss"
+        elif issubclass(type_, datetime.date):
+            kwargs["type"] = "input-date"
+            kwargs["format"] = "YYYY-MM-DD"
+        elif issubclass(type_, datetime.time):
+            kwargs["type"] = "input-time"
+            kwargs["format"] = "HH:mm:ss"
+        elif issubclass(type_, Json):
+            kwargs["type"] = "json-editor"
+        elif issubclass(type_, BaseModel):
+            # pydantic model parse to InputSubForm
+            kwargs["type"] = "input-sub-form"
+            kwargs["labelField"] = get_model_label_field_name(type_)
+            kwargs["btnLabel"] = type_.Config.title
+            kwargs["form"] = self.as_amis_form(type_, is_filter=is_filter)
+        else:
+            kwargs["type"] = "input-text"
+        return kwargs
+
+    def get_field_amis_extra(
+        self,
+        modelfield: ModelField,
+        name: str,
+    ) -> Union[FormItem, TableColumn, dict]:
+        """Get amis extra from pydantic model field.
+        You can pass amis configuration through the extra parameter of the pydantic model field.
+        """
+        extra = modelfield.field_info.extra.get(name, {})
+        if not extra:
+            return {}
+        extra = smart_deepcopy(extra)
+        if isinstance(extra, (AmisNode, dict)):
+            pass
+        elif isinstance(extra, str):
+            extra = dict(type=extra)
+        else:
+            extra = {}
+        return extra
+
+
+def cyclic_generator(iterable: Iterable):
+    while True:
+        yield from iterable
+
+
+def get_model_label_field_name(model: Type[BaseModel]) -> str:
+    """Get model label field name. The label field is used to display the model name in the form."""
+    label_field_name = getattr(model.Config, "label_field_name", None)
+    if label_field_name:
+        return label_field_name
+    for filed in model.__fields__.values():
+        if filed.alias in ["name", "title", "label"]:
+            return filed.alias
+    return "id"
