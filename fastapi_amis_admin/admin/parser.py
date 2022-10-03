@@ -1,9 +1,10 @@
 import datetime
-from typing import Any, Iterable, Type, Union, get_origin
+from typing import Any, Iterable, Type, Union
 
 from pydantic import BaseModel, Json
 from pydantic.fields import ModelField
 from pydantic.utils import deep_update, smart_deepcopy
+from typing_extensions import get_origin
 
 from fastapi_amis_admin import amis
 from fastapi_amis_admin.amis import AmisNode

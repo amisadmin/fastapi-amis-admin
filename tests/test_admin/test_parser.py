@@ -1,6 +1,7 @@
-from typing import List, get_origin
+from typing import List
 
 from pydantic import BaseModel
+from typing_extensions import get_origin
 
 from fastapi_amis_admin.admin.parser import AmisParser
 from fastapi_amis_admin.models import Field, IntegerChoices
@@ -29,8 +30,8 @@ def test_field_str():
     filteritem = amis_parser.as_form_item(modelfield, is_filter=True, set_default=True)
     assert filteritem.type == "input-text"
     assert filteritem.label == "姓名"
-    assert hasattr(filteritem, "minLength")
-    assert hasattr(filteritem, "maxLength")
+    assert hasattr(filteritem, "minLength") is False
+    assert hasattr(filteritem, "maxLength") is False
     assert filteritem.value is None
     # table column
     column = amis_parser.as_table_column(modelfield)
