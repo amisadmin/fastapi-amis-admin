@@ -131,24 +131,7 @@ class LinkModelForm:
             else:
                 item_key = key
         if admin and link_key and item_key:
-            if not admin.link_models:
-                admin.link_models = {
-                    pk_admin.model.__tablename__: (
-                        table,
-                        link_key.parent,
-                        item_key.parent,
-                    )
-                }
-            else:
-                admin.link_models.update(
-                    {
-                        pk_admin.model.__tablename__: (
-                            table,
-                            link_key.parent,
-                            item_key.parent,
-                        )
-                    }
-                )
+            admin.link_models[pk_admin.model.__tablename__] = (table, link_key.parent, item_key.parent)
             return LinkModelForm(
                 pk_admin=pk_admin,
                 display_admin=admin,

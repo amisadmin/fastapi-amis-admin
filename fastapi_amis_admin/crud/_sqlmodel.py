@@ -57,6 +57,16 @@ class SQLModelSelector:
     exclude: List[SQLModelField] = []  # 不需要查询的字段
     ordering: List[Union[SQLModelListField, UnaryExpression]] = []  # 默认排序字段
     link_models: Dict[str, Tuple[Type[Table], Column, Column]] = {}  # 关联模型
+    """Relate information of the target model with the current model.
+    - The Data structure is: {Target table name: (link model table,
+        Column in the link model table associated with the current model,
+        Column in the link model table associated with the target model)}
+    - E.g. the current model is Role, you can add the target model User through `User.roles` here.
+        And then you can query the Role through the primary key field of the target model User.
+    - Saved information: {auth_user: (auth_user_roles, auth_user_roles.role_id, auth_user_roles.user_id)}
+    - You can add the query parameters to the route url to access the role list of the user:
+        `?link_model=auth_user&link_item_id={user_id}`.
+    """
     pk_name: str = "id"  # 主键名称
 
     def __init__(self, model: Type[SQLModel] = None, fields: List[SQLModelListField] = None) -> None:
