@@ -42,7 +42,7 @@ class SQLModelFieldParser:
         elif isinstance(field, ModelField):
             modelfield = field
         elif isinstance(field, Label):
-            return get_label_model_field(field)
+            return _get_label_modelfield(field)
         else:  # other
             return None
         if deepcopy:
@@ -148,7 +148,7 @@ def get_python_type_parse(field: Union[InstrumentedAttribute, Column, Label]) ->
         return str
 
 
-def get_label_model_field(label: Label) -> ModelField:
+def _get_label_modelfield(label: Label) -> ModelField:
     modelfield = getattr(label, "__ModelField__", None)
     if modelfield is None:
         try:
@@ -161,7 +161,7 @@ def get_label_model_field(label: Label) -> ModelField:
 
 
 def LabelField(label: Label, field: FieldInfo) -> Label:
-    modelfield = get_label_model_field(label)
+    modelfield = _get_label_modelfield(label)
     field.alias = label.key
     modelfield.field_info = field
     label.__ModelField__ = modelfield
