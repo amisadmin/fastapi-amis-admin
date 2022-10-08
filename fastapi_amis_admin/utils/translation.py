@@ -23,7 +23,7 @@ class I18N:
         :param language: 尝试设置的语言
         :return: 设置成功后的语言
         """
-        language = language or os.getenv("LANGUAGE") or os.getenv("LANG") or locale.getdefaultlocale()[0]
+        language = language or os.getenv("LANGUAGE") or os.getenv("LANG") or locale.getdefaultlocale()[0] or "en_US"
         self._language = "zh_CN" if language.lower().startswith("zh") else "en_US"
         return self._language
 
