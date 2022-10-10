@@ -26,11 +26,8 @@ class I18N:
         """
         language = language or os.getenv("LANGUAGE") or os.getenv("LANG") or locale.getdefaultlocale()[0] or "en_US"
         self._language = "zh_CN" if language.lower().startswith("zh") else language
-        self._language = language
-
         I18N.gettext.cache_clear()  # clear cache after language has changed
         gc.collect()
-
         return self._language
 
     def get_language(self):
