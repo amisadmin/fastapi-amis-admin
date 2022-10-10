@@ -1,3 +1,4 @@
+import gc
 import locale
 import os
 from functools import lru_cache
@@ -19,12 +20,14 @@ class I18N:
 
     def set_language(self, language: str = None) -> str:
         """
-        设置i18n本地化语言.如果为空,则依次尝试读取环境变量`LANGUAGE`/`LANG`,系统默认语言.
-        :param language: 尝试设置的语言
-        :return: 设置成功后的语言
+        Set the i18n localization language. If it is empty, try to read the environment variable `LANGUAGE`/`LANG`, the system default language, in turn.
+        :param language: the language to try to set
+        :return: the language after the successful setting
         """
         language = language or os.getenv("LANGUAGE") or os.getenv("LANG") or locale.getdefaultlocale()[0] or "en_US"
-        self._language = "zh_CN" if language.lower().startswith("zh") else "en_US"
+        self._language = "zh_CN" if language.lower().startswith("zh") else language
+        I18N.gettext.cache_clear()  # clear cache after language has changed
+        gc.collect()
         return self._language
 
     def get_language(self):
