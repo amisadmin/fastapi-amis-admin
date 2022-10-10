@@ -24,7 +24,7 @@ class I18N:
         :param language: the language to try to set
         :return: the language after the successful setting
         """
-        language = language or os.getenv("LANGUAGE") or os.getenv("LANG") or locale.getdefaultlocale()[0]
+        language = language or os.getenv("LANGUAGE") or os.getenv("LANG") or locale.getdefaultlocale()[0] or "en_US"
         self._language = "zh_CN" if language.lower().startswith("zh") else language
         self._language = language
 
