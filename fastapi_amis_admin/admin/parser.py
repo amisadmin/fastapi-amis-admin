@@ -108,13 +108,15 @@ class AmisParser:
                 item.value = modelfield.default
         item.name = modelfield.alias
         if item.label is None:
-            item.label = _(modelfield.field_info.title) or _(modelfield.name)  # The use of I18N
+            item.label = _(modelfield.field_info.title or modelfield.name)  # The use of I18N
         else:
             item.label = _(modelfield.field_info.title)  # The use of I18N
 
         label_name = "labelRemark" if isinstance(item, FormItem) else "remark"
         if getattr(item, label_name, None) is None:
-            label = Remark(content=_(modelfield.field_info.description)) if modelfield.field_info.description else None  # The use of I18N
+            label = (
+                Remark(content=_(modelfield.field_info.description)) if modelfield.field_info.description else None
+            )  # The use of I18N
             setattr(item, label_name, label)
         return item
 
