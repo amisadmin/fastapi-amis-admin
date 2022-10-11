@@ -18,8 +18,8 @@ class Settings(BaseSettings):
     site_icon: str = "https://baidu.gitee.io/amis/static/favicon_b3b0647.png"
     site_url: str = ""
     root_path: str = "/admin"
-    database_url_async: str = Field("", env="DATABASE_URL_ASYNC")
-    database_url: str = Field("", env="DATABASE_URL")
+    database_url_async: str = Field("", env="AMIS_DATABASE_URL_ASYNC")
+    database_url: str = Field("", env="AMIS_DATABASE_URL")
     language: Union[Literal["zh_CN", "en_US", "de_DE"], str] = ""
     amis_cdn: str = "https://unpkg.com"
     amis_pkg: str = "amis@1.10.2"
