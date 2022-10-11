@@ -38,6 +38,7 @@ class Icon(AmisNode):
     type: str = "icon"  # 指定组件类型
     className: str = None  # 外层 CSS 类名
     icon: str = None  # icon 名，支持 fontawesome v4 或使用 url
+    vendor: str = None  # icon 厂商，icon默认支持fontawesome v4，如果想要支持 v5 以及 v6 版本的 fontawesome 请设置vendor为空字符串。
 
 
 class Remark(AmisNode):
@@ -108,11 +109,11 @@ class Page(AmisNode):
     ):
         """渲染html模板"""
         template_path = template_path or self.__default_template_path__
-        theme_css = f'<link href="{cdn}/{pkg}/sdk/antd.css" rel="stylesheet"/>' if theme.lower() == "antd" else ""
+        theme_css = f'<link href="{cdn}/{pkg}/sdk/{theme}.css" rel="stylesheet"/>' if theme != "cxd" else ""
         return amis_templates(template_path).safe_substitute(
             {
                 "AmisSchemaJson": self.amis_json(),
-                "locale": locale,
+                "locale": locale.replace("_", "-"),  # Fix #50
                 "cdn": cdn,
                 "pkg": pkg,
                 "site_title": site_title,
@@ -314,7 +315,7 @@ class PageSchema(AmisNode):
     """页面配置"""
 
     label: str = None  # 菜单名称。
-    icon: str = "fa fa-flash"  # 菜单图标，比如：'fa fa-file'.
+    icon: str = "fa fa-flash"  # 菜单图标，比如：'fa fa-file'. 详细图标参考：http://www.fontawesome.com.cn/faicons/
     url: str = None  # 页面路由路径，当路由命中该路径时，启用当前页面。当路径不是 / 打头时，会连接父级路径。
     # 比如：父级的路径为 folder，而此时配置 pageA, 那么当页面地址为 /folder/pageA 时才会命中此页面。
     # 当路径是 / 开头如： /crud/list 时，则不会拼接父级路径。
@@ -546,7 +547,7 @@ class Form(AmisNode):
     initApi: API = None  # Form 用来获取初始数据的 api。
     rules: list = None  # 表单组合校验规则 Array<{rule:string;message:string}>
     interval: int = None  # 刷新时间(最低 3000)
-    silentPolling: bool = False  # 配置刷新时是否显示加载动画
+    silentPolling: bool = None  # False  # 配置刷新时是否显示加载动画
     stopAutoRefreshWhen: str = None  # 通过表达式 来配置停止刷新的条件
     initAsyncApi: API = None  # Form 用来获取初始数据的 api,与 initApi 不同的是，会一直轮询请求该接口，直到返回 finished 属性为 true 才 结束。
     initFetch: bool = None  # 设置了 initApi 或者 initAsyncApi 后，默认会开始就发请求，设置为 false 后就不会起始就请求接口
@@ -577,6 +578,26 @@ class Form(AmisNode):
     debug: bool = None
 
 
+class InputSubForm(FormItem):
+    """子表单"""
+
+    type: str = "input-sub-form"
+    multiple: bool = None  # False # 是否为多选模式
+    labelField: str = None  # 当值中存在这个字段，则按钮名称将使用此字段的值来展示。
+    btnLabel: str = None  # "设置" # 按钮默认名称
+    minLength: int = None  # 0 # 限制最小个数。
+    maxLength: int = None  # 0 # 限制最大个数。
+    draggable: bool = None  # 是否可拖拽排序
+    addable: bool = None  # 是否可新增
+    removable: bool = None  # 是否可删除
+    addButtonClassName: str = None  # "``" # 新增按钮 CSS 类名
+    itemClassName: str = None  # "``" # 值元素 CSS 类名
+    itemsClassName: str = None  # "``" # 值包裹元素 CSS 类名
+    form: Form = None  # 子表单配置，同 Form
+    addButtonText: str = None  # "``" # 自定义新增一项的文本
+    showErrorMsg: bool = None  # True # 是否在左下角显示报错信息
+
+
 class Button(FormItem):
     """按钮"""
 
@@ -602,7 +623,7 @@ class InputArray(FormItem):
     items: FormItem = None  # 配置单项表单类型
     addable: bool = None  # 是否可新增。
     removable: bool = None  # 是否可删除
-    draggable: bool = False  # 是否可以拖动排序, 需要注意的是当启用拖动排序的时候，会多一个$id 字段
+    draggable: bool = None  # False  # 是否可以拖动排序, 需要注意的是当启用拖动排序的时候，会多一个$id 字段
     draggableTip: str = None  # 可拖拽的提示文字，默认为："可通过拖动每行中的【交换】按钮进行顺序调整"
     addButtonText: str = None  # "新增"  # 新增按钮文字
     minLength: int = None  # 限制最小长度
@@ -1476,16 +1497,16 @@ class TableColumn(AmisNode):
     searchable: Union[bool, SchemaNode] = None  # False  # 是否可快速搜索  boolean|Schema
     width: Union[str, int] = None  # 列宽
     remark: Remark = None  # 提示信息
-    breakpoint: str = None  # *,ls
+    breakpoint: str = None  # *,ls. 列太多时，内容没办法全部显示完，可以让部分信息在底部显示，可以让用户展开查看详情
     filterable: Dict[str, Any] = None  # 过滤器配置
+    toggled: bool = None  # 是否默认展开,在列配置中可以通过配置 toggled 为 false 默认不展示这列
+    backgroundScale: int = None  # 可以用来根据数据控制自动分配色阶
 
 
 class ColumnOperation(TableColumn):
     """操作列"""
 
     type: str = "operation"
-    label: Template = None  # "操作"
-    toggled: bool = None  # True
     buttons: List[Union[Action, AmisNode]] = None
 
 
@@ -1713,6 +1734,9 @@ class Iframe(AmisNode):
     frameBorder: list = None  # frameBorder
     style: dict = None  # 样式对象
     src: str = None  # iframe 地址
+    allow: str = None  # allow 配置
+    sandbox: str = None  # sandbox 配置
+    referrerpolicy: str = None  # referrerpolicy 配置
     height: Union[int, str] = None  # "100%"#  iframe 高度
     width: Union[int, str] = None  # "100%" # iframe 宽度
 

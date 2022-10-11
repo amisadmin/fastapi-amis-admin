@@ -19,14 +19,14 @@ from fastapi import Body, Depends, FastAPI, HTTPException, Query, Request
 from pydantic import BaseModel
 from pydantic.fields import ModelField
 from pydantic.utils import deep_update
-from sqlalchemy import Column, Table, create_engine, delete, insert
-from sqlalchemy.engine import Engine
-from sqlalchemy.ext.asyncio import AsyncEngine, create_async_engine
+from sqlalchemy import Column, Table, delete, insert
 from sqlalchemy.orm import InstrumentedAttribute, RelationshipProperty
+from sqlalchemy.sql.elements import Label
 from sqlalchemy.util import md5_hex
 from sqlalchemy_database import AsyncDatabase, Database
 from sqlmodel import SQLModel, select
 from starlette import status
+from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import HTMLResponse, JSONResponse, Response
 from starlette.templating import Jinja2Templates
 
@@ -68,13 +68,14 @@ from fastapi_amis_admin.amis.types import (
 )
 from fastapi_amis_admin.crud import RouterMixin, SQLModelCrud, SQLModelSelector
 from fastapi_amis_admin.crud.parser import (
-    SQLModelField,
     SQLModelFieldParser,
     SQLModelListField,
     get_python_type_parse,
 )
 from fastapi_amis_admin.crud.schema import BaseApiOut, CrudEnum, Paginator
 from fastapi_amis_admin.crud.utils import (
+    SqlalchemyDatabase,
+    get_engine_db,
     parser_item_id,
     parser_str_set_list,
     schema_create_by_schema,
@@ -130,24 +131,7 @@ class LinkModelForm:
             else:
                 item_key = key
         if admin and link_key and item_key:
-            if not admin.link_models:
-                admin.link_models = {
-                    pk_admin.model.__tablename__: (
-                        table,
-                        link_key.parent,
-                        item_key.parent,
-                    )
-                }
-            else:
-                admin.link_models.update(
-                    {
-                        pk_admin.model.__tablename__: (
-                            table,
-                            link_key.parent,
-                            item_key.parent,
-                        )
-                    }
-                )
+            admin.link_models[pk_admin.model.__tablename__] = (table, link_key.parent, item_key.parent)
             return LinkModelForm(
                 pk_admin=pk_admin,
                 display_admin=admin,
@@ -336,23 +320,26 @@ class LinkModelForm:
 
 class BaseModelAdmin(SQLModelCrud):
     list_display: List[Union[SQLModelListField, TableColumn]] = []  # 需要显示的字段
+    list_filter: List[Union[SQLModelListField, FormItem]] = []  # 查询可过滤的字段
     list_per_page: int = 10  # 每页数据量
     link_model_fields: List[InstrumentedAttribute] = []  # 内联字段
     link_model_forms: List[LinkModelForm] = []
     bulk_update_fields: List[Union[SQLModelListField, FormItem]] = []  # 批量编辑字段
-    search_fields: List[SQLModelField] = []  # 模糊搜索字段
+    enable_bulk_create: bool = False  # 是否启用批量创建
+    search_fields: List[SQLModelListField] = []  # 模糊搜索字段
 
     def __init__(self, app: "AdminApp"):
         assert self.model, "model is None"
         assert app, "app is None"
         self.app = app
-        self.engine = self.engine or self.app.db.engine
+        self.engine = self.engine or self.app.engine
+        self.amis_parser = self.app.site.amis_parser
         self.parser = SQLModelFieldParser(default_model=self.model)
-        list_display_insfield = self.parser.filter_insfield(self.list_display)
+        list_display_insfield = self.parser.filter_insfield(self.list_display, save_class=(Label,))
         self.list_filter = self.list_filter or list_display_insfield
-        self.fields = self.fields or [self.model]
-        self.fields.extend(list_display_insfield)
+        self.list_filter.extend(self.search_fields)
         super().__init__(self.model, self.engine)
+        self.fields.extend(list_display_insfield)
 
     @cached_property
     def router_path(self) -> str:
@@ -374,7 +361,7 @@ class BaseModelAdmin(SQLModelCrud):
         return self.list_filter or list(self.schema_filter.__fields__.values())
 
     async def get_list_column(self, request: Request, modelfield: ModelField) -> TableColumn:
-        column = AmisParser(modelfield).as_table_column()
+        column = self.amis_parser.as_table_column(modelfield)
         if await self.has_update_permission(request, None, None) and modelfield.name in self.schema_update.__fields__:
             item = await self.get_form_item(request, modelfield, action=CrudEnum.update)
             if isinstance(item, BaseModel):
@@ -393,10 +380,12 @@ class BaseModelAdmin(SQLModelCrud):
                 columns.append(field)
             elif isinstance(field, type) and issubclass(field, SQLModel):
                 ins_list = self.parser.get_sqlmodel_insfield(field)
-                modelfield_list = [self.parser.get_modelfield(ins, deepcopy=True) for ins in ins_list]
-                columns.extend([await self.get_list_column(request, modelfield) for modelfield in modelfield_list])
+                modelfields = [self.parser.get_modelfield(ins, deepcopy=True) for ins in ins_list]
+                columns.extend([await self.get_list_column(request, modelfield) for modelfield in modelfields])
             else:
-                columns.append(await self.get_list_column(request, self.parser.get_modelfield(field, deepcopy=True)))
+                modelfield = self.parser.get_modelfield(field, deepcopy=True)
+                if modelfield:
+                    columns.append(await self.get_list_column(request, modelfield))
         for link_form in self.link_model_forms:
             form = await link_form.get_form_item(request)
             if form:
@@ -514,9 +503,9 @@ class BaseModelAdmin(SQLModelCrud):
     ) -> Union[FormItem, SchemaNode, None]:
         is_filter = action == CrudEnum.list
         set_default = action == CrudEnum.create
-        return await self.get_form_item_on_foreign_key(request, modelfield, is_filter=is_filter) or AmisParser(
-            modelfield
-        ).as_form_item(is_filter=is_filter, set_default=set_default)
+        return await self.get_form_item_on_foreign_key(request, modelfield, is_filter=is_filter) or self.amis_parser.as_form_item(
+            modelfield, is_filter=is_filter, set_default=set_default
+        )
 
     async def get_list_filter_form(self, request: Request) -> Form:
         body = await self._conv_modelfields_to_formitems(request, await self.get_list_filter(request), CrudEnum.list)
@@ -601,7 +590,7 @@ class BaseModelAdmin(SQLModelCrud):
                 label=_("Create"),
                 level=LevelEnum.primary,
                 dialog=Dialog(
-                    title=_("Create"),
+                    title=_("Create") + " - " + _(self.page_schema.label),
                     size=SizeEnum.lg,
                     body=await self.get_create_form(request, bulk=bulk),
                 ),
@@ -611,7 +600,7 @@ class BaseModelAdmin(SQLModelCrud):
             label=_("Bulk Create"),
             level=LevelEnum.primary,
             dialog=Dialog(
-                title=_("Bulk Create"),
+                title=_("Bulk Create") + " - " + _(self.page_schema.label),
                 size=SizeEnum.full,
                 body=await self.get_create_form(request, bulk=bulk),
             ),
@@ -626,7 +615,7 @@ class BaseModelAdmin(SQLModelCrud):
                 icon="fa fa-pencil",
                 tooltip=_("Update"),
                 dialog=Dialog(
-                    title=_("Update"),
+                    title=_("Update") + " - " + _(self.page_schema.label),
                     size=SizeEnum.lg,
                     body=await self.get_update_form(request, bulk=bulk),
                 ),
@@ -636,7 +625,7 @@ class BaseModelAdmin(SQLModelCrud):
             return ActionType.Dialog(
                 label=_("Bulk Update"),
                 dialog=Dialog(
-                    title=_("Bulk Update"),
+                    title=_("Bulk Update") + " - " + _(self.page_schema.label),
                     size=SizeEnum.lg,
                     body=await self.get_update_form(request, bulk=True),
                 ),
@@ -666,8 +655,9 @@ class BaseModelAdmin(SQLModelCrud):
     async def get_actions_on_header_toolbar(self, request: Request) -> List[Action]:
         actions = [
             await self.get_create_action(request, bulk=False),
-            await self.get_create_action(request, bulk=True),
         ]
+        if self.enable_bulk_create:
+            actions.append(await self.get_create_action(request, bulk=True))
         return list(filter(None, actions))
 
     async def get_actions_on_item(self, request: Request) -> List[Action]:
@@ -935,7 +925,7 @@ class BaseFormAdmin(PageAdmin):
         return page
 
     async def get_form_item(self, request: Request, modelfield: ModelField) -> Union[FormItem, SchemaNode]:
-        return AmisParser(modelfield).as_form_item(set_default=True)
+        return self.site.amis_parser.as_form_item(modelfield, set_default=True)
 
     async def get_form(self, request: Request) -> Form:
         form = self.form or Form()
@@ -1073,7 +1063,7 @@ class BaseModelAction:
 
     async def fetch_item_scalars(self, item_id: List[str]) -> List[BaseModel]:
         stmt = select(self.admin.model).where(self.admin.pk.in_(item_id))
-        return await self.admin.db.async_execute(stmt, lambda r: r.scalars().all())
+        return await self.admin.db.async_scalars_all(stmt)
 
     def register_router(self):
         raise NotImplementedError
@@ -1190,7 +1180,7 @@ class AdminGroup(PageSchemaAdmin):
 class AdminApp(PageAdmin, AdminGroup):
     """管理应用"""
 
-    engine: Union[Engine, AsyncEngine] = None
+    engine: SqlalchemyDatabase = None
     page_path = "/"
     tabs_mode: TabsModeEnum = None
 
@@ -1198,8 +1188,7 @@ class AdminApp(PageAdmin, AdminGroup):
         PageAdmin.__init__(self, app)
         AdminGroup.__init__(self, app)
         self.engine = self.engine or self.app.engine
-        assert self.engine, "engine is None"
-        self.db = AsyncDatabase(self.engine) if isinstance(self.engine, AsyncEngine) else Database(self.engine)
+        self.db = get_engine_db(self.engine)
         self._registered: Dict[Type[_BaseAdminT], Optional[_BaseAdminT]] = {}
         self.__register_lock = False
 
@@ -1240,12 +1229,13 @@ class AdminApp(PageAdmin, AdminGroup):
             self.__register_lock = True
         return self
 
-    @lru_cache()
+    @lru_cache()  # noqa: B019
     def get_model_admin(self, table_name: str) -> Optional[ModelAdmin]:
         for admin_cls, admin in self._registered.items():
-            if issubclass(admin_cls, ModelAdmin) and admin_cls.bind_model and admin_cls.model.__tablename__ == table_name:
+            admin = admin or self.get_admin_or_create(admin_cls)
+            if issubclass(admin_cls, ModelAdmin) and admin.bind_model and admin.model.__tablename__ == table_name:
                 return admin
-            elif isinstance(admin, AdminApp) and self.engine.url == admin.engine.url:
+            elif isinstance(admin, AdminApp) and self.engine is admin.engine:
                 admin = admin.get_model_admin(table_name)
                 if admin:
                     return admin
@@ -1271,6 +1261,7 @@ class AdminApp(PageAdmin, AdminGroup):
     async def _get_page_as_app(self, request: Request) -> App:
         app = App()
         app.brandName = self.site.settings.site_title
+        app.logo = self.site.settings.site_icon
         app.header = Tpl(
             className="w-full",
             tpl='<div class="flex justify-between"><div></div>'
@@ -1303,7 +1294,7 @@ class BaseAdminSite(AdminApp):
         self,
         settings: Settings,
         fastapi: FastAPI = None,
-        engine: Union[Engine, AsyncEngine] = None,
+        engine: SqlalchemyDatabase = None,
     ):
         try:
             from fastapi_user_auth.auth import Auth
@@ -1312,15 +1303,19 @@ class BaseAdminSite(AdminApp):
         except ImportError:
             pass
         self.settings = settings
+        self.amis_parser = AmisParser(
+            image_receiver=self.settings.amis_image_receiver,
+            file_receiver=self.settings.amis_file_receiver,
+        )
         self.fastapi = fastapi or FastAPI(debug=settings.debug, reload=settings.debug)
         register_exception_handlers(self.fastapi, self.settings.logger)
         self.router = self.fastapi.router
         if engine:
             self.engine = engine
         elif settings.database_url_async:
-            self.engine = create_async_engine(settings.database_url_async, echo=settings.debug, future=True)
+            self.engine = AsyncDatabase.create(settings.database_url_async, echo=settings.debug)
         elif settings.database_url:
-            self.engine = create_engine(settings.database_url, echo=settings.debug, future=True)
+            self.engine = Database.create(settings.database_url, echo=settings.debug)
         super().__init__(self)
 
     @cached_property
@@ -1328,5 +1323,17 @@ class BaseAdminSite(AdminApp):
         return self.settings.site_url + self.settings.root_path + self.router.prefix
 
     def mount_app(self, fastapi: FastAPI, name: str = "admin") -> None:
+        """mount app to fastapi, the path is: site.settings.root_path.
+        once mount, the site will create all registered admin instance and register router.
+        """
         self.register_router()
         fastapi.mount(self.settings.root_path, self.fastapi, name=name)
+        fastapi.add_middleware(BaseHTTPMiddleware, dispatch=self.db.asgi_dispatch)
+        """Add SQLAlchemy Session middleware to the main application, and the session object will be bound to each request.
+        Note:
+        1. The session will be automatically closed when the request ends, so you don't need to close it manually.
+        2. In the sub-application, you can also use this middleware, but you need to pay attention that the session object
+        in the sub-application will be closed in the main application.
+        3. If the sub-application needs to use its own session object, you need to add this middleware to the sub-application.
+        4. Middleware or routes after this middleware can get the session object through `db.session`.
+        """

@@ -8,7 +8,7 @@ from sqlalchemy import insert
 from sqlmodel import SQLModel
 
 from tests.conftest import async_db as db
-from tests.models import User
+from tests.models import Article, User
 
 pytestmark = pytest.mark.asyncio
 
@@ -43,5 +43,20 @@ async def fake_users() -> List[User]:
         }
         for i in range(1, 6)
     ]
-    await db.execute(insert(User).values(data), commit=True)
+    await db.execute(insert(User).values(data))
     return [User.parse_obj(item) for item in data]
+
+
+@pytest.fixture
+async def fake_articles(fake_users) -> List[Article]:
+    data = [
+        {
+            "id": user.id,
+            "title": f"Article_{user.id}",
+            "description": f"Description_{user.id}",
+            "user_id": user.id,
+        }
+        for user in fake_users
+    ]
+    await db.execute(insert(Article).values(data))
+    return [Article.parse_obj(item) for item in data]

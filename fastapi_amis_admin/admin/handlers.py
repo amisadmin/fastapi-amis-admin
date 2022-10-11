@@ -6,7 +6,7 @@ from fastapi import FastAPI
 from fastapi.exceptions import RequestValidationError
 from pydantic import ValidationError
 from starlette.exceptions import HTTPException
-from starlette.requests import Request
+from starlette.requests import ClientDisconnect, Request
 from starlette.responses import Response
 from starlette.status import (
     HTTP_417_EXPECTATION_FAILED,
@@ -30,7 +30,7 @@ except ImportError:  # fastapi < 0.83.0
 try:
     import ujson
     from fastapi.responses import UJSONResponse as JSONResponse
-except ImportError:  # pragma: nocover
+except ImportError:
     ujson = None
     from fastapi.responses import JSONResponse
 
@@ -45,10 +45,7 @@ def register_exception_handlers(app: FastAPI, logger: logging.Logger = None):
         RequestValidationError,
         handler=log_exception(logging.WARNING, logger)(request_validation_exception_handler),
     )
-    app.add_exception_handler(
-        HTTPException,
-        handler=log_exception(logging.ERROR, logger)(http_exception_handler),
-    )
+    app.add_exception_handler(HTTPException, handler=http_exception_handler)
     app.add_exception_handler(Exception, handler=log_exception(logging.ERROR, logger)(all_exception_handler))
 
 
@@ -58,6 +55,14 @@ def log_exception(level: Union[int, str] = logging.ERROR, logger: logging.Logger
 
     def wrapper(func):
         async def function(request: Request, exc: Exception):
+            if isinstance(
+                exc,
+                (
+                    ClientDisconnect,
+                    Warning,
+                ),
+            ):  # 忽略客户端断开连接;暂时忽略警告
+                return None
             logger.log(level, f"Error: {exc}\nTraceback: {traceback.format_exc()}")
             return await func(request, exc)
 

@@ -2,13 +2,10 @@ import os.path
 import platform
 import time
 import uuid
-from typing import Union
 
 import aiofiles
 from fastapi import FastAPI, File, UploadFile
 from pydantic import BaseModel
-from sqlalchemy.ext.asyncio import AsyncEngine
-from sqlalchemy.future import Engine
 from starlette.requests import Request
 from starlette.staticfiles import StaticFiles
 
@@ -18,6 +15,7 @@ from fastapi_amis_admin.admin import AdminApp, admin
 from fastapi_amis_admin.admin.settings import Settings
 from fastapi_amis_admin.amis.components import Page, PageSchema, Property
 from fastapi_amis_admin.crud.schema import BaseApiOut
+from fastapi_amis_admin.crud.utils import SqlalchemyDatabase
 from fastapi_amis_admin.utils.translation import i18n as _
 
 
@@ -68,6 +66,7 @@ class HomeAdmin(admin.PageAdmin):
                     Property.Item(label="license", content="Apache2.0"),
                     Property.Item(label="amis-cdn", content=self.site.settings.amis_cdn),
                     Property.Item(label="amis-pkg", content=self.site.settings.amis_pkg),
+                    Property.Item(label="amis-theme", content=self.site.settings.amis_theme),
                 ],
             ),
         ]
@@ -129,7 +128,7 @@ class AdminSite(admin.BaseAdminSite):
         self,
         settings: Settings,
         fastapi: FastAPI = None,
-        engine: Union[Engine, AsyncEngine] = None,
+        engine: SqlalchemyDatabase = None,
     ):
         super().__init__(settings, fastapi, engine)
         self.register_admin(HomeAdmin, DocsAdmin, ReDocsAdmin, FileAdmin)

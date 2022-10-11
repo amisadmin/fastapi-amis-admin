@@ -15,12 +15,15 @@
 - 支持SQLModel模型字段, SQLModel模型, 当前模型数据库表字段名
 - 支持当前模型字段,和其它模型字段.
 - 支持amis类型:  TableColumn
-
+- 支持sqlalchemy Label类型: 可通过`LabelField`方法构造.
+    - 例如: `User.name.label('nickname')`, `LabelField(User.name.label('nickname'),Field(None,title='用户昵称'))`
 - 默认: `self.schema_list.__fields__.values()`
 
 #### list_filter
 
 - 批量查询过滤表单的字段列表
+- 支持amis类型:  FormItem
+- 支持sqlalchemy Label类型: 可通过`LabelField`方法构造.
 - 默认: `self.schema_filter.__fields__.values()`
 
 #### list_per_page
@@ -47,6 +50,10 @@
 
 - 批量查询需要链接的多对多关联的字段表单列表,默认根据`self.link_model_fields`生成.
 
+#### enable_bulk_create
+
+- 是否启用批量创建,默认为: False
+
 ### 方法
 
 #### get_list_display
@@ -54,8 +61,10 @@
 - 返回表格列表显示的字段列表.
 
 ```python
-async def get_list_display(self,
-                           request: Request) -> List[Union[SQLModelListField, TableCRUD.Column]]
+async def get_list_display(
+    self,
+    request: Request
+) -> List[Union[SQLModelListField, TableCRUD.Column]]
 ```
 
 #### get_list_filter
@@ -73,8 +82,10 @@ async def get_list_filter(self, request: Request) -> List[Union[SQLModelListFiel
 - 参考: [Table 表格](https://baidu.gitee.io/amis/zh-CN/components/table#列配置属性表)
 
 ```python
-async def get_list_column(self, request: Request,
-                          modelfield: ModelField) -> TableColumn
+async def get_list_column(
+    self, request: Request,
+    modelfield: ModelField
+) -> TableColumn
 ```
 
 #### get_list_columns
@@ -111,9 +122,11 @@ async def get_list_table(self, request: Request) -> TableCRUD
 - 参考: [FormItem 普通表单项 (gitee.io)](https://baidu.gitee.io/amis/zh-CN/components/form/formitem)
 
 ```python
-async def get_form_item(self, request: Request,
-                        modelfield: ModelField,
-                        action: CrudEnum) -> Union[FormItem, SchemaNode]
+async def get_form_item(
+    self, request: Request,
+    modelfield: ModelField,
+    action: CrudEnum
+) -> Union[FormItem, SchemaNode]
 ```
 
 #### get_form_item_on_foreign_key
@@ -121,8 +134,10 @@ async def get_form_item(self, request: Request,
 - 返回页面表单`foreign_key`字段的`amis` `FormItem`对象.
 
 ```python
-async def get_form_item_on_foreign_key(self,
-                                       modelfield: ModelField) -> Union[Service, SchemaNode]
+async def get_form_item_on_foreign_key(
+    self,
+    modelfield: ModelField
+) -> Union[Service, SchemaNode]
 ```
 
 #### get_link_model_forms
@@ -230,3 +245,53 @@ async def get_actions_on_bulk(self, request: Request) -> List[Action]
 
 - 在存在外键关联的模型中, 默认的`FormItem`(TablePicker),将使用绑定模型相对应的第一个管理页面.
 
+## ModelAdmin数据控制核心字段/方法关系图
+
+- A: 总是影响最终值.
+
+- O?: 数值?表示优先顺序.
+
+    - 优先采用数值最低的构造方案作为最终值.
+    - 自身被重载覆盖将直接采用为最终值.
+
+```mermaid
+graph LR
+
+	subgraph Read
+		model--O1-->schema_read-->route_read:Response(ReadApiResponse)
+		subgraph Selector
+            model.->fields
+            pk_name--A-->fields
+            exclude--A-->fields
+    	end
+	end
+	
+	subgraph Create
+        schema_create-->get_create_form-->create_form(AmisCreateForm)
+        create_fields--O1-->schema_create-->route_create-->create_api_body(CreateApiRequest)
+    end
+    
+	subgraph Update
+		schema_update-->get_update_form-->update_form(AmisUpdateForm)
+		update_fields--O1-->schema_update-->route_update-->update_api_body(UpdateApiRequest)
+		readonly_fields--A-->schema_update
+	end
+	
+	subgraph List
+		fields-->_select_entities-->get_select
+        fields-->schema_list-->list_api_response(ListApiResponse)
+		list_display-->get_list_display-->get_list_columns-->list_columns(AmisListColumns)
+		subgraph route_list
+            get_select
+            calc_filter_clause
+            schema_list
+            schema_filter
+		end
+        list_display--A-->fields--O2-->list_filter-->_filter_entities-->calc_filter_clause
+        list_display--O1-->list_filter-->schema_filter-->route_list_body(ListApiRequest)
+        subgraph Filter
+        	search_fields--A-->list_filter-->get_list_filter-->get_list_filter_form-->list_filter_form(AmisListFilterForm)
+        end
+	end
+	
+```

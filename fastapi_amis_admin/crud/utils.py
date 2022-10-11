@@ -5,8 +5,13 @@ from fastapi.params import Path
 from pydantic import BaseConfig, BaseModel, Extra
 from pydantic.fields import ModelField
 from pydantic.utils import smart_deepcopy
+from sqlalchemy.engine import Engine
+from sqlalchemy.ext.asyncio import AsyncEngine
+from sqlalchemy_database import AsyncDatabase, Database
 
 from .schema import BaseApiSchema
+
+SqlalchemyDatabase = Union[Engine, AsyncEngine, Database, AsyncDatabase]
 
 
 def validator_skip_blank(cls, v, config: BaseConfig, field: ModelField, *args, **kwargs):
@@ -24,7 +29,7 @@ def schema_create_by_schema(
     include: Set[str] = None,
     exclude: Set[str] = None,
     set_none: bool = False,
-    **kwargs
+    **kwargs,
 ) -> Type[BaseModel]:
     schema_fields = smart_deepcopy(schema_cls.__dict__["__fields__"])
     exclude = exclude or {}
@@ -42,7 +47,7 @@ def schema_create_by_modelfield(
     set_none: bool = False,
     namespaces: Dict[str, Any] = None,
     extra: Extra = Extra.ignore,
-    **kwargs
+    **kwargs,
 ) -> Type[BaseModel]:
     namespaces = namespaces or {}
     namespaces.update({"__fields__": {}, "__annotations__": {}})
@@ -77,3 +82,13 @@ def parser_item_id(
     )
 ) -> List[str]:
     return parser_str_set_list(set_str=item_id)
+
+
+def get_engine_db(engine: SqlalchemyDatabase) -> Union[Database, AsyncDatabase]:
+    if isinstance(engine, (Database, AsyncDatabase)):
+        return engine
+    if isinstance(engine, Engine):
+        return Database(engine)
+    if isinstance(engine, AsyncEngine):
+        return AsyncDatabase(engine)
+    raise TypeError(f"Unknown engine type: {type(engine)}")
