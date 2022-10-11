@@ -4,11 +4,10 @@ from typing import Any, AsyncGenerator, List
 import pytest
 from fastapi import FastAPI
 from httpx import AsyncClient
-from sqlalchemy import insert
 from sqlmodel import SQLModel
 
 from tests.conftest import async_db as db
-from tests.models import Article, User
+from tests.models import Article, ArticleContent, Category, User
 
 pytestmark = pytest.mark.asyncio
 
@@ -33,30 +32,43 @@ async def async_client(app: FastAPI, prepare_database: Any) -> AsyncGenerator[As
 
 
 @pytest.fixture
-async def fake_users() -> List[User]:
+async def fake_users(async_session) -> List[User]:
     data = [
-        {
-            "id": i,
-            "username": f"User_{i}",
-            "password": f"password_{i}",
-            "create_time": datetime.datetime.strptime(f"2022-01-0{i} 00:00:00", "%Y-%m-%d %H:%M:%S"),
-        }
+        User(
+            id=i,
+            username=f"User_{i}",
+            password=f"password_{i}",
+            create_time=datetime.datetime.strptime(f"2022-01-0{i} 00:00:00", "%Y-%m-%d %H:%M:%S"),
+        )
         for i in range(1, 6)
     ]
-    await db.execute(insert(User).values(data))
-    return [User.parse_obj(item) for item in data]
+    async_session.add_all(data)
+    await async_session.commit()
+    return data
 
 
 @pytest.fixture
-async def fake_articles(fake_users) -> List[Article]:
+async def fake_categorys(async_session) -> List[Category]:
+    data = [Category(id=i, name=f"Category_{i}") for i in range(1, 6)]
+    async_session.add_all(data)
+    await async_session.commit()
+    return data
+
+
+@pytest.fixture
+async def fake_article_contents(async_session) -> List[ArticleContent]:
+    data = [ArticleContent(id=i, content=f"Content_{i}") for i in range(1, 6)]
+    async_session.add_all(data)
+    await async_session.commit()
+    return data
+
+
+@pytest.fixture
+async def fake_articles(async_session, fake_users, fake_categorys, fake_article_contents) -> List[Article]:
     data = [
-        {
-            "id": user.id,
-            "title": f"Article_{user.id}",
-            "description": f"Description_{user.id}",
-            "user_id": user.id,
-        }
-        for user in fake_users
+        Article(id=i, title=f"Article_{i}", description=f"Description_{i}", user_id=i, category_id=i, content_id=i)
+        for i in range(1, 6)
     ]
-    await db.execute(insert(Article).values(data))
-    return [Article.parse_obj(item) for item in data]
+    async_session.add_all(data)
+    await async_session.commit()
+    return data

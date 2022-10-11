@@ -1,15 +1,13 @@
+from typing import Optional
+
 from fastapi import FastAPI
 from httpx import AsyncClient
 from pydantic import BaseModel
+from sqlmodel import SQLModel
 
 from fastapi_amis_admin.crud import SQLModelCrud
 from tests.conftest import async_db as db
-from tests.models import User
-
-
-class UserFilter(BaseModel):
-    id: int = None
-    name: str = None
+from tests.models import Article, ArticleContent, Category, User
 
 
 async def test_schema_update(app: FastAPI, async_client: AsyncClient, fake_users):
@@ -120,7 +118,7 @@ async def test_schema_read(app: FastAPI, async_client: AsyncClient, fake_users):
     assert "password" not in items
 
 
-# todo perfect
+# todo perfect;test more comparison operators
 async def test_schema_filter(app: FastAPI, async_client: AsyncClient, fake_users):
     class UserFilter(BaseModel):
         id: int = None
@@ -152,3 +150,76 @@ async def test_schema_filter(app: FastAPI, async_client: AsyncClient, fake_users
     res = await async_client.post("/user/list", json={"password": "new_password"})
     items = res.json()["data"]["items"]
     assert items
+
+
+async def test_schema_read_relationship(app: FastAPI, async_client: AsyncClient, fake_articles):
+    class ArticleRead(SQLModel):  # must be SQLModel, not BaseModel
+        id: int
+        title: str
+        description: str
+        category: Optional[Category] = None  # Relationship
+        content: Optional[ArticleContent] = None  # Relationship
+        user: Optional[User] = None  # Relationship
+
+    class ArticleCrud(SQLModelCrud):
+        router_prefix = "/article"
+        schema_read = ArticleRead
+
+    ins = ArticleCrud(Article, db.engine).register_crud()
+
+    app.include_router(ins.router)
+
+    # test schemas
+    openapi = app.openapi()
+    schemas = openapi["components"]["schemas"]
+    assert "category" in schemas["ArticleRead"]["properties"]
+    assert schemas["ArticleRead"]["properties"]["category"]["$ref"] == "#/components/schemas/Category"
+    assert "content" in schemas["ArticleRead"]["properties"]
+    assert "user" in schemas["ArticleRead"]["properties"]
+
+    # test api
+    res = await async_client.get("/article/item/1")
+    items = res.json()["data"]
+    assert items["id"] == 1
+    assert "category" in items
+    assert "content" in items
+    assert "user" in items
+    assert items["category"]["id"] == 1
+    assert items["content"]["id"] == 1
+    assert items["user"]["id"] == 1
+
+
+async def test_schema_update_relationship(app: FastAPI, async_client: AsyncClient, fake_articles, async_session):
+    class ArticleUpdate(SQLModel):  # must be SQLModel, not BaseModel
+        title: str = None
+        description: str = None
+        content: Optional[ArticleContent] = None  # Relationship
+
+    class ArticleCrud(SQLModelCrud):
+        router_prefix = "/article"
+        update_exclude = {"content": {"id"}}
+        schema_update = ArticleUpdate
+
+    ins = ArticleCrud(Article, db.engine).register_crud()
+
+    app.include_router(ins.router)
+
+    # test schemas
+    openapi = app.openapi()
+    schemas = openapi["components"]["schemas"]
+
+    assert "content" in schemas["ArticleUpdate"]["properties"]
+    assert schemas["ArticleUpdate"]["properties"]["content"]["$ref"] == "#/components/schemas/ArticleContent"
+
+    # test api
+    res = await async_client.put("/article/item/1", json={"title": "new_title"})
+    assert res.json()["data"] == 1
+    article = await async_session.get(Article, 1)
+    assert article.title == "new_title"
+
+    res = await async_client.put(
+        "/article/item/1", json={"content": {"id": 2, "content": "new_content"}}  # will be ignored by `update_exclude`
+    )
+    assert res.json()["data"] == 1
+    content = await async_session.get(ArticleContent, 1)
+    assert content.content == "new_content"

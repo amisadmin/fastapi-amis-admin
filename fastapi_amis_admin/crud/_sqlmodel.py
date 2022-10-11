@@ -1,11 +1,13 @@
 import datetime
+import logging
 import re
 from enum import Enum
 from typing import Any, Callable, Dict, List, Optional, Pattern, Tuple, Type, Union
 
 from fastapi import APIRouter, Body, Depends, Query
+from fastapi.encoders import DictIntStrAny, SetIntStr
 from pydantic import BaseModel, Extra, Json
-from sqlalchemy import Column, Table, delete, func, insert, update
+from sqlalchemy import Column, Table, delete, func, insert
 from sqlalchemy.future import select
 from sqlalchemy.orm import InstrumentedAttribute, Session
 from sqlalchemy.sql import Select
@@ -206,7 +208,10 @@ class SQLModelCrud(BaseCrud, SQLModelSelector):
     engine: SqlalchemyDatabase = None
     create_fields: List[SQLModelField] = []  # 新增数据字段
     readonly_fields: List[SQLModelListField] = []  # 只读字段
+    """readonly fields, deprecated, not recommended, will be removed in version 0.4.0"""
     update_fields: List[SQLModelListField] = []  # 可编辑字段
+    update_exclude: Optional[Union[SetIntStr, DictIntStrAny]] = None
+    """update exclude fields, such as: {'id', 'key', 'name'} or {'id': True, 'category': {'id', 'name'}}"""
 
     def __init__(
         self,
@@ -220,6 +225,11 @@ class SQLModelCrud(BaseCrud, SQLModelSelector):
         self.db = get_engine_db(self.engine)
         SQLModelSelector.__init__(self, model, fields)
         BaseCrud.__init__(self, self.model, router)
+        if self.readonly_fields:
+            logging.warning(
+                "readonly fields, deprecated, not recommended, will be removed in version 0.4.0."
+                "Please replace them with update_fields and update_exclude."
+            )
 
     def _create_schema_list(self):
         if self.schema_list:
@@ -291,11 +301,33 @@ class SQLModelCrud(BaseCrud, SQLModelSelector):
         )
         return schema_create_by_modelfield(f"{self.schema_name_prefix}Create", modelfields)
 
-    def _read_items(self, session: Session, item_id: List[str]):
-        stmt = select(self.model).where(self.pk.in_(list(map(get_python_type_parse(self.pk), item_id))))
-        items = session.scalars(stmt).all()
+    def read_item(self, obj: SQLModel) -> BaseModel:
+        """read database data and parse to schema_read"""
         parse = self.schema_read.from_orm if self.schema_read.Config.orm_mode else self.schema_read.parse_obj
-        return [parse(obj) for obj in items]
+        return parse(obj)
+
+    def update_item(self, obj: SQLModel, values: Dict[str, Any]) -> None:
+        """update schema_update data to database,support relational attributes"""
+        for k, v in values.items():
+            if isinstance(v, dict) and hasattr(obj, k):
+                # Relational attributes, nested;such as: setattr(article.content, "body", "new body")
+                self.update_item(getattr(obj, k), v)
+            else:
+                setattr(obj, k, v)
+
+    def _fetch_item_scalars(self, session: Session, item_id: List[str]) -> List[SQLModel]:
+        stmt = select(self.model).where(self.pk.in_(list(map(get_python_type_parse(self.pk), item_id))))
+        return session.scalars(stmt).all()
+
+    def _read_items(self, session: Session, item_id: List[str]):
+        items = self._fetch_item_scalars(session, item_id)
+        return [self.read_item(obj) for obj in items]
+
+    def _update_items(self, session: Session, item_id: List[str], values: Dict[str, Any]):
+        items = self._fetch_item_scalars(session, item_id)
+        for item in items:
+            self.update_item(item, values)
+        return len(items)
 
     @property
     def schema_name_prefix(self):
@@ -316,7 +348,7 @@ class SQLModelCrud(BaseCrud, SQLModelSelector):
         item_id: Union[List[str], List[int]],
         **kwargs,
     ) -> Dict[str, Any]:
-        data = obj.dict(exclude_unset=True, by_alias=True)
+        data = obj.dict(exclude=self.update_exclude, exclude_unset=True, by_alias=True)
         data = {key: val for key, val in data.items() if val is not None or self.model.__fields__[key].allow_none}
         return data
 
@@ -415,13 +447,11 @@ class SQLModelCrud(BaseCrud, SQLModelSelector):
             if not await self.has_update_permission(request, item_id, data):
                 return self.error_no_router_permission(request)
             item_id = list(map(get_python_type_parse(self.pk), item_id))
-            stmt = update(self.model).where(self.pk.in_(item_id))
             values = await self.on_update_pre(request, data, item_id=item_id)
             if not values:
                 return self.error_data_handle(request)
-            stmt = stmt.values(values)
-            result = await self.db.async_execute(stmt)
-            return BaseApiOut(data=getattr(result, "rowcount", None))
+            result = await self.db.async_run_sync(self._update_items, item_id, values)
+            return BaseApiOut(data=result)
 
         return route
 
