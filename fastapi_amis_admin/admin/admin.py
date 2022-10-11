@@ -1053,6 +1053,18 @@ class ModelAdmin(BaseModelAdmin, PageAdmin):
         return await self.has_page_permission(request)
 
 
+class BaseFormAction:
+    admin: "FormAdmin" = None
+    action: Action = None
+
+    def __init__(self, admin: "FormAdmin"):
+        self.admin = admin
+        assert self.admin, "admin is None"
+
+    def register_router(self):
+        raise NotImplementedError
+
+
 class BaseModelAction:
     admin: "ModelAdmin" = None
     action: Action = None
@@ -1069,6 +1081,26 @@ class BaseModelAction:
         raise NotImplementedError
 
 
+class FormAction(FormAdmin, BaseFormAction):
+    schema: Type[BaseModel] = None
+    action: ActionType.Dialog = None
+
+    def __init__(self, admin: "FormAdmin"):
+        BaseFormAction.__init__(self, admin)
+        self.router = self.admin.router
+        FormAdmin.__init__(self, self.admin.app)
+
+    async def get_action(self, request: Request, **kwargs) -> Action:
+        action = self.action or ActionType.Dialog(label=_("Custom form actions"), dialog=Dialog())
+        action.dialog.title = action.dialog.title or action.label  # only override if not set
+        action.dialog.size = action.dialog.size or SizeEnum.xl
+        action.dialog.body = action.dialog.body or ""  # keep it empty for non model related custom form
+        return action
+
+    async def handle(self, request: Request, data: BaseModel, **kwargs) -> BaseApiOut[Any]:
+        return BaseApiOut(data=data)
+
+
 class ModelAction(BaseFormAdmin, BaseModelAction):
     schema: Type[BaseModel] = None
     action: ActionType.Dialog = None
@@ -1080,7 +1112,7 @@ class ModelAction(BaseFormAdmin, BaseModelAction):
 
     async def get_action(self, request: Request, **kwargs) -> Action:
         action = self.action or ActionType.Dialog(label=_("Custom form actions"), dialog=Dialog())
-        action.dialog.title = action.label
+        action.dialog.title = action.dialog.title or action.label  # only override if not set
         action.dialog.body = Service(
             schemaApi=AmisAPI(
                 method="post",
