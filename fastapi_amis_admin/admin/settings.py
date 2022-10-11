@@ -28,6 +28,9 @@ class Settings(BaseSettings):
     amis_file_receiver: API = None  # 文件上传接口
     logger: Union[logging.Logger, Any] = logging.getLogger("fastapi_amis_admin")
 
+    class Config:
+        env_prefix = "amis_"
+
     @validator("amis_cdn", "root_path", "site_url", pre=True)
     def valid_url(cls, url: str):
         return url[:-1] if url.endswith("/") else url
