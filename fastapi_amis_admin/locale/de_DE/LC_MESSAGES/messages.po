@@ -97,3 +97,6 @@ msgstr "JA"
 
 msgid "NO"
 msgstr "NEIN"
+
+msgid "View"
+msgstr "Sehen"

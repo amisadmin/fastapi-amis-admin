@@ -603,10 +603,10 @@ class BaseModelAdmin(SQLModelCrud):
     async def get_read_action(self, request: Request) -> Optional[Action]:
         return ActionType.Dialog(
             icon="fa fa-eye",
-            tooltip=_("Read"),
+            tooltip=_("View"),
             level=LevelEnum.primary,
             dialog=Dialog(
-                title=_("Read") + " - " + _(self.page_schema.label),
+                title=_("View") + " - " + _(self.page_schema.label),
                 size=SizeEnum.lg,
                 body=await self.get_read_form(request),
             ),
