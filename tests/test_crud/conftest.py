@@ -7,7 +7,7 @@ from httpx import AsyncClient
 from sqlmodel import SQLModel
 
 from tests.conftest import async_db as db
-from tests.models import Article, ArticleContent, Category, User
+from tests.models import Article, ArticleContent, ArticleTagLink, Category, Tag, User
 
 pytestmark = pytest.mark.asyncio
 
@@ -70,5 +70,17 @@ async def fake_articles(async_session, fake_users, fake_categorys, fake_article_
         for i in range(1, 6)
     ]
     async_session.add_all(data)
+    await async_session.commit()
+    return data
+
+
+@pytest.fixture
+async def fake_article_tags(async_session, fake_articles) -> List[Tag]:
+    # add tags
+    data = [Tag(id=i, name=f"Tag_{i}") for i in range(1, 6)]
+    async_session.add_all(data)
+    await async_session.commit()
+    # add article_tag_link
+    async_session.add_all([ArticleTagLink(article_id=i, tag_id=i) for i in range(1, 6)])
     await async_session.commit()
     return data

@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import List, Optional
 
 from fastapi import FastAPI
 from httpx import AsyncClient
@@ -7,7 +7,7 @@ from sqlmodel import SQLModel
 
 from fastapi_amis_admin.crud import SQLModelCrud
 from tests.conftest import async_db as db
-from tests.models import Article, ArticleContent, Category, User
+from tests.models import Article, ArticleContent, Category, Tag, User
 
 
 async def test_schema_update(app: FastAPI, async_client: AsyncClient, fake_users):
@@ -152,7 +152,7 @@ async def test_schema_filter(app: FastAPI, async_client: AsyncClient, fake_users
     assert items
 
 
-async def test_schema_read_relationship(app: FastAPI, async_client: AsyncClient, fake_articles):
+async def test_schema_read_relationship(app: FastAPI, async_client: AsyncClient, fake_articles, fake_article_tags):
     class ArticleRead(SQLModel):  # must be SQLModel, not BaseModel
         id: int
         title: str
@@ -160,6 +160,7 @@ async def test_schema_read_relationship(app: FastAPI, async_client: AsyncClient,
         category: Optional[Category] = None  # Relationship
         content: Optional[ArticleContent] = None  # Relationship
         user: Optional[User] = None  # Relationship
+        tags: List[Tag] = []  # Relationship
 
     class ArticleCrud(SQLModelCrud):
         router_prefix = "/article"
@@ -176,6 +177,7 @@ async def test_schema_read_relationship(app: FastAPI, async_client: AsyncClient,
     assert schemas["ArticleRead"]["properties"]["category"]["$ref"] == "#/components/schemas/Category"
     assert "content" in schemas["ArticleRead"]["properties"]
     assert "user" in schemas["ArticleRead"]["properties"]
+    assert "tags" in schemas["ArticleRead"]["properties"]
 
     # test api
     res = await async_client.get("/article/item/1")
@@ -187,6 +189,7 @@ async def test_schema_read_relationship(app: FastAPI, async_client: AsyncClient,
     assert items["category"]["id"] == 1
     assert items["content"]["id"] == 1
     assert items["user"]["id"] == 1
+    assert items["tags"][0]["id"] == 1
 
 
 async def test_schema_update_relationship(app: FastAPI, async_client: AsyncClient, fake_articles, async_session):

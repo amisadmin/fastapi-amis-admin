@@ -305,8 +305,7 @@ class SQLModelCrud(BaseCrud, SQLModelSelector):
     def _create_schema_read(self) -> Type[SchemaReadT]:
         if self.schema_read:
             return self.schema_read
-        if not self.read_fields:
-            return super()._create_schema_read()
+        self.read_fields = self.read_fields or self.schema_model.__fields__.values()
         self.read_fields = self.parser.filter_insfield(self.read_fields, save_class=(ModelField,))
         modelfields = [self.parser.get_modelfield(ins, deepcopy=True) for ins in self.read_fields]
         return schema_create_by_modelfield(f"{self.schema_name_prefix}Read", modelfields, orm_mode=True)
@@ -343,7 +342,7 @@ class SQLModelCrud(BaseCrud, SQLModelSelector):
 
     def read_item(self, obj: ModelT) -> SchemaReadT:
         """read database data and parse to schema_read"""
-        parse = self.schema_read.from_orm if self.schema_read.Config.orm_mode else self.schema_read.parse_obj
+        parse = self.schema_read.from_orm if getattr(self.schema_read.Config, "orm_mode", False) else self.schema_read.parse_obj
         return parse(obj)
 
     def update_item(self, obj: ModelT, values: Dict[str, Any]) -> None:
@@ -352,6 +351,8 @@ class SQLModelCrud(BaseCrud, SQLModelSelector):
             if isinstance(v, dict) and hasattr(obj, k):
                 # Relational attributes, nested;such as: setattr(article.content, "body", "new body")
                 self.update_item(getattr(obj, k), v)
+            elif isinstance(v, list):  # todo
+                pass
             else:
                 setattr(obj, k, v)
 

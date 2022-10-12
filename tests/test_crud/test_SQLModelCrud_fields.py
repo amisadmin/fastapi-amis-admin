@@ -1,3 +1,5 @@
+from typing import List
+
 from fastapi import FastAPI
 from httpx import AsyncClient
 from sqlmodel.sql.expression import Select
@@ -7,7 +9,7 @@ from fastapi_amis_admin.crud import SQLModelCrud
 from fastapi_amis_admin.crud.parser import LabelField, PropertyField
 from fastapi_amis_admin.models import Field
 from tests.conftest import async_db as db
-from tests.models import Article, ArticleContent, Category, User
+from tests.models import Article, ArticleContent, Category, Tag, User
 
 
 async def test_pk_name(app: FastAPI, async_client: AsyncClient, fake_users):
@@ -273,7 +275,7 @@ async def test_read_fields(app: FastAPI, async_client: AsyncClient, fake_article
     assert items["description"] == "Description_1"
 
 
-async def test_read_fields_relationship(app: FastAPI, async_client: AsyncClient, fake_articles):
+async def test_read_fields_relationship(app: FastAPI, async_client: AsyncClient, fake_articles, fake_article_tags):
     class ArticleCrud(SQLModelCrud):
         router_prefix = "/article"
         read_fields = [
@@ -282,6 +284,7 @@ async def test_read_fields_relationship(app: FastAPI, async_client: AsyncClient,
             PropertyField(name="category", type_=Category),  # Relationship attribute
             # Article.category,  # Relationship todo support
             PropertyField(name="content_text", type_=str),  # property attribute
+            PropertyField(name="tags", type_=List[Tag]),  # property attribute
         ]
 
     ins = ArticleCrud(Article, db.engine).register_crud()
@@ -293,15 +296,15 @@ async def test_read_fields_relationship(app: FastAPI, async_client: AsyncClient,
     assert "title" in ins.schema_read.__fields__
     assert "description" in ins.schema_read.__fields__
     assert "category" in ins.schema_read.__fields__
+    assert "tags" in ins.schema_read.__fields__
     # test api
     res = await async_client.get("/article/item/1")
     items = res.json()["data"]
-    print(items)
     assert "id" not in items
     assert "category" in items
     assert items["category"]["name"] == "Category_1"
     assert "content_text" in items
-    # assert items["user"]["username"] == "User_1"
+    assert items["tags"][0]["name"] == "Tag_1"
 
 
 async def test_update_fields_relationship(app: FastAPI, async_client: AsyncClient, fake_articles, async_session):
