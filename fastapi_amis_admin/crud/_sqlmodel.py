@@ -1,5 +1,4 @@
 import datetime
-import logging
 import re
 from enum import Enum
 from typing import (
@@ -19,6 +18,7 @@ from typing import (
 from fastapi import APIRouter, Body, Depends, Query
 from fastapi.encoders import DictIntStrAny, SetIntStr
 from pydantic import Extra, Json
+from pydantic.fields import ModelField
 from sqlalchemy import Column, Table, delete, func, insert
 from sqlalchemy.future import select
 from sqlalchemy.orm import InstrumentedAttribute, Session
@@ -42,6 +42,7 @@ from .parser import (
     SQLModelField,
     SQLModelFieldParser,
     SQLModelListField,
+    SQLModelPropertyField,
     get_python_type_parse,
 )
 from .schema import BaseApiOut, ItemListSchema
@@ -228,11 +229,15 @@ class SQLModelSelector(Generic[ModelT]):
 class SQLModelCrud(BaseCrud, SQLModelSelector):
     engine: SqlalchemyDatabase = None
     create_fields: List[SQLModelField] = []  # 新增数据字段
-    readonly_fields: List[SQLModelListField] = []  # 只读字段
-    """readonly fields, deprecated, not recommended, will be removed in version 0.4.0"""
-    update_fields: List[SQLModelListField] = []  # 可编辑字段
+    readonly_fields: List[SQLModelListField] = []
+    """readonly fields, priority is higher than update_fields.
+    readonly fields, deprecated, not recommended, will be removed in version 0.4.0"""
+    update_fields: List[SQLModelPropertyField] = []
+    """model update fields;support model property and relationship field."""
     update_exclude: Optional[Union[SetIntStr, DictIntStrAny]] = None
-    """update exclude fields, such as: {'id', 'key', 'name'} or {'id': True, 'category': {'id', 'name'}}"""
+    """update exclude fields, such as: {'id', 'key', 'name'} or {'id': True, 'category': {'id', 'name'}}."""
+    read_fields: List[SQLModelPropertyField] = []
+    """Model read fields; used in route_read, note the difference between readonly_fields and read_fields."""
 
     def __init__(
         self,
@@ -246,11 +251,11 @@ class SQLModelCrud(BaseCrud, SQLModelSelector):
         self.db = get_engine_db(self.engine)
         SQLModelSelector.__init__(self, model, fields)
         BaseCrud.__init__(self, self.model, router)
-        if self.readonly_fields:
-            logging.warning(
-                "readonly fields, deprecated, not recommended, will be removed in version 0.4.0."
-                "Please replace them with update_fields and update_exclude."
-            )
+        # if self.readonly_fields:
+        #     logging.warning(
+        #         "readonly fields, deprecated, not recommended, will be removed in version 0.4.0."
+        #         "Please replace them with update_fields and update_exclude."
+        #     )
 
     def _create_schema_list(self) -> Type[SchemaListT]:
         if self.schema_list:
@@ -296,6 +301,15 @@ class SQLModelCrud(BaseCrud, SQLModelSelector):
             set_none=True,
         )
 
+    def _create_schema_read(self) -> Type[SchemaReadT]:
+        if self.schema_read:
+            return self.schema_read
+        if not self.read_fields:
+            return super()._create_schema_read()
+        self.read_fields = self.parser.filter_insfield(self.read_fields, save_class=(ModelField,))
+        modelfields = [self.parser.get_modelfield(ins, deepcopy=True) for ins in self.read_fields]
+        return schema_create_by_modelfield(f"{self.schema_name_prefix}Read", modelfields, orm_mode=True)
+
     def _create_schema_update(self) -> Type[SchemaUpdateT]:
         if self.schema_update:
             return self.schema_update
@@ -340,7 +354,7 @@ class SQLModelCrud(BaseCrud, SQLModelSelector):
         stmt = select(self.model).where(self.pk.in_(list(map(get_python_type_parse(self.pk), item_id))))
         return session.scalars(stmt).all()
 
-    def _read_items(self, session: Session, item_id: List[str]):
+    def _read_items(self, session: Session, item_id: List[str]) -> List[SchemaReadT]:
         items = self._fetch_item_scalars(session, item_id)
         return [self.read_item(obj) for obj in items]
 

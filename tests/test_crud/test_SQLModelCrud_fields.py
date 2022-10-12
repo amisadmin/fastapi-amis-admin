@@ -4,10 +4,10 @@ from sqlmodel.sql.expression import Select
 from starlette.requests import Request
 
 from fastapi_amis_admin.crud import SQLModelCrud
-from fastapi_amis_admin.crud.parser import LabelField
+from fastapi_amis_admin.crud.parser import LabelField, PropertyField
 from fastapi_amis_admin.models import Field
 from tests.conftest import async_db as db
-from tests.models import Article, User
+from tests.models import Article, Category, User
 
 
 async def test_pk_name(app: FastAPI, async_client: AsyncClient, fake_users):
@@ -244,3 +244,61 @@ async def test_fields(app: FastAPI, async_client: AsyncClient, fake_articles):
     assert items[0]["id"] == 2
     assert items[0]["user__username"] == "User_2"
     assert items[0]["pwd"] == "password_2"
+
+
+async def test_read_fields(app: FastAPI, async_client: AsyncClient, fake_articles):
+    class ArticleCrud(SQLModelCrud):
+        router_prefix = "/article"
+        read_fields = [
+            Article.title,
+            Article.description,
+            # Article.category,  # Relationship
+            # Article.user  # Relationship
+        ]
+
+    ins = ArticleCrud(Article, db.engine).register_crud()
+
+    app.include_router(ins.router)
+
+    # test schemas
+    assert "id" not in ins.schema_read.__fields__
+    assert "title" in ins.schema_read.__fields__
+    assert "description" in ins.schema_read.__fields__
+    # test api
+    res = await async_client.get("/article/item/1")
+    items = res.json()["data"]
+    print(items)
+    assert "id" not in items
+    assert items["title"] == "Article_1"
+    assert items["description"] == "Description_1"
+
+
+async def test_read_fields_relationship(app: FastAPI, async_client: AsyncClient, fake_articles):
+    class ArticleCrud(SQLModelCrud):
+        router_prefix = "/article"
+        read_fields = [
+            Article.title,
+            Article.description,
+            PropertyField(name="category", type_=Category),  # Relationship attribute
+            # Article.category,  # Relationship todo support
+            PropertyField(name="content_text", type_=str),  # property attribute
+        ]
+
+    ins = ArticleCrud(Article, db.engine).register_crud()
+
+    app.include_router(ins.router)
+
+    # test schemas
+    assert "id" not in ins.schema_read.__fields__
+    assert "title" in ins.schema_read.__fields__
+    assert "description" in ins.schema_read.__fields__
+    assert "category" in ins.schema_read.__fields__
+    # test api
+    res = await async_client.get("/article/item/1")
+    items = res.json()["data"]
+    print(items)
+    assert "id" not in items
+    assert "category" in items
+    assert items["category"]["name"] == "Category_1"
+    assert "content_text" in items
+    # assert items["user"]["username"] == "User_1"
