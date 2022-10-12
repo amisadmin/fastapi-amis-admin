@@ -567,9 +567,11 @@ class BaseModelAdmin(SQLModelCrud):
         )
 
     async def get_update_form(self, request: Request, bulk: bool = False) -> Form:
+        extra = {}
         if not bulk:
             api = f"put:{self.router_path}/item/${self.pk_name}"
             fields = self.schema_update.__fields__.values()
+            extra["initApi"] = f"get:{self.router_path}/item/${self.pk_name}"
         else:
             api = f"put:{self.router_path}/item/" + "${ids|raw}"
             fields = self.bulk_update_fields
@@ -579,6 +581,27 @@ class BaseModelAdmin(SQLModelCrud):
             body=await self._conv_modelfields_to_formitems(request, fields, CrudEnum.update),
             submitText=None,
             trimValues=True,
+            **extra,
+        )
+
+    async def get_read_form(self, request: Request) -> Form:
+        return Form(
+            initApi=f"get:{self.router_path}/item/${self.pk_name}",
+            name=CrudEnum.read,
+            body=await self._conv_modelfields_to_formitems(request, self.schema_read.__fields__.values(), CrudEnum.read),
+            submitText=None,
+        )
+
+    async def get_read_action(self, request: Request) -> Optional[Action]:
+        return ActionType.Dialog(
+            icon="fa fa-eye",
+            tooltip=_("Read"),
+            level=LevelEnum.primary,
+            dialog=Dialog(
+                title=_("Read") + " - " + _(self.page_schema.label),
+                size=SizeEnum.lg,
+                body=await self.get_read_form(request),
+            ),
         )
 
     async def get_create_action(self, request: Request, bulk: bool = False) -> Optional[Action]:
@@ -662,6 +685,7 @@ class BaseModelAdmin(SQLModelCrud):
 
     async def get_actions_on_item(self, request: Request) -> List[Action]:
         actions = [
+            await self.get_read_action(request),
             await self.get_update_action(request, bulk=False),
             await self.get_delete_action(request, bulk=False),
         ]
