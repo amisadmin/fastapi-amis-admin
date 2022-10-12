@@ -11,7 +11,6 @@ from typing import (
     Pattern,
     Tuple,
     Type,
-    TypeVar,
     Union,
 )
 
@@ -25,7 +24,6 @@ from sqlalchemy.future import select
 from sqlalchemy.orm import InstrumentedAttribute, Session
 from sqlalchemy.sql import Select
 from sqlalchemy.sql.elements import BinaryExpression, Label, UnaryExpression
-from sqlmodel import SQLModel
 from starlette.requests import Request
 
 from fastapi_amis_admin.utils.functools import cached_property
@@ -35,6 +33,7 @@ from .base import (
     SchemaCreateT,
     SchemaFilterT,
     SchemaListT,
+    SchemaModelT,
     SchemaReadT,
     SchemaUpdateT,
 )
@@ -72,11 +71,9 @@ sql_operator_map: Dict[str, str] = {
     "-": "between",
 }
 
-ModelT = TypeVar("ModelT", bound=SQLModel)
 
-
-class SQLModelSelector(Generic[ModelT]):
-    model: Type[ModelT] = None  # SQLModel模型
+class SQLModelSelector(Generic[SchemaModelT]):
+    model: Type[SchemaModelT] = None  # SQLModel模型
     fields: List[SQLModelListField] = []  # 需要查询的字段
     list_filter: List[SQLModelListField] = []  # 查询可过滤的字段
     exclude: List[SQLModelField] = []  # 不需要查询的字段
@@ -94,7 +91,7 @@ class SQLModelSelector(Generic[ModelT]):
     """
     pk_name: str = "id"  # 主键名称
 
-    def __init__(self, model: Type[ModelT] = None, fields: List[SQLModelListField] = None) -> None:
+    def __init__(self, model: Type[SchemaModelT] = None, fields: List[SQLModelListField] = None) -> None:
         self.model = model or self.model
         assert self.model, "model is None"
         self.pk_name: str = self.pk_name or self.model.__table__.primary_key.columns.keys()[0]
@@ -242,7 +239,7 @@ class SQLModelCrud(BaseCrud, SQLModelSelector):
 
     def __init__(
         self,
-        model: Type[ModelT],
+        model: Type[SchemaModelT],
         engine: SqlalchemyDatabase,
         fields: List[SQLModelListField] = None,
         router: APIRouter = None,
@@ -340,12 +337,12 @@ class SQLModelCrud(BaseCrud, SQLModelSelector):
         )
         return schema_create_by_modelfield(f"{self.schema_name_prefix}Create", modelfields)
 
-    def read_item(self, obj: ModelT) -> SchemaReadT:
+    def read_item(self, obj: SchemaModelT) -> SchemaReadT:
         """read database data and parse to schema_read"""
         parse = self.schema_read.from_orm if getattr(self.schema_read.Config, "orm_mode", False) else self.schema_read.parse_obj
         return parse(obj)
 
-    def update_item(self, obj: ModelT, values: Dict[str, Any]) -> None:
+    def update_item(self, obj: SchemaModelT, values: Dict[str, Any]) -> None:
         """update schema_update data to database,support relational attributes"""
         for k, v in values.items():
             if isinstance(v, dict) and hasattr(obj, k):
@@ -356,7 +353,7 @@ class SQLModelCrud(BaseCrud, SQLModelSelector):
             else:
                 setattr(obj, k, v)
 
-    def _fetch_item_scalars(self, session: Session, item_id: List[str]) -> List[ModelT]:
+    def _fetch_item_scalars(self, session: Session, item_id: List[str]) -> List[SchemaModelT]:
         stmt = select(self.model).where(self.pk.in_(list(map(get_python_type_parse(self.pk), item_id))))
         return session.scalars(stmt).all()
 
