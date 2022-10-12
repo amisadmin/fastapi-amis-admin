@@ -2,11 +2,23 @@ import datetime
 import logging
 import re
 from enum import Enum
-from typing import Any, Callable, Dict, List, Optional, Pattern, Tuple, Type, Union
+from typing import (
+    Any,
+    Callable,
+    Dict,
+    Generic,
+    List,
+    Optional,
+    Pattern,
+    Tuple,
+    Type,
+    TypeVar,
+    Union,
+)
 
 from fastapi import APIRouter, Body, Depends, Query
 from fastapi.encoders import DictIntStrAny, SetIntStr
-from pydantic import BaseModel, Extra, Json
+from pydantic import Extra, Json
 from sqlalchemy import Column, Table, delete, func, insert
 from sqlalchemy.future import select
 from sqlalchemy.orm import InstrumentedAttribute, Session
@@ -17,7 +29,14 @@ from starlette.requests import Request
 
 from fastapi_amis_admin.utils.functools import cached_property
 
-from .base import BaseCrud
+from .base import (
+    BaseCrud,
+    SchemaCreateT,
+    SchemaFilterT,
+    SchemaListT,
+    SchemaReadT,
+    SchemaUpdateT,
+)
 from .parser import (
     SqlField,
     SQLModelField,
@@ -51,9 +70,11 @@ sql_operator_map: Dict[str, str] = {
     "-": "between",
 }
 
+ModelT = TypeVar("ModelT", bound=SQLModel)
 
-class SQLModelSelector:
-    model: Type[SQLModel] = None  # SQLModel模型
+
+class SQLModelSelector(Generic[ModelT]):
+    model: Type[ModelT] = None  # SQLModel模型
     fields: List[SQLModelListField] = []  # 需要查询的字段
     list_filter: List[SQLModelListField] = []  # 查询可过滤的字段
     exclude: List[SQLModelField] = []  # 不需要查询的字段
@@ -71,7 +92,7 @@ class SQLModelSelector:
     """
     pk_name: str = "id"  # 主键名称
 
-    def __init__(self, model: Type[SQLModel] = None, fields: List[SQLModelListField] = None) -> None:
+    def __init__(self, model: Type[ModelT] = None, fields: List[SQLModelListField] = None) -> None:
         self.model = model or self.model
         assert self.model, "model is None"
         self.pk_name: str = self.pk_name or self.model.__table__.primary_key.columns.keys()[0]
@@ -215,7 +236,7 @@ class SQLModelCrud(BaseCrud, SQLModelSelector):
 
     def __init__(
         self,
-        model: Type[SQLModel],
+        model: Type[ModelT],
         engine: SqlalchemyDatabase,
         fields: List[SQLModelListField] = None,
         router: APIRouter = None,
@@ -231,7 +252,7 @@ class SQLModelCrud(BaseCrud, SQLModelSelector):
                 "Please replace them with update_fields and update_exclude."
             )
 
-    def _create_schema_list(self):
+    def _create_schema_list(self) -> Type[SchemaListT]:
         if self.schema_list:
             return self.schema_list
         modelfields = list(
@@ -247,7 +268,7 @@ class SQLModelCrud(BaseCrud, SQLModelSelector):
             extra=Extra.allow,
         )
 
-    def _create_schema_filter(self):
+    def _create_schema_filter(self) -> Type[SchemaFilterT]:
         if self.schema_filter:
             return self.schema_filter
         self.list_filter = self.list_filter or self._select_entities.values()
@@ -275,7 +296,7 @@ class SQLModelCrud(BaseCrud, SQLModelSelector):
             set_none=True,
         )
 
-    def _create_schema_update(self):
+    def _create_schema_update(self) -> Type[SchemaUpdateT]:
         if self.schema_update:
             return self.schema_update
         if not self.readonly_fields and not self.update_fields:
@@ -288,7 +309,7 @@ class SQLModelCrud(BaseCrud, SQLModelSelector):
         modelfields = [field for field in modelfields if field.name not in readonly_fields]
         return schema_create_by_modelfield(f"{self.schema_name_prefix}Update", modelfields, set_none=True)
 
-    def _create_schema_create(self):
+    def _create_schema_create(self) -> Type[SchemaCreateT]:
         if self.schema_create:
             return self.schema_create
         if not self.create_fields:
@@ -301,12 +322,12 @@ class SQLModelCrud(BaseCrud, SQLModelSelector):
         )
         return schema_create_by_modelfield(f"{self.schema_name_prefix}Create", modelfields)
 
-    def read_item(self, obj: SQLModel) -> BaseModel:
+    def read_item(self, obj: ModelT) -> SchemaReadT:
         """read database data and parse to schema_read"""
         parse = self.schema_read.from_orm if self.schema_read.Config.orm_mode else self.schema_read.parse_obj
         return parse(obj)
 
-    def update_item(self, obj: SQLModel, values: Dict[str, Any]) -> None:
+    def update_item(self, obj: ModelT, values: Dict[str, Any]) -> None:
         """update schema_update data to database,support relational attributes"""
         for k, v in values.items():
             if isinstance(v, dict) and hasattr(obj, k):
@@ -315,7 +336,7 @@ class SQLModelCrud(BaseCrud, SQLModelSelector):
             else:
                 setattr(obj, k, v)
 
-    def _fetch_item_scalars(self, session: Session, item_id: List[str]) -> List[SQLModel]:
+    def _fetch_item_scalars(self, session: Session, item_id: List[str]) -> List[ModelT]:
         stmt = select(self.model).where(self.pk.in_(list(map(get_python_type_parse(self.pk), item_id))))
         return session.scalars(stmt).all()
 
@@ -335,7 +356,7 @@ class SQLModelCrud(BaseCrud, SQLModelSelector):
             return self.model.__name__
         return super().schema_name_prefix
 
-    async def on_create_pre(self, request: Request, obj: BaseModel, **kwargs) -> Dict[str, Any]:
+    async def on_create_pre(self, request: Request, obj: SchemaCreateT, **kwargs) -> Dict[str, Any]:
         data_dict = obj.dict(by_alias=True)  # exclude=set(self.pk)
         if self.pk_name in data_dict and not data_dict.get(self.pk_name):
             del data_dict[self.pk_name]
@@ -344,7 +365,7 @@ class SQLModelCrud(BaseCrud, SQLModelSelector):
     async def on_update_pre(
         self,
         request: Request,
-        obj: BaseModel,
+        obj: SchemaUpdateT,
         item_id: Union[List[str], List[int]],
         **kwargs,
     ) -> Dict[str, Any]:
@@ -352,7 +373,7 @@ class SQLModelCrud(BaseCrud, SQLModelSelector):
         data = {key: val for key, val in data.items() if val is not None or self.model.__fields__[key].allow_none}
         return data
 
-    async def on_filter_pre(self, request: Request, obj: BaseModel, **kwargs) -> Dict[str, Any]:
+    async def on_filter_pre(self, request: Request, obj: SchemaFilterT, **kwargs) -> Dict[str, Any]:
         return obj and {k: v for k, v in obj.dict(exclude_unset=True, by_alias=True).items() if v is not None}
 
     @property
