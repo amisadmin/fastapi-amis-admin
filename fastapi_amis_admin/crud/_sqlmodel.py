@@ -56,7 +56,7 @@ class SQLModelSelector:
     list_filter: List[SQLModelListField] = []  # 查询可过滤的字段
     exclude: List[SQLModelField] = []  # 不需要查询的字段
     ordering: List[Union[SQLModelListField, UnaryExpression]] = []  # 默认排序字段
-    link_models: Dict[str, Tuple[Type[Table], Column, Column]] = {}  # 关联模型
+    link_models: Dict[str, Tuple[Type[Table], Column, Column]] = None  # 关联模型
     """Relate information of the target model with the current model.
     - The Data structure is: {Target table name: (link model table,
         Column in the link model table associated with the current model,
@@ -84,6 +84,8 @@ class SQLModelSelector:
         ]
         assert self.fields, "fields is None"
         self.list_filter = self.list_filter or self.fields
+        self.link_models = self.link_models or {}
+        """Make sure the value of link_models is an object attribute, not a class attribute."""
 
     @cached_property
     def _select_entities(self) -> Dict[str, SqlField]:
