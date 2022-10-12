@@ -86,7 +86,7 @@ class AmisParser:
         Returns:
             amis.Form
         """
-        form = amis.Form(title=model.Config.title)
+        form = amis.Form(title=getattr(model.Config, "title", None))
         form.body = [
             self.as_form_item(modelfield, set_default=set_default, is_filter=is_filter)
             for modelfield in model.__fields__.values()
@@ -229,7 +229,7 @@ class AmisParser:
             # pydantic model parse to InputSubForm
             kwargs["type"] = "input-sub-form"
             kwargs["labelField"] = get_model_label_field_name(type_)
-            kwargs["btnLabel"] = type_.Config.title
+            kwargs["btnLabel"] = getattr(type_.Config, "title", None)
             kwargs["form"] = self.as_amis_form(type_, is_filter=is_filter)
         else:
             kwargs["type"] = "input-text"
