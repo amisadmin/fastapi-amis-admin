@@ -19,6 +19,7 @@ from fastapi import APIRouter, Body, Depends, Query
 from fastapi.encoders import DictIntStrAny, SetIntStr
 from pydantic import Extra, Json
 from pydantic.fields import ModelField
+from pydantic.utils import ValueItems
 from sqlalchemy import Column, Table, delete, func, insert
 from sqlalchemy.future import select
 from sqlalchemy.orm import InstrumentedAttribute, Session
@@ -313,14 +314,18 @@ class SQLModelCrud(BaseCrud, SQLModelSelector):
     def _create_schema_update(self) -> Type[SchemaUpdateT]:
         if self.schema_update:
             return self.schema_update
-        if not self.readonly_fields and not self.update_fields:
-            return super(SQLModelCrud, self)._create_schema_update()
-        self.update_fields = self.parser.filter_insfield(self.update_fields) or self.schema_model.__fields__.values()
+        self.update_fields = (
+            self.parser.filter_insfield(self.update_fields, save_class=(ModelField,)) or self.schema_model.__fields__.values()
+        )
         modelfields = [self.parser.get_modelfield(ins, deepcopy=True) for ins in self.update_fields]
-        readonly_fields = {
-            self.parser.get_modelfield(ins, deepcopy=False).name for ins in self.parser.filter_insfield(self.readonly_fields)
-        } | {self.pk_name}
-        modelfields = [field for field in modelfields if field.name not in readonly_fields]
+        if self.update_exclude is None:  # deprecated in version 0.4.0
+            exclude = {self.pk_name} | {
+                self.parser.get_modelfield(ins, deepcopy=False).name
+                for ins in self.parser.filter_insfield(self.readonly_fields)  # readonly fields, deprecated
+            }
+        else:
+            exclude = {k for k, v in ValueItems.merge(self.update_exclude, {}).items() if not isinstance(v, (dict, list, set))}
+        modelfields = [field for field in modelfields if field.name not in exclude]
         return schema_create_by_modelfield(f"{self.schema_name_prefix}Update", modelfields, set_none=True)
 
     def _create_schema_create(self) -> Type[SchemaCreateT]:

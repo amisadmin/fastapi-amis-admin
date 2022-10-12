@@ -7,7 +7,7 @@ from fastapi_amis_admin.crud import SQLModelCrud
 from fastapi_amis_admin.crud.parser import LabelField, PropertyField
 from fastapi_amis_admin.models import Field
 from tests.conftest import async_db as db
-from tests.models import Article, Category, User
+from tests.models import Article, ArticleContent, Category, User
 
 
 async def test_pk_name(app: FastAPI, async_client: AsyncClient, fake_users):
@@ -302,3 +302,43 @@ async def test_read_fields_relationship(app: FastAPI, async_client: AsyncClient,
     assert items["category"]["name"] == "Category_1"
     assert "content_text" in items
     # assert items["user"]["username"] == "User_1"
+
+
+async def test_update_fields_relationship(app: FastAPI, async_client: AsyncClient, fake_articles, async_session):
+    class ArticleCrud(SQLModelCrud):
+        router_prefix = "/article"
+        update_exclude = {"content": {"id"}}
+        update_fields = [
+            Article.description,
+            PropertyField(name="content", type_=ArticleContent),  # Relationship attribute
+        ]
+
+    ins = ArticleCrud(Article, db.engine).register_crud()
+
+    app.include_router(ins.router)
+
+    # test schemas
+    assert "id" not in ins.schema_update.__fields__
+    assert "title" not in ins.schema_update.__fields__
+    assert "description" in ins.schema_update.__fields__
+    assert "content" in ins.schema_update.__fields__
+
+    # test api
+    res = await async_client.put(
+        "/article/item/1",
+        json={
+            "title": "new_title",
+            "description": "new_description",
+            "content": {
+                "id": 22,  # will be ignored by `update_exclude`
+                "content": "new_content",
+            },
+        },
+    )
+    assert res.json()["data"] == 1
+    article = await async_session.get(Article, 1)
+    assert article.title != "new_title"
+    assert article.description == "new_description"
+
+    content = await async_session.get(ArticleContent, 1)
+    assert content.content == "new_content"
