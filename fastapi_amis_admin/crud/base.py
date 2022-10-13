@@ -69,7 +69,7 @@ class BaseCrud(RouterMixin, Generic[SchemaModelT, SchemaListT, SchemaFilterT, Sc
         schema_list: Type[SchemaListT] = None,
         schema_filter: Type[SchemaFilterT] = None,
         schema_create: Type[SchemaCreateT] = None,
-        schema_read: Type[SchemaReadT] = None,
+        schema_read: Type[SchemaReadT] = None,  # default is None, means not use read route.
         schema_update: Type[SchemaUpdateT] = None,
         list_per_page_max: int = None,
         depends_list: List[Depends] = None,
@@ -93,14 +93,15 @@ class BaseCrud(RouterMixin, Generic[SchemaModelT, SchemaListT, SchemaFilterT, Sc
             dependencies=depends_list,
             name=CrudEnum.list,
         )
-        self.router.add_api_route(
-            "/item/{item_id}",
-            self.route_read,
-            methods=["GET"],
-            response_model=BaseApiOut[Union[self.schema_read, List[self.schema_read]]],
-            dependencies=depends_read,
-            name=CrudEnum.read,
-        )
+        if self.schema_read:
+            self.router.add_api_route(
+                "/item/{item_id}",
+                self.route_read,
+                methods=["GET"],
+                response_model=BaseApiOut[Union[self.schema_read, List[self.schema_read]]],
+                dependencies=depends_read,
+                name=CrudEnum.read,
+            )
         self.router.add_api_route(
             "/item",
             self.route_create,
@@ -133,8 +134,8 @@ class BaseCrud(RouterMixin, Generic[SchemaModelT, SchemaListT, SchemaFilterT, Sc
     def _create_schema_filter(self) -> Type[SchemaFilterT]:
         return self.schema_filter or schema_create_by_schema(self.schema_list, f"{self.schema_name_prefix}Filter", set_none=True)
 
-    def _create_schema_read(self) -> Type[SchemaReadT]:
-        return self.schema_read or self.schema_model
+    def _create_schema_read(self) -> Optional[Type[SchemaReadT]]:
+        return self.schema_read
 
     def _create_schema_update(self) -> Type[SchemaUpdateT]:
         return self.schema_update or schema_create_by_schema(

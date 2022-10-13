@@ -579,7 +579,8 @@ class BaseModelAdmin(SQLModelCrud):
         if not bulk:
             api = f"put:{self.router_path}/item/${self.pk_name}"
             fields = self.schema_update.__fields__.values()
-            extra["initApi"] = f"get:{self.router_path}/item/${self.pk_name}"
+            if self.schema_read:
+                extra["initApi"] = f"get:{self.router_path}/item/${self.pk_name}"
         else:
             api = f"put:{self.router_path}/item/" + "${ids|raw}"
             fields = self.bulk_update_fields
@@ -601,6 +602,8 @@ class BaseModelAdmin(SQLModelCrud):
         )
 
     async def get_read_action(self, request: Request) -> Optional[Action]:
+        if not self.schema_read:
+            return None
         return ActionType.Dialog(
             icon="fa fa-eye",
             tooltip=_("View"),

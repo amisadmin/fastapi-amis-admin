@@ -235,7 +235,8 @@ class SQLModelCrud(BaseCrud, SQLModelSelector):
     update_exclude: Optional[Union[SetIntStr, DictIntStrAny]] = None
     """update exclude fields, such as: {'id', 'key', 'name'} or {'id': True, 'category': {'id', 'name'}}."""
     read_fields: List[SQLModelPropertyField] = []
-    """Model read fields; used in route_read, note the difference between readonly_fields and read_fields."""
+    """Model read fields; used in route_read, note the difference between readonly_fields and read_fields.
+    default is None, means not use read route."""
 
     def __init__(
         self,
@@ -299,9 +300,11 @@ class SQLModelCrud(BaseCrud, SQLModelSelector):
             set_none=True,
         )
 
-    def _create_schema_read(self) -> Type[SchemaReadT]:
+    def _create_schema_read(self) -> Optional[Type[SchemaReadT]]:
         if self.schema_read:
             return self.schema_read
+        if not self.read_fields:
+            return None
         self.read_fields = self.read_fields or self.schema_model.__fields__.values()
         self.read_fields = self.parser.filter_insfield(self.read_fields, save_class=(ModelField,))
         modelfields = [self.parser.get_modelfield(ins, deepcopy=True) for ins in self.read_fields]
