@@ -1,9 +1,11 @@
 from typing import List
 
+import pytest
 from fastapi import FastAPI
 from httpx import AsyncClient
 from sqlmodel.sql.expression import Select
 from starlette.requests import Request
+from starlette.routing import NoMatchFound
 
 from fastapi_amis_admin.crud import SQLModelCrud
 from fastapi_amis_admin.crud.parser import LabelField, PropertyField
@@ -16,6 +18,7 @@ async def test_pk_name(app: FastAPI, async_client: AsyncClient, fake_users):
     class UserCrud(SQLModelCrud):
         router_prefix = "/user"
         pk_name = "username"
+        read_fields = [User]
 
     ins = UserCrud(User, db.engine).register_crud()
 
@@ -345,3 +348,24 @@ async def test_update_fields_relationship(app: FastAPI, async_client: AsyncClien
 
     content = await async_session.get(ArticleContent, 1)
     assert content.content == "new_content"
+
+
+async def test_read_fields_and_schema_read_is_none(app: FastAPI, async_client: FastAPI):
+    class ArticleCrud(SQLModelCrud):
+        router_prefix = "/article"
+
+    ins = ArticleCrud(Article, db.engine).register_crud()
+
+    app.include_router(ins.router)
+    assert ins.schema_read is None
+
+    with pytest.raises(NoMatchFound):
+        ins.router.url_path_for(name="read")
+
+    # test schemas
+    openapi = app.openapi()
+    paths = openapi["paths"]
+    assert "/article/list" in paths
+    assert "/article/item/{item_id}" in paths
+    assert "put" in paths["/article/item/{item_id}"]
+    assert "get" not in paths["/article/item/{item_id}"]
