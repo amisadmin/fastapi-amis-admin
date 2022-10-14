@@ -2,10 +2,14 @@ from typing import AbstractSet, Any, Dict, Mapping, Optional, Sequence, Union
 
 from pydantic.fields import Undefined, UndefinedType
 from pydantic.typing import NoArgAnyCallable
-from sqlalchemy import Column
 from sqlmodel.main import FieldInfo
 
 from fastapi_amis_admin.amis.components import FormItem, TableColumn
+
+try:
+    from sqlmodelx.main import SaColumnTypes  # sqlmodelx version >= 0.0.4
+except ImportError:
+    from sqlalchemy import Column as SaColumnTypes
 
 
 def Field(
@@ -34,7 +38,7 @@ def Field(
     unique: bool = False,
     nullable: Union[bool, UndefinedType] = Undefined,
     index: Union[bool, UndefinedType] = Undefined,
-    sa_column: Union[Column, UndefinedType] = Undefined,
+    sa_column: Union[SaColumnTypes, UndefinedType] = Undefined,
     sa_column_args: Union[Sequence[Any], UndefinedType] = Undefined,
     sa_column_kwargs: Union[Mapping[str, Any], UndefinedType] = Undefined,
     schema_extra: Optional[Dict[str, Any]] = None,
