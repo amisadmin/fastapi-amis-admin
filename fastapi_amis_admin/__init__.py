@@ -14,6 +14,11 @@ i18n.load_translations(
             domain="messages",
             localedir=os.path.join(BASE_DIR, "locale"),
             languages=["zh_CN"],
+        ),
+        "de_DE": gettext.translation(
+            domain="messages",
+            localedir=os.path.join(BASE_DIR, "locale"),
+            languages=["de_DE"],
         )
     }
 )
