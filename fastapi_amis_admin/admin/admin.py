@@ -5,6 +5,7 @@ from typing import (
     Any,
     Callable,
     Dict,
+    Generic,
     Iterable,
     Iterator,
     List,
@@ -24,7 +25,7 @@ from sqlalchemy.orm import InstrumentedAttribute, RelationshipProperty
 from sqlalchemy.sql.elements import Label
 from sqlalchemy.util import md5_hex
 from sqlalchemy_database import AsyncDatabase, Database
-from sqlmodel import SQLModel, select
+from sqlmodel import SQLModel
 from starlette import status
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import HTMLResponse, JSONResponse, Response
@@ -67,6 +68,12 @@ from fastapi_amis_admin.amis.types import (
     SchemaNode,
 )
 from fastapi_amis_admin.crud import RouterMixin, SQLModelCrud, SQLModelSelector
+from fastapi_amis_admin.crud.base import (
+    SchemaCreateT,
+    SchemaFilterT,
+    SchemaModelT,
+    SchemaUpdateT,
+)
 from fastapi_amis_admin.crud.parser import (
     SQLModelFieldParser,
     SQLModelListField,
@@ -327,6 +334,7 @@ class BaseModelAdmin(SQLModelCrud):
     bulk_update_fields: List[Union[SQLModelListField, FormItem]] = []  # 批量编辑字段
     enable_bulk_create: bool = False  # 是否启用批量创建
     search_fields: List[SQLModelListField] = []  # 模糊搜索字段
+    page_schema: Union[PageSchema, str] = PageSchema()
 
     def __init__(self, app: "AdminApp"):
         assert self.model, "model is None"
@@ -336,7 +344,7 @@ class BaseModelAdmin(SQLModelCrud):
         self.amis_parser = self.app.site.amis_parser
         self.parser = SQLModelFieldParser(default_model=self.model)
         list_display_insfield = self.parser.filter_insfield(self.list_display, save_class=(Label,))
-        self.list_filter = self.list_filter or list_display_insfield
+        self.list_filter = self.list_filter or list_display_insfield or [self.model]
         self.list_filter.extend(self.search_fields)
         super().__init__(self.model, self.engine)
         self.fields.extend(list_display_insfield)
@@ -567,9 +575,12 @@ class BaseModelAdmin(SQLModelCrud):
         )
 
     async def get_update_form(self, request: Request, bulk: bool = False) -> Form:
+        extra = {}
         if not bulk:
             api = f"put:{self.router_path}/item/${self.pk_name}"
             fields = self.schema_update.__fields__.values()
+            if self.schema_read:
+                extra["initApi"] = f"get:{self.router_path}/item/${self.pk_name}"
         else:
             api = f"put:{self.router_path}/item/" + "${ids|raw}"
             fields = self.bulk_update_fields
@@ -579,6 +590,29 @@ class BaseModelAdmin(SQLModelCrud):
             body=await self._conv_modelfields_to_formitems(request, fields, CrudEnum.update),
             submitText=None,
             trimValues=True,
+            **extra,
+        )
+
+    async def get_read_form(self, request: Request) -> Form:
+        return Form(
+            initApi=f"get:{self.router_path}/item/${self.pk_name}",
+            name=CrudEnum.read,
+            body=await self._conv_modelfields_to_formitems(request, self.schema_read.__fields__.values(), CrudEnum.read),
+            submitText=None,
+        )
+
+    async def get_read_action(self, request: Request) -> Optional[Action]:
+        if not self.schema_read:
+            return None
+        return ActionType.Dialog(
+            icon="fa fa-eye",
+            tooltip=_("View"),
+            level=LevelEnum.primary,
+            dialog=Dialog(
+                title=_("View") + " - " + _(self.page_schema.label),
+                size=SizeEnum.lg,
+                body=await self.get_read_form(request),
+            ),
         )
 
     async def get_create_action(self, request: Request, bulk: bool = False) -> Optional[Action]:
@@ -662,6 +696,7 @@ class BaseModelAdmin(SQLModelCrud):
 
     async def get_actions_on_item(self, request: Request) -> List[Action]:
         actions = [
+            await self.get_read_action(request),
             await self.get_update_action(request, bulk=False),
             await self.get_delete_action(request, bulk=False),
         ]
@@ -903,8 +938,8 @@ class TemplateAdmin(PageAdmin):
         return {}
 
 
-class BaseFormAdmin(PageAdmin):
-    schema: Type[BaseModel] = None
+class BaseFormAdmin(PageAdmin, Generic[SchemaUpdateT]):
+    schema: Type[SchemaUpdateT] = None
     schema_init_out: Type[Any] = Any
     schema_submit_out: Type[Any] = Any
     form: Form = None
@@ -975,7 +1010,7 @@ class FormAdmin(BaseFormAdmin):
 
         return route
 
-    async def handle(self, request: Request, data: BaseModel, **kwargs) -> BaseApiOut[Any]:
+    async def handle(self, request: Request, data: SchemaUpdateT, **kwargs) -> BaseApiOut[Any]:
         raise NotImplementedError
 
     async def get_init_data(self, request: Request, **kwargs) -> BaseApiOut[Any]:
@@ -1029,12 +1064,12 @@ class ModelAdmin(BaseModelAdmin, PageAdmin):
         self,
         request: Request,
         paginator: Paginator,
-        filters: BaseModel = None,  # type self.schema_filter
+        filters: SchemaFilterT = None,
         **kwargs,
     ) -> bool:
         return await self.has_page_permission(request)
 
-    async def has_create_permission(self, request: Request, data: BaseModel, **kwargs) -> bool:  # type self.schema_create
+    async def has_create_permission(self, request: Request, data: SchemaCreateT, **kwargs) -> bool:  # type self.schema_create
         return await self.has_page_permission(request)
 
     async def has_read_permission(self, request: Request, item_id: List[str], **kwargs) -> bool:
@@ -1044,7 +1079,7 @@ class ModelAdmin(BaseModelAdmin, PageAdmin):
         self,
         request: Request,
         item_id: List[str],
-        data: BaseModel,  # type self.schema_update
+        data: SchemaUpdateT,
         **kwargs,
     ) -> bool:
         return await self.has_page_permission(request)
@@ -1073,9 +1108,9 @@ class BaseModelAction:
         self.admin = admin
         assert self.admin, "admin is None"
 
-    async def fetch_item_scalars(self, item_id: List[str]) -> List[BaseModel]:
-        stmt = select(self.admin.model).where(self.admin.pk.in_(item_id))
-        return await self.admin.db.async_scalars_all(stmt)
+    async def fetch_item_scalars(self, item_id: List[str]) -> List[SchemaModelT]:
+        # noinspection PyProtectedMember
+        return await self.admin.db.async_run_sync(self.admin._fetch_item_scalars, item_id, commit=False)
 
     def register_router(self):
         raise NotImplementedError
@@ -1102,7 +1137,6 @@ class FormAction(FormAdmin, BaseFormAction):
 
 
 class ModelAction(BaseFormAdmin, BaseModelAction):
-    schema: Type[BaseModel] = None
     action: ActionType.Dialog = None
 
     def __init__(self, admin: "ModelAdmin"):
@@ -1126,7 +1160,7 @@ class ModelAction(BaseFormAdmin, BaseModelAction):
         )
         return action
 
-    async def handle(self, request: Request, item_id: List[str], data: Optional[BaseModel], **kwargs) -> BaseApiOut[Any]:
+    async def handle(self, request: Request, item_id: List[str], data: Optional[SchemaUpdateT], **kwargs) -> BaseApiOut[Any]:
         return BaseApiOut(data=data)
 
     @property
@@ -1331,7 +1365,7 @@ class BaseAdminSite(AdminApp):
         try:
             from fastapi_user_auth.auth import Auth
 
-            self.auth: Auth = None
+            self.auth: Auth = None  # type: ignore
         except ImportError:
             pass
         self.settings = settings

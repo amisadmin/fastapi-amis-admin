@@ -1,19 +1,24 @@
+from typing import List
+
+import pytest
 from fastapi import FastAPI
 from httpx import AsyncClient
 from sqlmodel.sql.expression import Select
 from starlette.requests import Request
+from starlette.routing import NoMatchFound
 
 from fastapi_amis_admin.crud import SQLModelCrud
-from fastapi_amis_admin.crud.parser import LabelField
+from fastapi_amis_admin.crud.parser import LabelField, PropertyField
 from fastapi_amis_admin.models import Field
 from tests.conftest import async_db as db
-from tests.models import Article, User
+from tests.models import Article, ArticleContent, Category, Tag, User
 
 
 async def test_pk_name(app: FastAPI, async_client: AsyncClient, fake_users):
     class UserCrud(SQLModelCrud):
         router_prefix = "/user"
         pk_name = "username"
+        read_fields = [User]
 
     ins = UserCrud(User, db.engine).register_crud()
 
@@ -244,3 +249,123 @@ async def test_fields(app: FastAPI, async_client: AsyncClient, fake_articles):
     assert items[0]["id"] == 2
     assert items[0]["user__username"] == "User_2"
     assert items[0]["pwd"] == "password_2"
+
+
+async def test_read_fields(app: FastAPI, async_client: AsyncClient, fake_articles):
+    class ArticleCrud(SQLModelCrud):
+        router_prefix = "/article"
+        read_fields = [
+            Article.title,
+            Article.description,
+            # Article.category,  # Relationship
+            # Article.user  # Relationship
+        ]
+
+    ins = ArticleCrud(Article, db.engine).register_crud()
+
+    app.include_router(ins.router)
+
+    # test schemas
+    assert "id" not in ins.schema_read.__fields__
+    assert "title" in ins.schema_read.__fields__
+    assert "description" in ins.schema_read.__fields__
+    # test api
+    res = await async_client.get("/article/item/1")
+    items = res.json()["data"]
+    print(items)
+    assert "id" not in items
+    assert items["title"] == "Article_1"
+    assert items["description"] == "Description_1"
+
+
+async def test_read_fields_relationship(app: FastAPI, async_client: AsyncClient, fake_articles, fake_article_tags):
+    class ArticleCrud(SQLModelCrud):
+        router_prefix = "/article"
+        read_fields = [
+            Article.title,
+            Article.description,
+            PropertyField(name="category", type_=Category),  # Relationship attribute
+            # Article.category,  # Relationship todo support
+            PropertyField(name="content_text", type_=str),  # property attribute
+            PropertyField(name="tags", type_=List[Tag]),  # property attribute
+        ]
+
+    ins = ArticleCrud(Article, db.engine).register_crud()
+
+    app.include_router(ins.router)
+
+    # test schemas
+    assert "id" not in ins.schema_read.__fields__
+    assert "title" in ins.schema_read.__fields__
+    assert "description" in ins.schema_read.__fields__
+    assert "category" in ins.schema_read.__fields__
+    assert "tags" in ins.schema_read.__fields__
+    # test api
+    res = await async_client.get("/article/item/1")
+    items = res.json()["data"]
+    assert "id" not in items
+    assert "category" in items
+    assert items["category"]["name"] == "Category_1"
+    assert "content_text" in items
+    assert items["tags"][0]["name"] == "Tag_1"
+
+
+async def test_update_fields_relationship(app: FastAPI, async_client: AsyncClient, fake_articles, async_session):
+    class ArticleCrud(SQLModelCrud):
+        router_prefix = "/article"
+        update_exclude = {"content": {"id"}}
+        update_fields = [
+            Article.description,
+            PropertyField(name="content", type_=ArticleContent),  # Relationship attribute
+        ]
+
+    ins = ArticleCrud(Article, db.engine).register_crud()
+
+    app.include_router(ins.router)
+
+    # test schemas
+    assert "id" not in ins.schema_update.__fields__
+    assert "title" not in ins.schema_update.__fields__
+    assert "description" in ins.schema_update.__fields__
+    assert "content" in ins.schema_update.__fields__
+
+    # test api
+    res = await async_client.put(
+        "/article/item/1",
+        json={
+            "title": "new_title",
+            "description": "new_description",
+            "content": {
+                "id": 22,  # will be ignored by `update_exclude`
+                "content": "new_content",
+            },
+        },
+    )
+    assert res.json()["data"] == 1
+    article = await async_session.get(Article, 1)
+    assert article.title != "new_title"
+    assert article.description == "new_description"
+
+    content = await async_session.get(ArticleContent, 1)
+    assert content.content == "new_content"
+
+
+async def test_read_fields_and_schema_read_is_none(app: FastAPI, async_client: FastAPI):
+    class ArticleCrud(SQLModelCrud):
+        router_prefix = "/article"
+
+    ins = ArticleCrud(Article, db.engine).register_crud()
+
+    app.include_router(ins.router)
+    assert ins.schema_read is None
+
+    with pytest.raises(NoMatchFound):
+        ins.router.url_path_for(name="read")
+
+    # test schemas
+    openapi = app.openapi()
+    paths = openapi["paths"]
+    assert "/article/list" in paths
+    assert "/article/item/{item_id}" in paths
+    assert "put" in paths["/article/item/{item_id}"]
+    assert "get" not in paths["/article/item/{item_id}"]

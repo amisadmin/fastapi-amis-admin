@@ -4,6 +4,7 @@ from typing import Any, Dict, Iterable, List, Set, Type, Union
 from fastapi.params import Path
 from pydantic import BaseConfig, BaseModel, Extra
 from pydantic.fields import ModelField
+from pydantic.main import ModelMetaclass
 from pydantic.utils import smart_deepcopy
 from sqlalchemy.engine import Engine
 from sqlalchemy.ext.asyncio import AsyncEngine
@@ -50,6 +51,7 @@ def schema_create_by_modelfield(
     **kwargs,
 ) -> Type[BaseModel]:
     namespaces = namespaces or {}
+    namespaces["Config"] = type("Config", (BaseApiSchema.Config,), {"extra": extra, **kwargs})
     namespaces.update({"__fields__": {}, "__annotations__": {}})
     for modelfield in modelfields:
         if set_none:
@@ -61,7 +63,7 @@ def schema_create_by_modelfield(
                 modelfield.pre_validators.insert(0, validator_skip_blank)
         namespaces["__fields__"][modelfield.name] = modelfield
         namespaces["__annotations__"][modelfield.name] = modelfield.type_
-    return type(schema_name, (BaseApiSchema,), namespaces, extra=extra, **kwargs)  # type: ignore
+    return ModelMetaclass(schema_name, (BaseApiSchema,), namespaces)
 
 
 def parser_str_set_list(set_str: Union[int, str]) -> List[str]:

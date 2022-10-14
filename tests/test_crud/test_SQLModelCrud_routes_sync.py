@@ -42,7 +42,7 @@ def fake_users() -> List[User]:
 
 @pytest.fixture(autouse=True)
 def app_routes(app: FastAPI):
-    user_crud = SQLModelCrud(User, db.engine).register_crud()
+    user_crud = SQLModelCrud(User, db.engine).register_crud(schema_read=User)
 
     app.include_router(user_crud.router)
 

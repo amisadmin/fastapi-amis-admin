@@ -20,7 +20,8 @@ class I18N:
 
     def set_language(self, language: str = None) -> str:
         """
-        Set the i18n localization language. If it is empty, try to read the environment variable `LANGUAGE`/`LANG`, the system default language, in turn.
+        Set the i18n localization language. If it is empty, try to read the environment variable `LANGUAGE`/`LANG`,
+        the system default language, in turn.
         :param language: the language to try to set
         :return: the language after the successful setting
         """

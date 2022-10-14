@@ -98,3 +98,6 @@ msgstr "是"
 
 msgid "NO"
 msgstr "否"
+
+msgid "View"
+msgstr "查看"

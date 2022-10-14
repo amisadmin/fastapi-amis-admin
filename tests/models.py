@@ -70,3 +70,7 @@ class Article(PkModelMixin, CreateTimeModelMixin, table=True):
     user: Optional[User] = Relationship(back_populates="articles")
 
     tags: List[Tag] = Relationship(back_populates="articles", link_model=ArticleTagLink)
+
+    @property
+    def content_text(self):
+        return self.content.content if self.content else ""

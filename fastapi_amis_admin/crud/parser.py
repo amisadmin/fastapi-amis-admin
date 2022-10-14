@@ -16,6 +16,7 @@ from sqlmodel import SQLModel
 SQLModelField = Union[str, InstrumentedAttribute]
 SqlField = Union[InstrumentedAttribute, Label]
 SQLModelListField = Union[Type[SQLModel], SQLModelField, SqlField]
+SQLModelPropertyField = Union[Type[SQLModel], SQLModelField, "PropertyField"]
 
 
 class SQLModelFieldParser:
@@ -42,7 +43,7 @@ class SQLModelFieldParser:
         elif isinstance(field, ModelField):
             modelfield = field
         elif isinstance(field, Label):
-            return get_label_model_field(field)
+            return _get_label_modelfield(field)
         else:  # other
             return None
         if deepcopy:
@@ -148,7 +149,7 @@ def get_python_type_parse(field: Union[InstrumentedAttribute, Column, Label]) ->
         return str
 
 
-def get_label_model_field(label: Label) -> ModelField:
+def _get_label_modelfield(label: Label) -> ModelField:
     modelfield = getattr(label, "__ModelField__", None)
     if modelfield is None:
         try:
@@ -161,8 +162,20 @@ def get_label_model_field(label: Label) -> ModelField:
 
 
 def LabelField(label: Label, field: FieldInfo) -> Label:
-    modelfield = get_label_model_field(label)
+    """Use for adding FieldInfo to sqlalchemy Label type"""
+    modelfield = _get_label_modelfield(label)
     field.alias = label.key
     modelfield.field_info = field
     label.__ModelField__ = modelfield
     return label
+
+
+class PropertyField(ModelField):
+    """Use this to quickly initialize a ModelField, mainly used in schema_read and schema_update"""
+
+    def __init__(
+        self, *, name: str, type_: Type[Any], required: bool = False, field_info: Optional[FieldInfo] = None, **kwargs: Any
+    ) -> None:
+        kwargs.setdefault("class_validators", {})
+        kwargs.setdefault("model_config", BaseConfig)
+        super().__init__(name=name, type_=type_, required=required, field_info=field_info, **kwargs)
