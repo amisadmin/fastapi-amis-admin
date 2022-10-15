@@ -1,4 +1,4 @@
-# help or get help
+# Help or get help
 
 If you like the `fastapi_amis_admin` project, or it works for you, you can help `fastapi_amis_admin` in the following ways.
 
