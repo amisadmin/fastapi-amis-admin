@@ -99,4 +99,4 @@ msgid "NO"
 msgstr "NEIN"
 
 msgid "View"
-msgstr "Sehen"
+msgstr "Anzeigen"
