@@ -74,7 +74,6 @@ self.session_maker: sessionmaker = sessionmaker(self.async_engine, autoflush=Fal
 
 ```python
 def session_generator(self) -> Generator[Session, Any, None]:
-    session = self.session_maker()
     with self.session_maker() as session:
         yield session
 ```
