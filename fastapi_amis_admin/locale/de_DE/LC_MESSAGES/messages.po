@@ -35,7 +35,7 @@ msgstr "Sind Sie sicher, dass Sie die Assoziation entfernen wollen?"
 
 #: amis_admin/admin.py:335
 msgid "SHOWING ${items|count} OF ${total} RESULT(S)"
-msgstr "Zeige {items|count} von {total} Resultate"
+msgstr "Zeige ${items|count} von ${total} Resultate"
 
 #: amis_admin/admin.py:391
 msgid "Filter"
@@ -99,4 +99,4 @@ msgid "NO"
 msgstr "NEIN"
 
 msgid "View"
-msgstr "Sehen"
+msgstr "Anzeigen"

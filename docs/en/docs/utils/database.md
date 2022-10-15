@@ -1,17 +1,17 @@
 ## AsyncDatabase
 
-- `sqlalchemy`异步客户端
+- `sqlalchemy` asynchronous client
 
-### 字段
+### fields
 
 #### engine
 
-- `sqlalchemy`异步引擎.
+- `sqlalchemy` asynchronous engine.
 -
 
-参考: [Asynchronous I/O (asyncio) — SQLAlchemy 1.4 Documentation](https://docs.sqlalchemy.org/en/14/orm/extensions/asyncio.html?highlight=async#sqlalchemy.ext.asyncio.AsyncEngine)
+Reference: [Asynchronous I/O (asyncio) — SQLAlchemy 1.4 Documentation](https://docs.sqlalchemy.org/en/14/orm/extensions/asyncio.html?highlight=async#sqlalchemy.ext.asyncio.AsyncEngine)
 
-- 示例:
+- Example:
 
 ```python
 from sqlalchemy.ext.asyncio import create_async_engine
@@ -27,7 +27,7 @@ engine = create_async_engine("sqlite+aiosqlite:///amisadmin.db", future=True)
 self.session_maker: sessionmaker = sessionmaker(self.async_engine, class_=AsyncSession, autoflush=False)
 ```
 
-### 方法:
+### method:
 
 #### session_generator
 
@@ -39,18 +39,18 @@ async def session_generator(self) -> AsyncGenerator[AsyncSession, Any]:
 
 ## Database
 
-- `sqlalchemy`同步客户端
+- `sqlalchemy` sync client
 
-### 字段
+### fields
 
 #### engine
 
-- `sqlalchemy`同步引擎.
--
+- `sqlalchemy` synchronization engine.
 
-参考: [Establishing Connectivity - the Engine — SQLAlchemy 1.4 Documentation](https://docs.sqlalchemy.org/en/14/tutorial/engine.html)
 
-- 示例:
+Reference: [Establishing Connectivity - the Engine — SQLAlchemy 1.4 Documentation](https://docs.sqlalchemy.org/en/14/tutorial/engine.html)
+
+- Example:
 
 ```python
 from sqlalchemy import create_engine
@@ -68,7 +68,7 @@ engine = create_engine("sqlite+pysqlite:///amisadmin.db", echo=True, future=True
 self.session_maker: sessionmaker = sessionmaker(self.async_engine, autoflush=False)
 ```
 
-### 方法:
+### method:
 
 #### session_generator
 
@@ -77,4 +77,3 @@ def session_generator(self) -> Generator[Session, Any, None]:
     with self.session_maker() as session:
         yield session
 ```
-
