@@ -128,8 +128,10 @@ async def verify_token(x_token: str = Header(...)):
         raise HTTPException(status_code=400, detail="X-Token header invalid")
 
 
-site = AdminSite(settings=Settings(debug=True, database_url_async='sqlite+aiosqlite:///amisadmin.db'),
-                 fastapi=FastAPI(dependencies=[Depends(verify_token)]))
+site = AdminSite(
+    settings=Settings(debug=True, database_url_async='sqlite+aiosqlite:///amisadmin.db'),
+    fastapi=FastAPI(dependencies=[Depends(verify_token)])
+)
 
 ```
 

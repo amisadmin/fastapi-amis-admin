@@ -14,7 +14,7 @@
 
 #### page_schema
 
-- Current page menu navigation information
+- Current page menu navigation information.If None, it will not be displayed in the menu navigation.
 
 ### method
 

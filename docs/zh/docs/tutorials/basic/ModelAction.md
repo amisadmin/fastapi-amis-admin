@@ -1,6 +1,8 @@
 # 模型动作
 
-模型管理动作指的是针对某一项或多项模型数据所进行的操作.例如:最基本的操作有增加/读取/更新/删除; 但是很多时候你可能需要添加某些特殊的操作命令.例如:改变数据状态, 执行某些任务.这时候你可以添加自定义模型管理动作.`fastapi_amis_admin`
+模型管理动作指的是针对某一项或多项模型数据所进行的操作.例如:最基本的操作有增加/读取/更新/删除;
+但是很多时候你可能需要添加某些特殊的操作命令.例如:改变数据状态,
+执行某些任务.这时候你可以添加自定义模型管理动作.`fastapi_amis_admin`
 拥有多种类型模型动作,下面简单演示几种可能常用的动作方式.
 
 ## 自定义工具条动作
@@ -79,7 +81,8 @@ class ArticleAdmin(admin.ModelAdmin):
 
 示例-2中所完成的工作:
 
-- 定义了一个最基础的模型动作类`TestAction`,它的核心是`handle`方法.具体请参考: [ModelAction](/amis_admin/ModelAction/#baseformadmin)
+- 定义了一个最基础的模型动作类`TestAction`,它的核心是`handle`
+  方法.具体请参考: [ModelAction](/amis_admin/ModelAction/#baseformadmin)
 
 - 通过重载`register_router`方法,实例化`TestAction`类,并且注册路由,绑定到当前模型管理类属性字段当中.
 

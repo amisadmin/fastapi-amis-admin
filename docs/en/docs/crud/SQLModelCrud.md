@@ -65,7 +65,10 @@ def get_select(self, request: Request) -> Select
 - Calculate query filter conditions.
 
 ```python
-def calc_filter_clause(self, data: Dict[str, Any]) -> List[BinaryExpression]
+def calc_filter_clause(
+    self,
+    data: Dict[str, Any]
+) -> List[BinaryExpression]
 ```
 
 ## SQLModelCrud
@@ -107,7 +110,12 @@ def get_select(self, request: Request) -> Select
 - Returns the processed data of the create request.
 
 ```python
-async def on_create_pre(self, request: Request, obj: BaseModel, **kwargs) -> Dict[str, Any]
+async def on_create_pre(
+    self,
+    request: Request,
+    obj: SchemaCreateT,
+    **kwargs
+) -> Dict[str, Any]
 ```
 
 #### on_update_pre
@@ -115,7 +123,13 @@ async def on_create_pre(self, request: Request, obj: BaseModel, **kwargs) -> Dic
 - Returns the data after the update request has been processed.
 
 ```python
-async def on_update_pre(self, request: Request, obj: BaseModel, **kwargs) -> Dict[str, Any]
+async def on_update_pre(
+    self,
+    request: Request,
+    obj: SchemaUpdateT,
+    item_id: Union[List[str], List[int]],
+    **kwargs
+) -> Dict[str, Any]
 ```
 
 #### on_filter_pre
@@ -123,5 +137,10 @@ async def on_update_pre(self, request: Request, obj: BaseModel, **kwargs) -> Dic
 - Returns the data processed by the batch query request submission filter.
 
 ```python
-async def on_filter_pre(self, request: Request, obj: BaseModel, **kwargs) -> Dict[str, Any]
+async def on_filter_pre(
+    self,
+    request: Request,
+    obj: SchemaFilterT,
+    **kwargs
+) -> Dict[str, Any]
 ```

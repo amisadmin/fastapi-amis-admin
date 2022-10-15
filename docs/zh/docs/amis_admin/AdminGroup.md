@@ -6,15 +6,11 @@
 
 - #### [PageSchemaAdmin](../PageSchemaAdmin)
 
-
-
 ### 字段
 
 #### _children
 
 - 当前页面组子页面属性列表
-
-
 
 ### 方法
 
@@ -29,7 +25,6 @@
 ```python
 async def get_page_schema_children(self, request: Request) -> List[PageSchema]
 ```
-
 
 #### append_child
 

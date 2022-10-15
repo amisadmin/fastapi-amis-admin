@@ -1,6 +1,6 @@
 site_url: https://docs.amis.work/
 site_name: FastAPI-Amis-Admin
-site_description: fastapi-amis-admin是一个拥有高性能,高效率,易拓展的fastapi管理后台框架.启发自Django-Admin,并且拥有不逊色于Django-Admin的强大功能.
+site_description: fastapi-amis-admin is a high-performance, efficient and easily extensible FastAPI admin framework. Inspired by Django-admin, and has as many powerful functions as Django-admin.
 repo_url: https://github.com/amisadmin/fastapi_amis_admin
 edit_uri: edit/master/docs/en/docs/
 theme:
@@ -71,7 +71,7 @@ nav:
   - Tutorials:
       - index.md
       - tutorials/quickstart.md
-      - 基础教程:
+      - Basic:
           - tutorials/basic/PageAdmin.md
           - tutorials/basic/FormAdmin.md
           - tutorials/basic/TemplateAdmin.md
@@ -81,7 +81,7 @@ nav:
           - tutorials/basic/Inheritance.md
           - tutorials/basic/i18n.md
           - tutorials/basic/_more.md
-      - 高级教程:
+      - Advanced:
           - tutorials/advanced/cli.md
           - tutorials/advanced/permission.md
           - tutorials/advanced/user-auth.md
@@ -90,7 +90,7 @@ nav:
           - tutorials/advanced/structure.md
           - tutorials/advanced/debug.md
           - tutorials/advanced/_more.md
-      - 拓展教程:
+      - Expand:
           - extended/about.md
           - extended/SQLModel.md
           - extended/alembic.md

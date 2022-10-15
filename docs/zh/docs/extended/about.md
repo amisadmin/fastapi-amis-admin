@@ -1,6 +1,7 @@
 # 关于拓展教程
 
-本部分内容严格上并不属于`fastapi_amis_admin`开发教程文档范围, 但是通过阅读了解本部分相关内容知识, 将更加有利于`fastapi_amis_admin`的开发.
+本部分内容严格上并不属于`fastapi_amis_admin`开发教程文档范围, 
+但是通过阅读了解本部分相关内容知识, 将更加有利于`fastapi_amis_admin`的开发.
 
 - [FastAPI](https://fastapi.tiangolo.com/)
 - [Amis](https://baidu.gitee.io/amis)

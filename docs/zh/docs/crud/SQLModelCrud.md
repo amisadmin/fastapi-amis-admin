@@ -65,7 +65,10 @@ def get_select(self, request: Request) -> Select
 - 计算查询过滤条件.
 
 ```python
-def calc_filter_clause(self, data: Dict[str, Any]) -> List[BinaryExpression]
+def calc_filter_clause(
+    self,
+    data: Dict[str, Any]
+) -> List[BinaryExpression]
 ```
 
 ## SQLModelCrud
@@ -107,7 +110,12 @@ def get_select(self, request: Request) -> Select
 - 返回创建请求处理后的数据.
 
 ```python
-async def on_create_pre(self, request: Request, obj: BaseModel, **kwargs) -> Dict[str, Any]
+async def on_create_pre(
+    self,
+    request: Request,
+    obj: SchemaCreateT,
+    **kwargs
+) -> Dict[str, Any]
 ```
 
 #### on_update_pre
@@ -115,7 +123,13 @@ async def on_create_pre(self, request: Request, obj: BaseModel, **kwargs) -> Dic
 - 返回更新请求处理后的数据.
 
 ```python
-async def on_update_pre(self, request: Request, obj: BaseModel, **kwargs) -> Dict[str, Any]
+async def on_update_pre(
+    self,
+    request: Request,
+    obj: SchemaUpdateT,
+    item_id: Union[List[str], List[int]],
+    **kwargs
+) -> Dict[str, Any]
 ```
 
 #### on_filter_pre
@@ -123,6 +137,11 @@ async def on_update_pre(self, request: Request, obj: BaseModel, **kwargs) -> Dic
 - 返回批量查询请求提交过滤器处理后的数据.
 
 ```python
-async def on_filter_pre(self, request: Request, obj: BaseModel, **kwargs) -> Dict[str, Any]
+async def on_filter_pre(
+    self,
+    request: Request,
+    obj: SchemaFilterT,
+    **kwargs
+) -> Dict[str, Any]
 ```
 

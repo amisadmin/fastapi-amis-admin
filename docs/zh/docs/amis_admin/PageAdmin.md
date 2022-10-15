@@ -12,7 +12,7 @@
 
 #### page
 
-- Amis页面展示主Page对象
+- Amis页面展示的Page对象
 - 参考: [Page 页面](https://baidu.gitee.io/amis/zh-CN/components/page)
 
 #### page_path
@@ -39,8 +39,8 @@
 - 页面路由函数
 
 ```python
-  @property
-  def route_page(self)->Callable
+@property
+def route_page(self) -> Callable
 ```
 
 ### 方法

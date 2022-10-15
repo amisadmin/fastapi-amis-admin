@@ -33,7 +33,7 @@ site.mount_app(app)
 # 创建初始化数据库表
 @app.on_event("startup")
 async def startup():
-    await site.db.async_run_sync(SQLModel.metadata.create_all)
+    await site.db.async_run_sync(SQLModel.metadata.create_all,is_session=False)
     # 创建默认测试用户, 请及时修改密码!!!
     await auth.create_role_user('admin')
     await auth.create_role_user('vip')

@@ -95,7 +95,8 @@ class GitHubLinkAdmin(admin.LinkAdmin):
 
 ## 内嵌框架管理
 
-`IframeAdmin`实现在菜单列表显示一个菜单.点击菜单后将通过在当前页面内嵌一个框架,访问设置的链接. 使用方法与`LinkAdmin`非常相似,不同的仅仅是链接的打开方式.
+`IframeAdmin`实现在菜单列表显示一个菜单.点击菜单后将通过在当前页面内嵌一个框架,访问设置的链接. 使用方法与`LinkAdmin`
+非常相似,不同的仅仅是链接的打开方式.
 
 ```python
 @site.register_admin

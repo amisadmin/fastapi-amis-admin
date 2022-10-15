@@ -47,7 +47,6 @@ async def session_generator(self) -> AsyncGenerator[AsyncSession, Any]:
 
 - `sqlalchemy` synchronization engine.
 
-
 Reference: [Establishing Connectivity - the Engine — SQLAlchemy 1.4 Documentation](https://docs.sqlalchemy.org/en/14/tutorial/engine.html)
 
 - Example:
@@ -74,7 +73,10 @@ self.session_maker: sessionmaker = sessionmaker(self.async_engine, autoflush=Fal
 
 ```python
 def session_generator(self) -> Generator[Session, Any, None]:
-    session = self.session_maker()
     with self.session_maker() as session:
         yield session
 ```
+
+### Reference project:
+
+[sqlalchemy-database](https://github.com/amisadmin/sqlalchemy_database)
