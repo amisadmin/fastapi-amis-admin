@@ -78,3 +78,6 @@ def session_generator(self) -> Generator[Session, Any, None]:
         yield session
 ```
 
+### 参考项目: 
+
+[sqlalchemy-database](https://github.com/amisadmin/sqlalchemy_database)

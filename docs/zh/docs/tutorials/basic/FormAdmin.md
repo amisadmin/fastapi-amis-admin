@@ -34,11 +34,13 @@ class UserLoginFormAdmin(admin.FormAdmin):
 
 ## 表单对象
 
-类字段`form`可以配置表单的基本信息,例如: 标题,表单样式,提交按钮,提交API,信息提示等等.请参考: [Form 表单](https://baidu.gitee.io/amis/zh-CN/components/form/index)
+类字段`form`可以配置表单的基本信息,例如:
+标题,表单样式,提交按钮,提交API,信息提示等等.请参考: [Form 表单](https://baidu.gitee.io/amis/zh-CN/components/form/index)
 
 ## 表单数据模型
 
-类字段`schema`定义表单数据模型,它继承自 `pydantic BaseModel`, 支持各种类型字段, 通过`amis`自动在前端解析成对应的组件.通过`schema`可以完成的功能有:
+类字段`schema`定义表单数据模型,它继承自 `pydantic BaseModel`, 支持各种类型字段, 通过`amis`自动在前端解析成对应的组件.通过`schema`
+可以完成的功能有:
 
 - 定义字段基本属性. 例如: 名称,标签,数据类型,基本限制
 - 自定义字段处理或验证器. 参考: [Validators - pydantic](https://pydantic-docs.helpmanual.io/usage/validators/)

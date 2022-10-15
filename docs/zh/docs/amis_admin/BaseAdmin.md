@@ -21,8 +21,6 @@
 - 可自定义设置,如未设置则根据默认规则自动生成.
 - 唯一性标识ID不应当随着项目的启动或停止产生变化, 并且在项目中每个Admin类标识应当唯一.
 
-
-
 ## Admin ClassDiagram
 
 - FastAPI-Amis-Admin 核心类图

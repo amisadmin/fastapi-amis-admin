@@ -140,19 +140,20 @@ async def has_delete_permission(self, request: Request, item_id: Optional[List[s
 - 注册Crud路由.
 
 ```python
-def register_crud(self,
-                      schema_list: Type[BaseModel] = None,
-                      schema_filter: Type[BaseModel] = None,
-                      schema_create: Type[BaseModel] = None,
-                      schema_read: Type[BaseModel] = None,
-                      schema_update: Type[BaseModel] = None,
-                      list_max_per_page: int = None,
-                      depends_list: List[Depends] = None,
-                      depends_read: List[Depends] = None,
-                      depends_create: List[Depends] = None,
-                      depends_update: List[Depends] = None,
-                      depends_delete: List[Depends] = None
-                      ) -> "BaseCrud"
+def register_crud(
+    self,
+    schema_list: Type[BaseModel] = None,
+    schema_filter: Type[BaseModel] = None,
+    schema_create: Type[BaseModel] = None,
+    schema_read: Type[BaseModel] = None,
+    schema_update: Type[BaseModel] = None,
+    list_max_per_page: int = None,
+    depends_list: List[Depends] = None,
+    depends_read: List[Depends] = None,
+    depends_create: List[Depends] = None,
+    depends_update: List[Depends] = None,
+    depends_delete: List[Depends] = None
+) -> "BaseCrud"
 ```
 
 

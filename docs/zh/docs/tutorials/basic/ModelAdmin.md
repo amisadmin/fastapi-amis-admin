@@ -1,6 +1,7 @@
 # 模型管理
 
-模型管理在后台管理中是最为常用的一个管理类,其使用功能也是最为丰富的. fastapi-amis-admin目前已经实现针对数据模型常用的各种基本操作, 并且你仍然可以在此基础上做出更多个性化的拓展.
+模型管理在后台管理中是最为常用的一个管理类,其使用功能也是最为丰富的. fastapi-amis-admin目前已经实现针对数据模型常用的各种基本操作,
+并且你仍然可以在此基础上做出更多个性化的拓展.
 
 ## 示例-1
 
@@ -62,12 +63,14 @@ class ArticleAdmin(admin.ModelAdmin):
         return stmt.outerjoin(Category, Article.category_id == Category.id)
 ```
 
-示例2相比于示例1显得更为复杂. 但是如果你熟悉`Django-Admin`你会发现他们非常的相似,是的. `fastapi_amis_admin`启发自`Django-Admin`,所以很多功能的设计都与之类似, 并且`fastapi_amis_admin`
+示例2相比于示例1显得更为复杂. 但是如果你熟悉`Django-Admin`你会发现他们非常的相似,是的. `fastapi_amis_admin`启发自`Django-Admin`
+,所以很多功能的设计都与之类似, 并且`fastapi_amis_admin`
 的功能更加丰富,配置更加灵活.
 
 ### 配置展示字段
 
-默认情况下,管理列表会展示当前模型的全部字段.但是如果你只需要展示部分字段,或者你还需要展示相关模型的其他字段,你可以通过配置`list_display`来自定义需要展示的字段.
+默认情况下,管理列表会展示当前模型的全部字段.但是如果你只需要展示部分字段,或者你还需要展示相关模型的其他字段,你可以通过配置`list_display`
+来自定义需要展示的字段.
 
 - 例如在示例2中:
 

@@ -6,15 +6,14 @@
 
 - #### [PageAdmin](../PageAdmin)
 
-
-
 ### 字段
 
 #### engine
 
 - 当前应用`sqlalchemy`数据库引擎,支持同步引擎和异步引擎.
 
-- 参考: [Asynchronous I/O (asyncio) — SQLAlchemy 1.4 Documentation](https://docs.sqlalchemy.org/en/14/orm/extensions/asyncio.html?highlight=async#sqlalchemy.ext.asyncio.AsyncEngine)
+-
+参考: [Asynchronous I/O (asyncio) — SQLAlchemy 1.4 Documentation](https://docs.sqlalchemy.org/en/14/orm/extensions/asyncio.html?highlight=async#sqlalchemy.ext.asyncio.AsyncEngine)
 - 示例:
 
 ```python
@@ -26,14 +25,12 @@ engine = create_async_engine("sqlite+aiosqlite:///amisadmin.db", future=True)
 
 #### db
 
-- 当前应用`sqlalchemy`客户端,支持同步或异步, 即 `AsyncDatabase`或`Database` 对象. 
+- 当前应用`sqlalchemy`客户端,支持同步或异步, 即 `AsyncDatabase`或`Database` 对象.
 - 参考: [AsyncDatabase](../../utils/database)
 
 #### site
 
 - 当前应用所属站点.
-
-
 
 ### 方法
 

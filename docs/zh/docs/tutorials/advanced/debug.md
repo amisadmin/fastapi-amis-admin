@@ -13,15 +13,19 @@ site = AdminSite(settings=Settings(debug=False, database_url_async='sqlite+aiosq
 2.自定义`FastAPI`对象,并且关闭`debug`
 
 ```python
-site = AdminSite(settings=Settings(debug=False, database_url_async='sqlite+aiosqlite:///amisadmin.db'),
-                 fastapi=FastAPI(debug=False))
+site = AdminSite(
+    settings=Settings(debug=False, database_url_async='sqlite+aiosqlite:///amisadmin.db'),
+    fastapi=FastAPI(debug=False)
+)
 ```
 
 3.自定义`AsyncEngine`对象,并且关闭`debug`
 
 ```python
-site = AdminSite(settings=Settings(debug=False),
-                 engine=create_async_engine('sqlite+aiosqlite:///amisadmin.db', echo=False, future=True))
+site = AdminSite(
+    settings=Settings(debug=False),
+    engine=create_async_engine('sqlite+aiosqlite:///amisadmin.db', echo=False, future=True)
+)
 ```
 
 ## ApiDocs
