@@ -1,68 +1,67 @@
-## Amis介绍
+## Amis introduction
 
-[amis](https://github.com/baidu/amis) 是`Baidu`团队开发的一个低代码前端框架，它使用 `JSON`
-配置来生成页面，可以减少页面开发工作量，极大提升效率。`python amis`
-基于`baidu amis` , 对`amis`数据结构通过[pydantic](https://pydantic-docs.helpmanual.io) 转换为对应的python数据模型,并添加部分常用方法.
+[amis](https://github.com/baidu/amis) is a low-code front-end framework developed by the `Baidu` team, which uses `JSON`
+Configuring to generate pages can reduce the workload of page development and greatly improve efficiency. `python amis`
+Based on `baidu amis`, the `amis` data structure is converted to the corresponding python data model through [pydantic](https://pydantic-docs.helpmanual.io), and some common methods are added.
 
-## Amis亮点
+## Amis Highlights
 
-- **不需要懂前端**：在百度内部，大部分 amis 用户之前从来没写过前端页面，也不会 `JavaScript`，却能做出专业且复杂的后台界面，这是所有其他前端
-  UI 库都无法做到的；
-- **不受前端技术更新的影响**：百度内部最老的 amis 页面是 6 年多前创建的，至今还在使用，而当年的 `Angular/Vue/React`
-  版本现在都废弃了，当年流行的 `Gulp` 也被 `Webpack`
-  取代了，如果这些页面不是用 amis，现在的维护成本会很高；
-- **享受 amis 的不断升级**：amis 一直在提升细节交互体验，比如表格首行冻结、下拉框大数据下不卡顿等，之前的 JSON 配置完全不需要修改；
-- 可以 **完全** 使用 [可视化页面编辑器](https://aisuda.github.io/amis-editor-demo/) 来制作页面：一般前端可视化编辑器只能用来做静态原型，而
-  amis
-  可视化编辑器做出的页面是可以直接上线的。
-- **提供完整的界面解决方案**：其它 UI 框架必须使用 JavaScript 来组装业务逻辑，而 amis 只需 JSON
-  配置就能完成完整功能开发，包括数据获取、表单提交及验证等功能，做出来的页面不需要经过二次开发就能直接上线；
-- **大量内置组件（120+），一站式解决**：其它 UI 框架大部分都只有最通用的组件，如果遇到一些稍微不常用的组件就得自己找第三方，而这些第三方组件往往在展现和交互上不一致，整合起来效果不好，而
-  amis
-  则内置大量组件，包括了富文本编辑器、代码编辑器、diff、条件组合、实时日志等业务组件，绝大部分中后台页面开发只需要了解 amis 就足够了；
-- **支持扩展**：除了低代码模式，还可以通过 [自定义组件](https://baidu.gitee.io/amis/zh-CN/docs/extend/internal) 来扩充组件，实际上
-  amis 可以当成普通 UI
-  库来使用，实现 90% 低代码，10% 代码开发的混合模式，既提升了效率，又不失灵活性；
-- **容器支持无限级嵌套**：可以通过嵌套来满足各种布局及展现需求；
-- **经历了长时间的实战考验**：amis 在百度内部得到了广泛使用，**在 6 年多的时间里创建了 5 万页面**，从内容审核到机器管理，从数据分析到模型训练，amis
-  满足了各种各样的页面需求，最复杂的页面有超过 1 万行 JSON
-  配置。
+- **No need to know front-end**: Inside Baidu, most of the amis users have never written front-end pages before, nor `JavaScript`, but they can make professional and complex back-end interfaces, which is the same as all other front-ends.
+  UI library can't do it;
+- **Not affected by front-end technology updates**: The oldest amis page in Baidu was created more than 6 years ago and is still in use, while the `Angular/Vue/React` of that year
+  Versions are now obsolete, and the popular `Gulp` was also used by `Webpack`
+  Instead, if these pages do not use amis, the maintenance cost will now be high;
+- **Enjoy the continuous upgrade of amis**: amis has been improving the interactive experience of details, such as the freezing of the first row of the table, the lack of lag under the big data of the drop-down box, etc. The previous JSON configuration does not need to be modified at all;
+- You can **completely** use the [visual page editor](https://aisuda.github.io/amis-editor-demo/) to make pages: general front-end visual editors can only be used for static prototypes, while
+  friends
+  The page made by the visual editor can be launched directly.
+- **Provide a complete interface solution**: Other UI frameworks must use JavaScript to assemble business logic, while amis only needs JSON
+  Configuration can complete complete function development, including functions such as data acquisition, form submission and verification, and the resulting page can be launched directly without secondary development;
+- **A large number of built-in components (120+), one-stop solution**: Most of other UI frameworks only have the most common components. If you encounter some less commonly used components, you have to find a third party yourself, and these third parties Components are often inconsistent in presentation and interaction, and the integration effect is not good.
+  friends
+  There are a large number of built-in components, including business components such as rich text editor, code editor, diff, conditional combination, real-time log, etc. Most of the middle and background page development only needs to understand amis;
+- **Support extension**: In addition to low-code mode, you can also extend components through [custom components](https://baidu.gitee.io/amis/zh-CN/docs/extend/internal), in fact
+  amis can be used as normal UI
+  Libraries are used to achieve a mixed mode of 90% low code and 10% code development, which improves efficiency without losing flexibility;
+- **Container supports infinite nesting**: various layout and presentation needs can be met through nesting;
+- **Experiencing a long-term practical test**: amis is widely used within Baidu, **created 50,000 pages in more than 6 years**, from content review to machine management, from data analysis to model training, amis
+  Satisfies a variety of page needs, the most complex page has more than 10,000 lines of JSON
+  configuration.
 
-## 安装
+## Install
 
 ```bash
 pip install amis 
 ```
 
-## 简单示例
+## Simple example
 
 **main.py**:
 
 ```python
 from amis.components import Page
 
-page = Page(title='标题', body='Hello World!')
-# 输出为json
+page = Page(title='title', body='Hello World!')
+# output as json
 print(page.amis_json())
-# 输出为dict
+# output as dict
 print(page.amis_dict())
-# 输出页面html
+# output page html
 print(page.amis_html())
 ```
 
-## 开发文档
+## Development documentation
 
-参考: [Amis官方文档](https://baidu.gitee.io/amis/zh-CN/docs/index)
+Reference: [Amis official documentation](https://baidu.gitee.io/amis/zh-CN/docs/index)
 
-## 依赖项目
+## Dependent projects
 
 - [pydantic](https://pydantic-docs.helpmanual.io/)
 
 - [amis](https://baidu.gitee.io/amis)
 
-## 许可协议
+## agreement
 
-该项目遵循 Apache2.0 许可协议。
-
+The project follows the Apache2.0 license agreement.
 
 

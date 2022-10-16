@@ -36,7 +36,7 @@ except ImportError:
 
 
 def register_exception_handlers(app: FastAPI, logger: logging.Logger = None):
-    """全局异常捕获"""
+    """global exception catch"""
     app.add_exception_handler(
         ValidationError,
         handler=log_exception(logging.ERROR, logger)(inner_validation_exception_handler),
@@ -50,7 +50,7 @@ def register_exception_handlers(app: FastAPI, logger: logging.Logger = None):
 
 
 def log_exception(level: Union[int, str] = logging.ERROR, logger: logging.Logger = None):
-    """装饰器输出异常信息到日志"""
+    """The decorator outputs exception information to the log"""
     logger = logger or logging.getLogger("fastapi_amis_admin")
 
     def wrapper(func):
@@ -61,7 +61,7 @@ def log_exception(level: Union[int, str] = logging.ERROR, logger: logging.Logger
                     ClientDisconnect,
                     Warning,
                 ),
-            ):  # 忽略客户端断开连接;暂时忽略警告
+            ):  # Ignore client disconnection; ignore warnings for now
                 return None
             logger.log(level, f"Error: {exc}\nTraceback: {traceback.format_exc()}")
             return await func(request, exc)
@@ -72,13 +72,13 @@ def log_exception(level: Union[int, str] = logging.ERROR, logger: logging.Logger
 
 
 def make_error_response(status: int, msg="", **extra):
-    """构造错误响应"""
+    """Construct an error response"""
     result = BaseApiOut(status=status, msg=msg, **extra)
     return JSONResponse(content=result.dict())
 
 
 async def http_exception_handler(request: Request, exc: HTTPException):
-    """http异常"""
+    """http exception"""
     headers = getattr(exc, "headers", None)
     if not is_body_allowed_for_status_code(exc.status_code):
         return Response(status_code=exc.status_code, headers=headers)
@@ -87,7 +87,7 @@ async def http_exception_handler(request: Request, exc: HTTPException):
 
 
 async def request_validation_exception_handler(request: Request, exc: RequestValidationError):
-    """请求参数验证异常"""
+    """Request parameter validation exception"""
     return make_error_response(
         status=HTTP_422_UNPROCESSABLE_ENTITY,
         body=exc.body,
@@ -96,10 +96,10 @@ async def request_validation_exception_handler(request: Request, exc: RequestVal
 
 
 async def inner_validation_exception_handler(request: Request, exc: ValidationError):
-    """内部参数验证异常"""
+    """Internal parameter validation exception"""
     return make_error_response(status=HTTP_417_EXPECTATION_FAILED, errors=exc.errors())
 
 
 async def all_exception_handler(request: Request, exc: Exception):
-    """所有异常"""
+    """All exceptions"""
     return Response(status_code=HTTP_500_INTERNAL_SERVER_ERROR)

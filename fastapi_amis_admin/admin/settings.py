@@ -8,7 +8,7 @@ from fastapi_amis_admin.amis import API
 
 
 class Settings(BaseSettings):
-    """项目配置"""
+    """Project configuration"""
 
     host: str = "127.0.0.1"
     port: int = 8000
@@ -24,8 +24,8 @@ class Settings(BaseSettings):
     amis_cdn: str = "https://unpkg.com"
     amis_pkg: str = "amis@2.3.1"
     amis_theme: Literal["cxd", "antd", "dark", "ang"] = "cxd"
-    amis_image_receiver: API = None  # 图片上传接口
-    amis_file_receiver: API = None  # 文件上传接口
+    amis_image_receiver: API = None  # Image upload interface
+    amis_file_receiver: API = None  # File upload interface
     logger: Union[logging.Logger, Any] = logging.getLogger("fastapi_amis_admin")
 
     @validator("amis_cdn", "root_path", "site_url", pre=True)

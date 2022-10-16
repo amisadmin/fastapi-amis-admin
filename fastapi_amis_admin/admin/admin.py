@@ -132,7 +132,7 @@ class LinkModelForm:
         link_key = None
         item_key = None
         for key in table.foreign_keys:
-            if key.column.table != pk_admin.model.__table__:  # 获取关联第三方表
+            if key.column.table != pk_admin.model.__table__:  # Get the associated third-party table
                 admin = pk_admin.app.site.get_model_admin(key.column.table.name)
                 link_key = key
             else:
@@ -326,14 +326,14 @@ class LinkModelForm:
 
 
 class BaseModelAdmin(SQLModelCrud):
-    list_display: List[Union[SQLModelListField, TableColumn]] = []  # 需要显示的字段
-    list_filter: List[Union[SQLModelListField, FormItem]] = []  # 查询可过滤的字段
-    list_per_page: int = 10  # 每页数据量
-    link_model_fields: List[InstrumentedAttribute] = []  # 内联字段
+    list_display: List[Union[SQLModelListField, TableColumn]] = []  # Fields to be displayed
+    list_filter: List[Union[SQLModelListField, FormItem]] = []  # Query filterable fields
+    list_per_page: int = 10  # Amount of data per page
+    link_model_fields: List[InstrumentedAttribute] = []  # inline field
     link_model_forms: List[LinkModelForm] = []
-    bulk_update_fields: List[Union[SQLModelListField, FormItem]] = []  # 批量编辑字段
-    enable_bulk_create: bool = False  # 是否启用批量创建
-    search_fields: List[SQLModelListField] = []  # 模糊搜索字段
+    bulk_update_fields: List[Union[SQLModelListField, FormItem]] = []  # Bulk edit fields
+    enable_bulk_create: bool = False  # whether to enable batch creation
+    search_fields: List[SQLModelListField] = []  # fuzzy search fields
     page_schema: Union[PageSchema, str] = PageSchema()
 
     def __init__(self, app: "AdminApp"):
@@ -643,7 +643,7 @@ class BaseModelAdmin(SQLModelCrud):
     async def get_update_action(self, request: Request, bulk: bool = False) -> Optional[Action]:
         if not await self.has_update_permission(request, None, None):
             return None
-        # 开启批量编辑
+        # Turn on batch editing
         if not bulk:
             return ActionType.Dialog(
                 icon="fa fa-pencil",
@@ -825,7 +825,7 @@ class RouterAdmin(BaseAdmin, RouterMixin):
 
 
 class PageAdmin(PageSchemaAdmin, RouterAdmin):
-    """Amis页面管理"""
+    """Amis page management"""
 
     page: Page = None
     page_path: Optional[str] = None
@@ -918,7 +918,7 @@ class PageAdmin(PageSchemaAdmin, RouterAdmin):
 
 
 class TemplateAdmin(PageAdmin):
-    """Jinja2渲染模板管理"""
+    """Jinja2 render template management"""
 
     page: Dict[str, Any] = {}
     page_parser_mode = "html"
@@ -999,7 +999,7 @@ class BaseFormAdmin(PageAdmin, Generic[SchemaUpdateT]):
 
 
 class FormAdmin(BaseFormAdmin):
-    """表单管理"""
+    """Form management"""
 
     @property
     def route_submit(self):
@@ -1033,7 +1033,7 @@ class ModelFormAdmin(FormAdmin, SQLModelSelector):
 
 
 class ModelAdmin(BaseModelAdmin, PageAdmin):
-    """模型管理"""
+    """Model management"""
 
     page_path: str = ""
     bind_model: bool = True
@@ -1244,7 +1244,7 @@ class AdminGroup(PageSchemaAdmin):
 
 
 class AdminApp(PageAdmin, AdminGroup):
-    """管理应用"""
+    """Manage applications"""
 
     engine: SqlalchemyDatabase = None
     page_path = "/"
@@ -1282,7 +1282,7 @@ class AdminApp(PageAdmin, AdminGroup):
 
     def _register_admin_router_all(self):
         for admin in self._registered.values():
-            if isinstance(admin, RouterAdmin):  # 注册路由
+            if isinstance(admin, RouterAdmin):  # register route
                 admin.register_router()
                 self.router.include_router(admin.router)
 

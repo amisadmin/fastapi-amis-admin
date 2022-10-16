@@ -1,4 +1,4 @@
-"""详细文档阅读地址: https://baidu.gitee.io/amis/zh-CN/components"""
+"""Detailed document reading address: https://baidu.gitee.io/amis/zh-CN/components"""
 import os
 from typing import Any, Dict, List, Optional, Union
 
@@ -28,86 +28,92 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 class Html(AmisNode):
     """Html"""
 
-    type: str = "html"  # 指定为 html 组件
-    html: str  # html  当需要获取数据域中变量时，使用 Tpl 。
+    type: str = "html"  # specify as html component
+    html: str  # html When you need to get variables in the data field, use Tpl.
 
 
 class Icon(AmisNode):
-    """图标"""
+    """icon"""
 
-    type: str = "icon"  # 指定组件类型
-    className: str = None  # 外层 CSS 类名
-    icon: str = None  # icon 名，支持 fontawesome v4 或使用 url
-    vendor: str = None  # icon 厂商，icon默认支持fontawesome v4，如果想要支持 v5 以及 v6 版本的 fontawesome 请设置vendor为空字符串。
+    type: str = "icon"  # specify the component type
+    className: str = None  # Outer CSS class name
+    icon: str = None  # icon name, support fontawesome v4 or use url
+    vendor: str = None  # icon vendor, icon supports fontawesome v4 by default, if you want to support fontawesome v5
+    # and v6, please set vendor to an empty string. 
 
 
 class Remark(AmisNode):
-    """标记"""
+    """mark"""
 
     type: str = "remark"  # remark
-    className: str = None  # 外层 CSS 类名
-    content: str = None  # 提示文本
-    placement: str = None  # 弹出位置
-    trigger: str = None  # 触发条件 ['hover','focus']
-    icon: str = None  # "fa fa-question-circle"  # 图标
+    className: str = None  # Outer CSS class name
+    content: str = None  # prompt text
+    placement: str = None  # Popup position
+    trigger: str = None  # Trigger condition['hover','focus']
+    icon: str = None  # "fa fa-question-circle" # icon
 
 
 class Badge(AmisNode):
-    """角标"""
+    """Subscript"""
 
-    mode: str = "dot"  # 角标类型，可以是 dot/text/ribbon
-    text: Union[str, int] = None  # 角标文案，支持字符串和数字，在mode='dot'下设置无效
-    size: int = None  # 角标大小
-    level: str = None  # 角标级别, 可以是info/success/warning/danger, 设置之后角标背景颜色不同
-    overflowCount: int = None  # 99  # 设置封顶的数字值
-    position: str = None  # "top-right"  # 角标位置， 可以是top-right/top-left/bottom-right/bottom-left
-    offset: int = None  # 角标位置，优先级大于position，当设置了offset后，以postion为top-right为基准进行定位  number[top, left]
-    className: str = None  # 外层 dom 的类名
-    animation: bool = None  # 角标是否显示动画
-    style: dict = None  # 角标的自定义样式
-    visibleOn: Expression = None  # 控制角标的显示隐藏
+    mode: str = "dot"  # Corner type, can be dot/text/ribbon
+    text: Union[str, int] = None  # Corner text, supports strings and numbers, invalid when mode='dot'
+    size: int = None  # Angular size
+    level: str = None  # The level of the corner label, which can be info/success/warning/danger, after setting the 
+    # background color of the corner label is different 
+    overflowCount: int = None  # 99 # Set the capped number value
+    position: str = None  # "top-right" # Corner position, can be top-right/top-left/bottom-right/bottom-left
+    offset: int = None  # The position of the corner label, the priority is greater than the position, when the 
+    # offset is set, the position is positioned as the top-right reference number[top, left] 
+    className: str = None  # The class name of the outer dom
+    animation: bool = None  # Whether the corner icon displays animation
+    style: dict = None  # Custom style for corner labels
+    visibleOn: Expression = None  # Controls the display and hiding of corner labels
 
 
 class Page(AmisNode):
-    """页面"""
+    """page"""
 
     __default_template_path__: str = f"{BASE_DIR}/templates/page.html"
 
-    type: str = "page"  # 指定为 Page 组件
-    title: SchemaNode = None  # 页面标题
-    subTitle: SchemaNode = None  # 页面副标题
-    remark: "Remark" = None  # 标题附近会出现一个提示图标，鼠标放上去会提示该内容。
-    aside: SchemaNode = None  # 往页面的边栏区域加内容
-    asideResizor: bool = None  # 页面的边栏区域宽度是否可调整
-    asideMinWidth: int = None  # 页面边栏区域的最小宽度
-    asideMaxWidth: int = None  # 页面边栏区域的最大宽度
-    toolbar: SchemaNode = None  # 往页面的右上角加内容，需要注意的是，当有 title 时，该区域在右上角，没有时该区域在顶部
-    body: SchemaNode = None  # 往页面的内容区域加内容
-    className: str = None  # 外层 dom 类名
-    cssVars: dict = None  # 自定义 CSS 变量，请参考样式
-    toolbarClassName: str = None  # "v-middle wrapper text-right bg-light b-b"  # Toolbar dom 类名
-    bodyClassName: str = None  # "wrapper"  # Body dom 类名
-    asideClassName: str = None  # "w page-aside-region bg-auto"  # Aside dom 类名
-    headerClassName: str = None  # "bg-light b-b wrapper"  # Header 区域 dom 类名
-    initApi: API = None  # Page 用来获取初始数据的 api。返回的数据可以整个 page 级别使用。
-    initFetch: bool = None  # True  # 是否起始拉取 initApi
-    initFetchOn: Expression = None  # 是否起始拉取 initApi, 通过表达式配置
-    interval: int = None  # 刷新时间(最小 1000)
-    silentPolling: bool = None  # False  # 配置刷新时是否显示加载动画
-    stopAutoRefreshWhen: Expression = None  # 通过表达式来配置停止刷新的条件
+    type: str = "page"  # Specify as Page component
+    title: SchemaNode = None  # page title
+    subTitle: SchemaNode = None  # Page subtitle
+    remark: "Remark" = None  # A prompt icon will appear near the title, and the content will be prompted when the 
+    # mouse is placed on it. 
+    aside: SchemaNode = None  # Add content to the sidebar area of the page
+    asideResizor: bool = None  # Whether the width of the sidebar area of the page can be adjusted
+    asideMinWidth: int = None  # The minimum width of the sidebar area of the page
+    asideMaxWidth: int = None  # The maximum width of the sidebar area of the page
+    toolbar: SchemaNode = None  # Add content to the upper right corner of the page. It should be noted that when 
+    # there is a title, the area is in the upper right corner, and when there is no title, the area is at the top 
+    body: SchemaNode = None  # Add content to the content area of the page
+    className: str = None  # Outer dom class name
+    cssVars: dict = None  # Custom CSS variables, please refer to styles
+    toolbarClassName: str = None  # "v-middle wrapper text-right bg-light bb" # Toolbar dom class name
+    bodyClassName: str = None  # "wrapper" # Body dom class name
+    asideClassName: str = None  # "w page-aside-region bg-auto" # Aside dom class name
+    headerClassName: str = None  # "bg-light bb wrapper" # Header area dom class name
+    initApi: API = None  # The api that Page uses to get initial data. The returned data can be used at the entire 
+    # page level. 
+    initFetch: bool = None  # True # Whether to start pulling initApi
+    initFetchOn: Expression = None  # Whether to start pulling initApi, configure by expression
+    interval: int = None  # refresh time (minimum 1000)
+    silentPolling: bool = None  # False # Whether to show the loading animation when the configuration is refreshed
+    stopAutoRefreshWhen: Expression = None  # Configure the conditions for stopping refresh through expressions
     regions: List[str] = None
 
     def amis_html(
-        self,
-        template_path: str = "",
-        locale: str = "zh_CN",
-        cdn: str = "https://unpkg.com",
-        pkg: str = "amis@1.10.2",
-        site_title: str = "Amis",
-        site_icon: str = "",
-        theme: str = "cxd",
+            self,
+            template_path: str = "",
+            locale: str = "zh_CN",
+            cdn: str = "https://unpkg.com",
+            pkg: str = "amis@1.10.2",
+            site_title: str = "Amis",
+            site_icon: str = "",
+            theme: str = "cxd",
     ):
-        """渲染html模板"""
+        """Render html template"""
         template_path = template_path or self.__default_template_path__
         theme_css = f'<link href="{cdn}/{pkg}/sdk/{theme}.css" rel="stylesheet"/>' if theme != "cxd" else ""
         return amis_templates(template_path).safe_substitute(
@@ -125,211 +131,237 @@ class Page(AmisNode):
 
 
 class Divider(AmisNode):
-    """分割线"""
+    """Dividing line"""
 
     type: str = "divider"  # "Divider"
-    className: str = None  # 外层 Dom 的类名
-    lineStyle: str = None  # 分割线的样式，支持dashed和solid
+    className: str = None  # The class name of the outer Dom
+    lineStyle: str = None  # Split line style, supports dashed and solid
 
 
 class Flex(AmisNode):
-    """布局"""
+    """layout"""
 
-    type: str = "flex"  # 指定为 Flex 渲染器
-    className: str = None  # css 类名
-    justify: str = None  # "start", "flex-start", "center", "end", "flex-end", "space-around", "space-between", "space-evenly"
+    type: str = "flex"  # Specify as Flex renderer
+    className: str = None  # css class name
+    justify: str = None  # "start", "flex-start", "center", "end", "flex-end", "space-around", "space-between",
+    # "space-evenly"
     alignItems: str = None  # "stretch", "start", "flex-start", "flex-end", "end", "center", "baseline"
-    style: dict = None  # 自定义样式
+    style: dict = None  # custom style
     items: List[SchemaNode] = None  #
 
 
 class Grid(AmisNode):
-    """水平布局"""
+    """Horizontal layout"""
 
     class Column(AmisNode):
-        """列配置"""
+        """Column configuration"""
 
-        xs: int = None  # "auto"   # 宽度占比： 1 - 12
-        ClassName: str = None  # 列类名
-        sm: int = None  # "auto"  # 宽度占比： 1 - 12
-        md: int = None  # "auto"   # 宽度占比： 1 - 12
-        lg: int = None  # "auto"   # 宽度占比： 1 - 12
-        valign: str = None  # 'top'|'middle'|'bottom'|'between = None # 当前列内容的垂直对齐
+        xs: int = None  # "auto" # Width ratio: 1 - 12
+        ClassName: str = None  # column class name
+        sm: int = None  # "auto" # Width ratio: 1 - 12
+        md: int = None  # "auto" # Width ratio: 1 - 12
+        lg: int = None  # "auto" # Width ratio: 1 - 12
+        valign: str = None  # 'top'|'middle'|'bottom'|'between = None # Vertical alignment of the current column content
         body: List[SchemaNode] = None  #
 
-    type: str = "grid"  # 指定为 Grid 渲染器
-    className: str = None  # 外层 Dom 的类名
-    gap: str = None  # 'xs'|'sm'|'base'|'none'|'md'|'lg = None # 水平间距
-    valign: str = None  # 'top'|'middle'|'bottom'|'between = None # 垂直对齐方式
-    align: str = None  # 'left'|'right'|'between'|'center = None # 水平对齐方式
+    type: str = "grid"  # Specify as Grid renderer
+    className: str = None  # The class name of the outer Dom
+    gap: str = None  # 'xs'|'sm'|'base'|'none'|'md'|'lg = None # Horizontal gap
+    valign: str = None  # 'top'|'middle'|'bottom'|'between = None # Vertical alignment
+    align: str = None  # 'left'|'right'|'between'|'center = None # Horizontal alignment
     columns: List[SchemaNode] = None  #
 
 
 class Panel(AmisNode):
-    """面板"""
+    """panel"""
 
-    type: str = "panel"  # 指定为 Panel 渲染器
-    className: str = None  # "panel-default"  # 外层 Dom 的类名
-    headerClassName: str = None  # "panel-heading"  # header 区域的类名
-    footerClassName: str = None  # "panel-footer bg-light lter wrapper"  # footer 区域的类名
-    actionsClassName: str = None  # "panel-footer"  # actions 区域的类名
-    bodyClassName: str = None  # "panel-body"  # body 区域的类名
-    title: SchemaNode = None  # 标题
-    header: SchemaNode = None  # 头部容器
-    body: SchemaNode = None  # 内容容器
-    footer: SchemaNode = None  # 底部容器
-    affixFooter: bool = None  # 是否固定底部容器
-    actions: List["Action"] = None  # 按钮区域
+    type: str = "panel"  # Specify as the Panel renderer
+    className: str = None  # "panel-default" # The class name of the outer Dom
+    headerClassName: str = None  # "panel-heading" # The class name of the header area
+    footerClassName: str = None  # "panel-footer bg-light lter wrapper" # The class name of the footer area
+    actionsClassName: str = None  # "panel-footer" # The class name of the actions area
+    bodyClassName: str = None  # "panel-body" # The class name of the body area
+    title: SchemaNode = None  # title
+    header: SchemaNode = None  # header container
+    body: SchemaNode = None  # Content container
+    footer: SchemaNode = None  # bottom container
+    affixFooter: bool = None  # Whether to fix the bottom container
+    actions: List["Action"] = None  # Button area
 
 
 class Tabs(AmisNode):
-    """选项卡"""
+    """Tab"""
 
     class Item(AmisNode):
-        title: str = None  # Tab 标题
-        icon: Union[str, Icon] = None  # Tab 的图标
-        tab: SchemaNode = None  # 内容区
-        hash: str = None  # 设置以后将跟 url 的 hash 对应
-        reload: bool = None  # 设置以后内容每次都会重新渲染，对于 crud 的重新拉取很有用
-        unmountOnExit: bool = None  # 每次退出都会销毁当前 tab 栏内容
-        className: str = None  # "bg-white b-l b-r b-b wrapper-md"  # Tab 区域样式
-        iconPosition: str = None  # "left"  # Tab 的图标位置 left / right
-        closable: bool = None  # False  # 是否支持删除，优先级高于组件的 closable
-        disabled: bool = None  # False  # 是否禁用
+        title: str = None  # Tab title
+        icon: Union[str, Icon] = None  # Icon for Tab
+        tab: SchemaNode = None  # Content area
+        hash: str = None  # After setting, it will correspond to the hash of the url
+        reload: bool = None  # After setting, the content will be re-rendered every time, which is useful for
+        # re-pulling crud
+        unmountOnExit: bool = None  # Each exit will destroy the current tab bar content
+        className: str = None  # "bg-white bl br bb wrapper-md" # Tab area style
+        iconPosition: str = None  # "left" # Tab's icon position left / right
+        closable: bool = None  # False # Whether to support deletion, the priority is higher than the closable of the
+        # component
+        disabled: bool = None  # False # whether to disable
 
-    type: str = "tabs"  # 指定为 Tabs 渲染器
-    className: str = None  # 外层 Dom 的类名
-    mode: str = None  # 展示模式，取值可以是 line、card、radio、vertical、chrome、simple、strong、tiled、sidebar
-    tabsClassName: str = None  # Tabs Dom 的类名
-    tabs: List[Item] = None  # tabs 内容
-    source: str = None  # tabs 关联数据，关联后可以重复生成选项卡
-    toolbar: SchemaNode = None  # tabs 中的工具栏
-    toolbarClassName: str = None  # tabs 中工具栏的类名
-    mountOnEnter: bool = None  # False  # 只有在点中 tab 的时候才渲染
-    unmountOnExit: bool = None  # False  # 切换 tab 的时候销毁
-    scrollable: bool = None  # False  # 是否导航支持内容溢出滚动，vertical和chrome模式下不支持该属性；chrome模式默认压缩标签（属性废弃）
-    tabsMode: TabsModeEnum = None  # 展示模式，取值可以是 line、card、radio、vertical、chrome、simple、strong、tiled、sidebar
-    addable: bool = None  # False  # 是否支持新增
-    addBtnText: str = None  # "增加"  # 新增按钮文案
-    closable: bool = None  # False  # 是否支持删除
-    draggable: bool = None  # False  # 是否支持拖拽
-    showTip: bool = None  # False  # 是否支持提示
-    showTipClassName: str = None  # "'' "  # 提示的类
-    editable: bool = None  # False  # 收否可编辑标签名
-    sidePosition: str = None  # "left"  # sidebar 模式下，标签栏位置 left / right
+    type: str = "tabs"  # Specify as Tabs renderer
+    className: str = None  # The class name of the outer Dom
+    mode: str = None  # Display mode, the value can be line, card, radio, vertical, chrome, simple, strong, tiled,
+    # sidebar
+    tabsClassName: str = None  # Class name of Tabs Dom
+    tabs: List[Item] = None  # tabs content
+    source: str = None  # tabs associated data, tabs can be generated repeatedly after association
+    toolbar: SchemaNode = None  # toolbar in tabs
+    toolbarClassName: str = None  # The class name of the toolbar in the tabs
+    mountOnEnter: bool = None  # False # Render only when the tab is clicked
+    unmountOnExit: bool = None  # False # Destroyed when switching tabs
+    scrollable: bool = None  # False # Whether the navigation supports content overflow scrolling, this property is 
+    # not supported in vertical and chrome modes; chrome mode defaults to compress tags (property discarded) 
+    tabsMode: TabsModeEnum = None  # Display mode, the value can be line, card, radio, vertical, chrome, simple,
+    # strong, tiled, sidebar
+    addable: bool = None  # False # Whether to support adding
+    addBtnText: str = None  # "Add" # Add button text
+    closable: bool = None  # False # Whether to support delete
+    draggable: bool = None  # False # Whether to support draggable
+    showTip: bool = None  # False # Whether to support tips
+    showTipClassName: str = None  # "'' " # Tip class
+    editable: bool = None  # False # Whether to edit the tag name
+    sidePosition: str = None  # "left" # In sidebar mode, the position of the tab bar is left / right
 
 
 class Portlet(Tabs):
-    """门户栏目"""
+    """Portal column"""
 
     class Item(Tabs.Item):
-        toolbar: SchemaNode = None  # tabs 中的工具栏，随 tab 切换而变化
+        toolbar: SchemaNode = None  # The toolbar in tabs, which changes with tab switching
 
-    type: str = "portlet"  # 指定为 Portlet 渲染器
-    contentClassName: str = None  # Tabs content Dom 的类名
-    tabs: List[Item] = None  # tabs 内容
-    style: Union[str, dict] = None  # 自定义样式
-    description: Template = None  # 标题右侧信息
-    hideHeader: bool = None  # False  # 隐藏头部
-    divider: bool = None  # False  # 去掉分隔线
+    type: str = "portlet"  # specify as portlet renderer
+    contentClassName: str = None  # Class name of Tabs content Dom
+    tabs: List[Item] = None  # tabs content
+    style: Union[str, dict] = None  # custom style
+    description: Template = None  # Information on the right side of the title
+    hideHeader: bool = None  # False # hide the header
+    divider: bool = None  # False # remove divider
 
 
 class Horizontal(AmisNode):
-    left: int = None  # 左边 label 的宽度占比
-    right: int = None  # 右边控制器的宽度占比。
-    offset: int = None  # 当没有设置 label 时，右边控制器的偏移量
+    left: int = None  # The width ratio of the left label
+    right: int = None  # The width ratio of the right controller.
+    offset: int = None  # When the label is not set, the offset of the right controller
 
 
 class Action(AmisNode):
-    """行为按钮"""
+    """Behavior button"""
 
-    type: str = "button"  # 指定为 Page 渲染器。 button  action
-    actionType: str = None  # 【必填】这是 action 最核心的配置，来指定该 action 的作用类型，
-    # 支持：ajax、link、url、drawer、dialog、confirm、cancel、prev、next、copy、close。
-    label: str = None  # 按钮文本。可用 ${xxx} 取值。
-    level: LevelEnum = None  # 按钮样式，支持：link、primary、secondary、info、success、warning、danger、light、dark、default。
-    size: str = None  # 按钮大小，支持：xs、sm、md、lg。
-    icon: str = None  # 设置图标，例如fa fa-plus。
-    iconClassName: str = None  # 给图标上添加类名。
-    rightIcon: str = None  # 在按钮文本右侧设置图标，例如fa fa-plus。
-    rightIconClassName: str = None  # 给右侧图标上添加类名。
-    active: bool = None  # 按钮是否高亮。
-    activeLevel: str = None  # 按钮高亮时的样式，配置支持同level。
-    activeClassName: str = None  # 给按钮高亮添加类名。 "is-active"
-    block: bool = None  # 用display:"block"来显示按钮。
-    confirmText: Template = None  # 当设置后，操作在开始前会询问用户。可用 ${xxx} 取值。
-    reload: str = None  # 指定此次操作完后，需要刷新的目标组件名字（组件的name值，自己配置的），多个请用 , 号隔开。
-    tooltip: str = None  # 鼠标停留时弹出该段文字，也可以配置对象类型：字段为title和content。可用 ${xxx} 取值。
-    disabledTip: str = None  # 被禁用后鼠标停留时弹出该段文字，也可以配置对象类型：字段为title和content。可用 ${xxx} 取值。
-    tooltipPlacement: str = None  # 如果配置了tooltip或者disabledTip，指定提示信息位置，可配置top、bottom、left、right。
-    close: Union[
-        bool, str
-    ] = None  # 当action配置在dialog或drawer的actions中时，配置为true指定此次操作完后关闭当前dialog或drawer。当值为字符串，并且是祖先层弹框的名字的时候，会把祖先弹框关闭掉。
-    required: List[str] = None  # 配置字符串数组，指定在form中进行操作之前，需要指定的字段名的表单项通过验证
-    # primary:bool=None
-    onClick: str = None  # 自定义点击事件 通过字符串形式的 onClick 来定义点击事件，这个字符串会转成 JavaScript 函数
-    componentId: str = None  # 目标组件ID
-    args: Union[dict, str] = None  # 事件参数
-    script: str = None  # 自定义 JS 脚本代码，代码内可以通过调用doAction执行任何动作 ，通过事件对象event可以实现事件动作干预
+    type: str = "button"  # Specify as the Page renderer. button action
+    actionType: str = None  # [Required] This is the core configuration of the action to specify the action type of
+    # the action. Support: ajax, link, url, drawer, dialog, confirm, cancel, prev, next, copy, close.
+    label: str = None  # Button text. Available ${xxx} values.
+    level: LevelEnum = None  # Button style, support: link, primary, secondary, info, success, warning, danger,
+    # light, dark, default.
+    size: str = None  # Button size, support: xs, sm, md, lg.
+    icon: str = None  # Set the icon, eg fa fa-plus.
+    iconClassName: str = None  # Add a class name to the icon.
+    rightIcon: str = None  # Set the icon to the right of the button text, eg fa fa-plus.
+    rightIconClassName: str = None  # Add a class name to the right icon.
+    active: bool = None  # Whether the button is highlighted.
+    activeLevel: str = None  # The style when the button is highlighted, the configuration supports the same level.
+    activeClassName: str = None  # Add a class name to the button highlight. "is-active"
+    block: bool = None  # Use display:"block" to display the button.
+    confirmText: Template = None  # When set, the action will ask the user before starting. Available ${xxx} values.
+    reload: str = None  # Specify the name of the target component that needs to be refreshed after this operation (
+    # the name value of the component, configured by yourself), please separate multiple ones with , signs. 
+    tooltip: str = None  # This text pops up when the mouse stays, and the object type can also be configured: the 
+    # fields are title and content. Available ${xxx} values. 
+    disabledTip: str = None  # The text will pop up when the mouse stays after it is disabled. You can also configure
+    # the object type: the fields are title and content. Available ${xxx} values. 
+    tooltipPlacement: str = None  # If tooltip or disabledTip is configured, specify the location of the prompt 
+    # information, and you can configure top, bottom, left, and right. 
+    close: Union[bool, str] = None  # When the action is configured in the actions of the dialog or drawer, configure
+    # it to true to close the current dialog or drawer after the operation. When the value is a string and is the
+    # name of the ancestor layer popup, the ancestor popup will be closed.
+    required: List[str] = None  # Configure an array of strings, specifying that the form items with the specified
+    # field name must pass validation before performing operations in the form primary:bool=None
+    onClick: str = None  # The custom click event defines the click event through onClick in the form of a string, 
+    # which will be converted into a JavaScript function 
+    componentId: str = None  # target component ID
+    args: Union[dict, str] = None  # event parameters
+    script: str = None  # Customize JS script code, any action can be performed by calling doAction in the code, 
+    # and event action intervention can be realized through the event object event 
 
 
 class ActionType:
-    """行为按钮类型"""
+    """Behavior button type"""
 
     class Ajax(Action):
-        actionType: str = "ajax"  # 点击后显示一个弹出框
-        api: API = None  # 请求地址，参考 api 格式说明。
-        redirect: Template = None  # 指定当前请求结束后跳转的路径，可用 ${xxx} 取值。
-        feedback: "Dialog" = None  # 如果 ajax 类型的，当 ajax 返回正常后，还能接着弹出一个 dialog 做其他交互。返回的数据可用于这个 dialog 中。格式可参考Dialog
-        messages: dict = None  # success：ajax 操作成功后提示，可以不指定，不指定时以 api 返回为准。failed：ajax 操作失败提示。
+        actionType: str = "ajax"  # Show a popup after clicking
+        api: API = None  # Request address, refer to api format description.
+        redirect: Template = None  # Specify the path to redirect to after the current request ends, which can be
+        # valued by ${xxx}.
+        feedback: "Dialog" = None  # If it is of ajax type, when ajax returns to normal, a dialog can be popped up 
+        # for other interactions. The returned data can be used in this dialog. For the format, please refer to Dialog 
+        messages: dict = None  # success: a message will be displayed after the ajax operation is successful. It can 
+        # be left unspecified. If it is not specified, the api return shall prevail. failed: Ajax operation failure 
+        # message. 
 
     class Dialog(Action):
-        actionType: str = "dialog"  # 点击后显示一个弹出框
-        dialog: Union["Dialog", "Service", SchemaNode]  # 指定弹框内容，格式可参考Dialog
-        nextCondition: bool = None  # 可以用来设置下一条数据的条件，默认为 true。
+        actionType: str = "dialog"  # Show a popup when clicked
+        dialog: Union[
+            "Dialog", "Service", SchemaNode]  # Specify the content of the pop-up box, the format can refer to Dialog
+        nextCondition: bool = None  # Can be used to set the condition of the next data, the default is true.
 
     class Drawer(Action):
-        actionType: str = "drawer"  # 点击后显示一个侧边栏
-        drawer: Union["Drawer", "Service", SchemaNode]  # 指定弹框内容，格式可参考Drawer
+        actionType: str = "drawer"  # Show a sidebar when clicked
+        drawer: Union[
+            "Drawer", "Service", SchemaNode]  # Specify the content of the popup box, the format can refer to Drawer
 
     class Copy(Action):
-        actionType: str = "copy"  # 复制一段内容到粘贴板
-        content: Template  # 指定复制的内容。可用 ${xxx} 取值。
-        copyFormat: str = None  # 可以通过 copyFormat 设置复制的格式，默认是文本 text/html
+        actionType: str = "copy"  # Copy a piece of content to the clipboard
+        content: Template  # Specify the copied content. Available ${xxx} values.
+        copyFormat: str = None  # You can set the copy format through copyFormat, the default is text text/html
 
     class Url(Action):
-        """直接跳转"""
+        """Jump directly"""
 
-        actionType: str = "url"  # 直接跳转
-        url: str  # 按钮点击后，会打开指定页面。可用 ${xxx} 取值。
-        blank: bool = None  # false 如果为 true 将在新 tab 页面打开。
+        actionType: str = "url"  # Jump directly
+        url: str  # When the button is clicked, the specified page will be opened. Available ${xxx} values.
+        blank: bool = None  # false If true will open in a new tab page.
 
     class Link(Action):
-        """单页跳转"""
+        """Single page jump"""
 
-        actionType: str = "link"  # 单页跳转
-        link: str  # 用来指定跳转地址，跟 url 不同的是，这是单页跳转方式，不会渲染浏览器，请指定 amis 平台内的页面。可用 ${xxx} 取值。
+        actionType: str = "link"  # Single page jump
+        link: str  # is used to specify the jump address. Unlike url, this is a single-page jump method, which will 
+        # not render the browser. Please specify the page in the amis platform. Available ${xxx} values. 
 
 
 class PageSchema(AmisNode):
-    """页面配置"""
+    """Page configuration"""
 
-    label: str = None  # 菜单名称。
-    icon: str = "fa fa-flash"  # 菜单图标，比如：'fa fa-file'. 详细图标参考：http://www.fontawesome.com.cn/faicons/
-    url: str = None  # 页面路由路径，当路由命中该路径时，启用当前页面。当路径不是 / 打头时，会连接父级路径。
-    # 比如：父级的路径为 folder，而此时配置 pageA, 那么当页面地址为 /folder/pageA 时才会命中此页面。
-    # 当路径是 / 开头如： /crud/list 时，则不会拼接父级路径。
-    # 另外还支持 /crud/view/:id 这类带参数的路由，页面中可以通过 ${params.id} 取到此值。
-    schema_: Union[Page, "Iframe"] = Field(None, alias="schema")  # 页面的配置，具体配置请前往 Page 页面说明
-    schemaApi: API = None  # 如果想通过接口拉取，请配置。返回路径为 json>data。schema 和 schemaApi 只能二选一。
-    link: str = None  # 如果想配置个外部链接菜单，只需要配置 link 即可。
-    redirect: str = None  # 跳转，当命中当前页面时，跳转到目标页面。
-    rewrite: str = None  # 改成渲染其他路径的页面，这个方式页面地址不会发生修改。
-    isDefaultPage: Union[str, bool] = None  # 当你需要自定义 404 页面的时候有用，不要出现多个这样的页面，因为只有第一个才会有用。
-    visible: str = None  # 有些页面可能不想出现在菜单中，可以配置成 false，另外带参数的路由无需配置，直接就是不可见的。
-    className: str = None  # 菜单类名。
-    children: List["PageSchema"] = None  # 子菜单
-    sort: int = None  # 排序
+    label: str = None  # Menu name.
+    icon: str = "fa fa-flash"  # Menu icon, for example: 'fa fa-file'. For detailed icon reference: 
+    # http://www.fontawesome.com.cn/faicons/ 
+    url: str = None  # The page routing path, when the route hits the path, the current page is enabled. When the 
+    # path does not start with /, the parent path is concatenated. For example: the path of the parent is folder, 
+    # and pageA is configured at this time, then this page will be hit only when the page address is /folder/pageA. 
+    # When the path starts with / such as: /crud/list, the parent path will not be spliced. In addition, routes with 
+    # parameters such as /crud/view/:id are supported. This value can be obtained from the page through ${params.id}. 
+    schema_: Union[Page, "Iframe"] = Field(None, alias="schema")  # The configuration of the page, please go to the 
+    # page page for specific configuration 
+    schemaApi: API = None  # If you want to pull through the interface, please configure. The return path is 
+    # json>data. Only one of schema and schemaApi can be selected. 
+    link: str = None  # If you want to configure an external link menu, you only need to configure link.
+    redirect: str = None  # Jump, when hitting the current page, jump to the target page.
+    rewrite: str = None  # Change to rendering pages of other paths, the page address will not be modified in this way.
+    isDefaultPage: Union[str, bool] = None  # Useful when you need a custom 404 page, don't have multiple such pages,
+    # because only the first one will be useful. 
+    visible: str = None  # Some pages may not want to appear in the menu, you can configure it to false, and the 
+    # route with parameters does not need to be configured, it is directly invisible. 
+    className: str = None  # Menu class name.
+    children: List["PageSchema"] = None  # Submenu
+    sort: int = None  # sort
 
     def as_tabs_item(self, tabs_extra: Dict[str, Any] = None, item_extra: Dict[str, Any] = None):
         if self.children:
@@ -354,1503 +386,1640 @@ class PageSchema(AmisNode):
 
 
 class App(Page):
-    """多页应用"""
+    """Multi-page application"""
 
     __default_template_path__: str = f"{BASE_DIR}/templates/app.html"
     type: str = "app"
-    api: API = None  # 页面配置接口，如果你想远程拉取页面配置请配置。返回配置路径 json>data>pages，具体格式请参考 pages 属性。
-    brandName: str = None  # 应用名称
-    logo: str = None  # 支持图片地址，或者 svg。
-    className: str = None  # css 类名
+    api: API = None  # The page configuration interface, if you want to pull the page configuration remotely, 
+    # please configure it. Return to the configuration path json>data>pages, please refer to the pages property for 
+    # the specific format. 
+    brandName: str = None  # app name
+    logo: str = None  # Support image address, or svg.
+    className: str = None  # css class name
     header: str = None  # header
-    asideBefore: str = None  # 页面菜单上前面区域。
-    asideAfter: str = None  # 页面菜单下前面区域。
-    footer: str = None  # 页面。
-    pages: List[PageSchema] = None  # Array<页面配置>具体的页面配置。
-
-    # 通常为数组，数组第一层为分组，一般只需要配置 label 集合，如果你不想分组，直接不配置，真正的页面请在第二层开始配置，即第一层的 children 中。
+    asideBefore: str = None  # The front area on the page menu.
+    asideAfter: str = None  # The front area under the page menu.
+    footer: str = None  # The page.
+    pages: List[PageSchema] = None  # Array<page configuration> specific page configuration.
+    # Usually in an array, the first layer of the array is a group, generally you only need to configure the label set, 
+    # if you don't want to group, don't configure it directly, the real page should be configured in the second 
+    # layer, that is, in the children of the first layer. 
 
 
 class ButtonGroup(AmisNode):
-    """按钮组"""
+    """Button group"""
 
     type: str = "button-group"
-    buttons: List[Action]  # 行为按钮组
-    className: str = None  # 外层 Dom 的类名
-    vertical: bool = None  # 是否使用垂直模式
+    buttons: List[Action]  # Behavior button group
+    className: str = None  # The class name of the outer Dom
+    vertical: bool = None  # Whether to use vertical mode
 
 
 class Custom(AmisNode):
-    """自定义组件"""
+    """Custom Components"""
 
     type: str = "custom"
-    id: str = None  # 节点 id
-    name: str = None  # 节点 名称
-    className: str = None  # 节点 class
-    inline: bool = False  # 默认使用 div 标签，如果 true 就使用 span 标签
-    html: str = None  # 初始化节点 html
-    onMount: str = None  # "Function"  # 节点初始化之后调的用函数
-    onUpdate: str = None  # "Function"  # 数据有更新的时候调用的函数
-    onUnmount: str = None  # "Function"  # 节点销毁的时候调用的函数
+    id: str = None  # node id
+    name: str = None  # node name
+    className: str = None  # node class
+    inline: bool = False  # use div tag by default, if true use span tag
+    html: str = None  # initialize node html
+    onMount: str = None  # "Function" # Function called after node initialization
+    onUpdate: str = None  # "Function" # The function called when the data is updated
+    onUnmount: str = None  # "Function" # The function called when the node is destroyed
 
 
 class Service(AmisNode):
-    """功能型容器"""
+    """Functional container"""
 
-    type: str = "service"  # 指定为 service 渲染器
-    name: str = None  # 节点 名称
+    type: str = "service"  # designate as service renderer
+    name: str = None  # node name
     data: dict = None  #
-    className: str = None  # 外层 Dom 的类名
-    body: SchemaNode = None  # 内容容器
-    api: API = None  # 初始化数据域接口地址
-    ws: str = None  # WebScocket 地址
-    dataProvider: str = None  # 数据获取函数
-    initFetch: bool = None  # 是否默认拉取
-    schemaApi: API = None  # 用来获取远程 Schema 接口地址
-    initFetchSchema: bool = None  # 是否默认拉取 Schema
-    messages: dict = None  # 消息提示覆写，默认消息读取的是接口返回的 toast 提示文字，但是在此可以覆写它。
-    # messages.fetchSuccess: str = None  # 接口请求成功时的 toast 提示文字
-    # messages.fetchFailed: str = "初始化失败"  # 接口请求失败时 toast 提示文字
-    interval: int = None  # 轮询时间间隔(最低 3000)
-    silentPolling: bool = None  # False  # 配置轮询时是否显示加载动画
-    stopAutoRefreshWhen: Expression = None  # 配置停止轮询的条件
+    className: str = None  # The class name of the outer Dom
+    body: SchemaNode = None  # Content container
+    api: API = None  # Initialize data domain interface address
+    ws: str = None  # WebScocket address
+    dataProvider: str = None  # Data acquisition function
+    initFetch: bool = None  # Whether to pull by default
+    schemaApi: API = None  # Used to get the remote schema interface address
+    initFetchSchema: bool = None  # Whether to pull Schema by default
+    messages: dict = None  # Message prompt override, the default message reads the toast prompt text returned by the
+    # interface, but it can be overridden here. 
+    # messages.fetchSuccess: str = None # Toast prompt text when the interface request is successful
+    # messages.fetchFailed: str = "Initialization failed" # Toast prompt text when interface request fails
+    interval: int = None  # Polling interval (minimum 3000)
+    silentPolling: bool = None  # False # Whether to display the loading animation during polling
+    stopAutoRefreshWhen: Expression = None  # Configure the condition to stop polling
 
 
 class Nav(AmisNode):
-    """导航"""
+    """navigation"""
 
     class Link(AmisNode):
-        label: str = None  # 名称
-        to: Template = None  # 链接地址
-        target: str = None  # "链接关系"  #
-        icon: str = None  # 图标
-        children: List["Link"] = None  # 子链接
-        unfolded: bool = None  # 初始是否展开
-        active: bool = None  # 是否高亮
-        activeOn: Expression = None  # 是否高亮的条件，留空将自动分析链接地址
-        defer: bool = None  # 标记是否为懒加载项
-        deferApi: API = None  # 可以不配置，如果配置优先级更高
+        label: str = None  # name
+        to: Template = None  # Link address
+        target: str = None  # "Link relationship" #
+        icon: str = None  # icon
+        children: List["Link"] = None  # child links
+        unfolded: bool = None  # Whether to unfold initially
+        active: bool = None  # Whether to highlight
+        activeOn: Expression = None  # Whether to highlight the condition, leaving it blank will automatically 
+        # analyze the link address 
+        defer: bool = None  # mark whether it is a lazy add-in
+        deferApi: API = None  # Can not be configured, if the configuration priority is higher
 
-    type: str = "nav"  # 指定为 Nav 渲染器
-    className: str = None  # 外层 Dom 的类名
-    stacked: bool = True  # 设置成 false 可以以 tabs 的形式展示
-    source: API = None  # 可以通过变量或 API 接口动态创建导航
-    deferApi: API = None  # 用来延时加载选项详情的接口，可以不配置，不配置公用 source 接口。
-    itemActions: SchemaNode = None  # 更多操作相关配置
-    draggable: bool = None  # 是否支持拖拽排序
-    dragOnSameLevel: bool = None  # 仅允许同层级内拖拽
-    saveOrderApi: API = None  # 保存排序的 api
-    itemBadge: Badge = None  # 角标
-    links: list = None  # 链接集合
+    type: str = "nav"  # specify as Nav renderer
+    className: str = None  # The class name of the outer Dom
+    stacked: bool = True  # Set to false to display in the form of tabs
+    source: API = None  # Navigation can be created dynamically via variable or API interface
+    deferApi: API = None  # The interface used to delay loading option details. It can be left unconfigured, 
+    # and the public source interface cannot be configured. 
+    itemActions: SchemaNode = None  # More operations related configuration
+    draggable: bool = None  # Whether to support drag and drop sorting
+    dragOnSameLevel: bool = None  # Only allow dragging within the same level
+    saveOrderApi: API = None  # save order api
+    itemBadge: Badge = None  # Badge
+    links: list = None  # link collection
 
 
 class AnchorNav(AmisNode):
-    """锚点导航"""
+    """Anchor Navigation"""
 
     class Link(AmisNode):
-        label: str = None  # 名称
-        title: str = None  # 区域 标题
-        href: str = None  # 区域 标识
-        body: SchemaNode = None  # 区域 内容区
-        className: str = None  # "bg-white b-l b-r b-b wrapper-md"  # 区域成员 样式
+        label: str = None  # name
+        title: str = None  # area title
+        href: str = None  # Region ID
+        body: SchemaNode = None  # area content area
+        className: str = None  # "bg-white bl br bb wrapper-md" # Area member style
 
-    type: str = "anchor-nav"  # 指定为 AnchorNav 渲染器
-    className: str = None  # 外层 Dom 的类名
-    linkClassName: str = None  # 导航 Dom 的类名
-    sectionClassName: str = None  # 锚点区域 Dom 的类名
-    links: list = None  # links 内容
-    direction: str = None  # "vertical"  # 可以配置导航水平展示还是垂直展示。对应的配置项分别是：vertical、horizontal
-    active: str = None  # 需要定位的区域
+    type: str = "anchor-nav"  # Specify as AnchorNav renderer
+    className: str = None  # The class name of the outer Dom
+    linkClassName: str = None  # Class name of the navigation Dom
+    sectionClassName: str = None  # The class name of the anchor area Dom
+    links: list = None  # links content
+    direction: str = None  # "vertical" # You can configure whether the navigation is displayed horizontally or 
+    # vertically. The corresponding configuration items are: vertical, horizontal 
+    active: str = None  # The area that needs to be located
 
 
 class ButtonToolbar(AmisNode):
-    """按钮工具栏"""
+    """Button Toolbar"""
 
     type: str = "button-toolbar"
-    buttons: List[Action]  # 行为按钮组
+    buttons: List[Action]  # Behavior button group
 
 
 class Validation(BaseAmisModel):
-    isEmail: bool = None  # 必须是 Email。
-    isUrl: bool = None  # 必须是 Url。
-    isNumeric: bool = None  # 必须是 数值。
-    isAlpha: bool = None  # 必须是 字母。
-    isAlphanumeric: bool = None  # 必须是 字母或者数字。
-    isInt: bool = None  # 必须是 整形。
-    isFloat: bool = None  # 必须是 浮点形。
-    isLength: int = None  # 是否长度正好等于设定值。
-    minLength: int = None  # 最小长度。
-    maxLength: int = None  # 最大长度。
-    maximum: int = None  # 最大值。
-    minimum: int = None  # 最小值。
-    equals: str = None  # 当前值必须完全等于 xxx。
-    equalsField: str = None  # 当前值必须与 xxx 变量值一致。
-    isJson: bool = None  # 是否是合法的 Json 字符串。
-    isUrlPath: bool = None  # 是 url 路径。
-    isPhoneNumber: bool = None  # 是否为合法的手机号码
-    isTelNumber: bool = None  # 是否为合法的电话号码
-    isZipcode: bool = None  # 是否为邮编号码
-    isId: bool = None  # 是否为身份证号码，没做校验
-    matchRegexp: str = None  # 必须命中某个正则。 /foo/
+    isEmail: bool = None  # Must be Email.
+    isUrl: bool = None  # Must be a Url.
+    isNumeric: bool = None  # Must be a number.
+    isAlpha: bool = None  # Must be an alpha.
+    isAlphanumeric: bool = None  # Must be a letter or a number.
+    isInt: bool = None  # Must be an integer.
+    isFloat: bool = None  # Must be a float.
+    isLength: int = None  # Whether the length is exactly equal to the set value.
+    minLength: int = None  # Minimum length.
+    maxLength: int = None  # Maximum length.
+    maximum: int = None  # Maximum value.
+    minimum: int = None  # Minimum value.
+    equals: str = None  # The current value must be exactly equal to xxx.
+    equalsField: str = None  # The current value must be the same as the xxx variable value.
+    isJson: bool = None  # Is it a valid Json string.
+    isUrlPath: bool = None  # is the url path.
+    isPhoneNumber: bool = None  # Is it a legal phone number
+    isTelNumber: bool = None  # Is it a valid phone number
+    isZipcode: bool = None  # Whether it is a zip code
+    isId: bool = None  # Whether it is an ID number, no verification is done
+    matchRegexp: str = None  # Must hit a certain regexp. /foo/
 
 
 class FormItem(AmisNode):
-    """表单项通用"""
+    """Form item common"""
 
-    type: str = "input-text"  # 指定表单项类型
-    className: str = None  # 表单最外层类名
-    inputClassName: str = None  # 表单控制器类名
-    labelClassName: str = None  # label 的类名
-    name: str = None  # 字段名，指定该表单项提交时的 key
-    label: Template = None  # 表单项标签  模板或false
-    value: Union[int, str] = None  # 字段的值
-    labelRemark: "Remark" = None  # 表单项标签描述
-    description: Template = None  # 表单项描述
-    placeholder: str = None  # 表单项描述
-    inline: bool = None  # 是否为 内联 模式
-    submitOnChange: bool = None  # 是否该表单项值发生变化时就提交当前表单。
-    disabled: bool = None  # 当前表单项是否是禁用状态
-    disabledOn: Expression = None  # 当前表单项是否禁用的条件
-    visible: Expression = None  # 当前表单项是否禁用的条件
-    visibleOn: Expression = None  # 当前表单项是否禁用的条件
-    required: bool = None  # 是否为必填。
-    requiredOn: Expression = None  # 过表达式来配置当前表单项是否为必填。
-    validations: Union[Validation, Expression] = None  # 表单项值格式验证，支持设置多个，多个规则用英文逗号隔开。
-    validateApi: Expression = None  # 表单校验接口
-    copyable: Union[bool, dict] = None  # 是否可复制  boolean 或 {icon: string, content:string}
+    type: str = "input-text"  # Specify the form item type
+    className: str = None  # The outermost class name of the form
+    inputClassName: str = None  # Form controller class name
+    labelClassName: str = None  # class name of label
+    name: str = None  # Field name, specifying the key when the form item is submitted
+    label: Template = None  # form item label template or false
+    value: Union[int, str] = None  # field value
+    labelRemark: "Remark" = None  # Form item label description
+    description: Template = None  # Form item description
+    placeholder: str = None  # Form item description
+    inline: bool = None  # Whether it is inline mode
+    submitOnChange: bool = None  # Whether to submit the current form when the value of the form item changes.
+    disabled: bool = None  # Whether the current form item is disabled
+    disabledOn: Expression = None  # The condition for whether the current form item is disabled
+    visible: Expression = None  # Whether the current form item is disabled or not
+    visibleOn: Expression = None  # The condition for whether the current form item is disabled
+    required: bool = None  # Whether it is required.
+    requiredOn: Expression = None  # Use an expression to configure whether the current form item is required.
+    validations: Union[Validation, Expression] = None  # Validation of the form item value format, multiple settings
+    # are supported, and multiple rules are separated by commas.
+    validateApi: Expression = None  # Form validation interface
+    copyable: Union[bool, dict] = None  # Whether to copy boolean or {icon: string, content:string}
 
 
 class Form(AmisNode):
-    """表单"""
+    """Form"""
 
     class Messages(AmisNode):
-        fetchSuccess: str = None  # 获取成功时提示
-        fetchFailed: str = None  # 获取失败时提示
-        saveSuccess: str = None  # 保存成功时提示
-        saveFailed: str = None  # 保存失败时提示
+        fetchSuccess: str = None  # Prompt when fetch is successful
+        fetchFailed: str = None  # Prompt when fetch fails
+        saveSuccess: str = None  # Prompt when saving is successful
+        saveFailed: str = None  # Prompt when saving fails
 
-    type: str = "form"  # "form" 指定为 Form 渲染器
-    name: str = None  # 设置一个名字后，方便其他组件与其通信
-    mode: DisplayModeEnum = None  # 表单展示方式，可以是：normal、horizontal 或者 inline
-    horizontal: Horizontal = None  # 当 mode 为 horizontal 时有用，
-    # 用来控制 label {"left": "col-sm-2", "right": "col-sm-10","offset": "col-sm-offset-2"}
-    title: Optional[str] = None  # Form 的标题
-    submitText: Optional[str] = None  # "提交"  # 默认的提交按钮名称，如果设置成空，则可以把默认按钮去掉。
-    className: str = None  # 外层 Dom 的类名
-    body: List[Union[FormItem, SchemaNode]] = None  # Form 表单项集合
-    actions: List["Action"] = None  # Form 提交按钮，成员为 Action
-    actionsClassName: str = None  # actions 的类名
-    messages: Messages = None  # 消息提示覆写，默认消息读取的是 API 返回的消息，但是在此可以覆写它。
-    wrapWithPanel: bool = None  # 是否让 Form 用 panel 包起来，设置为 false 后，actions 将无效。
-    panelClassName: str = None  # 外层 panel 的类名
-    api: API = None  # Form 用来保存数据的 api。
-    initApi: API = None  # Form 用来获取初始数据的 api。
-    rules: list = None  # 表单组合校验规则 Array<{rule:string;message:string}>
-    interval: int = None  # 刷新时间(最低 3000)
-    silentPolling: bool = None  # False  # 配置刷新时是否显示加载动画
-    stopAutoRefreshWhen: str = None  # 通过表达式 来配置停止刷新的条件
-    initAsyncApi: API = None  # Form 用来获取初始数据的 api,与 initApi 不同的是，会一直轮询请求该接口，直到返回 finished 属性为 true 才 结束。
-    initFetch: bool = None  # 设置了 initApi 或者 initAsyncApi 后，默认会开始就发请求，设置为 false 后就不会起始就请求接口
-    initFetchOn: str = None  # 用表达式来配置
-    initFinishedField: Optional[str] = None  # 设置了 initAsyncApi 后，默认会从返回数据的 data.finished 来判断是否完成，
-    # 也可以设置成其他的 xxx，就会从 data.xxx 中获取
-    initCheckInterval: int = None  # 设置了 initAsyncApi 以后，默认拉取的时间间隔
-    asyncApi: API = None  # 设置此属性后，表单提交发送保存接口后，还会继续轮询请求该接口，直到返回 finished 属性为 true 才 结束。
-    checkInterval: int = None  # 轮询请求的时间间隔，默认为 3 秒。设置 asyncApi 才有效
-    finishedField: Optional[str] = None  # 如果决定结束的字段名不是 finished 请设置此属性，比如 is_success
-    submitOnChange: bool = None  # 表单修改即提交
-    submitOnInit: bool = None  # 初始就提交一次
-    resetAfterSubmit: bool = None  # 提交后是否重置表单
-    primaryField: str = None  # 设置主键 id, 当设置后，检测表单是否完成时（asyncApi），只会携带此数据。
-    target: str = None  # 默认表单提交自己会通过发送 api 保存数据，但是也可以设定另外一个 form 的 name 值，
-    # 或者另外一个 CRUD 模型的 name 值。 如果 target 目标是一个 Form ，则目标 Form 会重新触发 initApi，api 可以拿到当前 form 数据。
-    # 如果目标是一个 CRUD 模型，则目标模型会重新触发搜索，参数为当前 Form 数据。当目标是 window 时，会把当前表单的数据附带到页面地址上。
-    redirect: str = None  # 设置此属性后，Form 保存成功后，自动跳转到指定页面。支持相对地址，和绝对地址（相对于组内的）。
-    reload: str = None  # 操作完后刷新目标对象。请填写目标组件设置的 name 值，如果填写为 window 则让当前页面整体刷新。
-    autoFocus: bool = None  # 是否自动聚焦。
-    canAccessSuperData: bool = None  # 指定是否可以自动获取上层的数据并映射到表单项上
-    persistData: str = None  # 指定一个唯一的 key，来配置当前表单是否开启本地缓存
-    clearPersistDataAfterSubmit: bool = None  # 指定表单提交成功后是否清除本地缓存
-    preventEnterSubmit: bool = None  # 禁用回车提交表单
-    trimValues: bool = None  # trim 当前表单项的每一个值
-    promptPageLeave: bool = None  # form 还没保存，即将离开页面前是否弹框确认。
-    columnCount: int = None  # 表单项显示为几列
+    type: str = "form"  # "form" specifies the Form renderer
+    name: str = None  # After setting a name, it is convenient for other components to communicate with it
+    mode: DisplayModeEnum = None  # Form display mode, can be: normal, horizontal or inline
+    horizontal: Horizontal = None  # Useful when mode is horizontal,
+    # Used to control label {"left": "col-sm-2", "right": "col-sm-10", "offset": "col-sm-offset-2"}
+    title: Optional[str] = None  # Title of the Form
+    submitText: Optional[str] = None  # "Submit" # Default submit button name, if it is set to empty, the default
+    # button can be removed.
+    className: str = None  # The class name of the outer Dom
+    body: List[Union[FormItem, SchemaNode]] = None  # Form item collection
+    actions: List["Action"] = None  # Form submit button, the member is Action
+    actionsClassName: str = None  # class name of actions
+    messages: Messages = None  # The message prompts to be overridden. The default message reads the message returned
+    # by the API, but it can be overridden here. 
+    wrapWithPanel: bool = None  # Whether to wrap the Form with panel, if set to false, actions will be invalid.
+    panelClassName: str = None  # The class name of the outer panel
+    api: API = None  # The api that Form uses to save data.
+    initApi: API = None  # The api that Form uses to get initial data.
+    rules: list = None  # Form combination validation rules Array<{rule:string;message:string}>
+    interval: int = None  # refresh time (minimum 3000)
+    silentPolling: bool = None  # False # Whether to show the loading animation when the configuration is refreshed
+    stopAutoRefreshWhen: str = None  # Configure the condition for stopping refresh by expression
+    initAsyncApi: API = None  # The api that Form uses to obtain initial data, which is different from initApi, 
+    # will keep polling and request this interface until the returned finished attribute is true. 
+    initFetch: bool = None  # After initApi or initAsyncApi is set, the request will be sent by default, and if it is
+    # set to false, the interface will not be requested at the beginning 
+    initFetchOn: str = None  # Use expression to configure
+    initFinishedField: Optional[str] = None  # After setting initAsyncApi, by default, the data.finished of the 
+    # returned data will be used to judge whether it is completed. 
+    # Can also be set to other xxx, it will be obtained from data.xxx
+    initCheckInterval: int = None  # After setting initAsyncApi, the default pull interval
+    asyncApi: API = None  # After setting this property, after the form is submitted and sent to save the interface, 
+    # it will continue to poll and request the interface, and it will not end until the returned finished property is
+    # true. 
+    checkInterval: int = None  # The time interval for polling requests, the default is 3 seconds. Setting asyncApi 
+    # is valid 
+    finishedField: Optional[str] = None  # Set this property if the field name that decides to end is not finished, 
+    # such as is_success 
+    submitOnChange: bool = None  # Form modification is submitted
+    submitOnInit: bool = None  # Submit once initially
+    resetAfterSubmit: bool = None  # Whether to reset the form after submitting
+    primaryField: str = None  # Set the primary key id. When set, it will only carry this data when checking whether 
+    # the form is completed (asyncApi). 
+    target: str = None  # The default form submission itself will save the data by sending the api, but you can also
+    # set the name value of another form, or another CRUD model name value. If the target target is a Form,
+    # the target Form will trigger initApi again, and the api can get the current form data. If the target is a CRUD
+    # model, the target model will re-trigger the search with the current Form data as the parameter. When the target
+    # is window, the data of the current form will be attached to the page address.
+    redirect: str = None  # After setting this attribute, after the Form is saved successfully, it will automatically
+    # jump to the specified page. Support relative addresses, and absolute addresses (relative to the group). 
+    reload: str = None  # Refresh the target object after the operation. Please fill in the name value set by the 
+    # target component. If it is filled in window, the current page will be refreshed as a whole. 
+    autoFocus: bool = None  # Whether to auto focus.
+    canAccessSuperData: bool = None  # Specify whether the upper layer data can be automatically obtained and mapped 
+    # to the form item 
+    persistData: str = None  # Specify a unique key to configure whether to enable local caching for the current form
+    clearPersistDataAfterSubmit: bool = None  # Specify whether to clear the local cache after the form is submitted 
+    # successfully 
+    preventEnterSubmit: bool = None  # Disable EnterSubmit form submission
+    trimValues: bool = None  # trim each value of the current form item
+    promptPageLeave: bool = None  # The form has not been saved, whether to confirm with a pop-up box before leaving 
+    # the page. 
+    columnCount: int = None  # The form item is displayed as several columns
     debug: bool = None
 
 
 class InputSubForm(FormItem):
-    """子表单"""
+    """Subform"""
 
     type: str = "input-sub-form"
-    multiple: bool = None  # False # 是否为多选模式
-    labelField: str = None  # 当值中存在这个字段，则按钮名称将使用此字段的值来展示。
-    btnLabel: str = None  # "设置" # 按钮默认名称
-    minLength: int = None  # 0 # 限制最小个数。
-    maxLength: int = None  # 0 # 限制最大个数。
-    draggable: bool = None  # 是否可拖拽排序
-    addable: bool = None  # 是否可新增
-    removable: bool = None  # 是否可删除
-    addButtonClassName: str = None  # "``" # 新增按钮 CSS 类名
-    itemClassName: str = None  # "``" # 值元素 CSS 类名
-    itemsClassName: str = None  # "``" # 值包裹元素 CSS 类名
-    form: Form = None  # 子表单配置，同 Form
-    addButtonText: str = None  # "``" # 自定义新增一项的文本
-    showErrorMsg: bool = None  # True # 是否在左下角显示报错信息
+    multiple: bool = None  # False # Whether it is multiple selection mode
+    labelField: str = None  # When this field exists in the value, the button name will be displayed using the value 
+    # of this field. 
+    btnLabel: str = None  # "Settings" # Default button name
+    minLength: int = None  # 0 # Limit the minimum number.
+    maxLength: int = None  # 0 # Limit the maximum number.
+    draggable: bool = None  # Whether it can be draggable and sorted
+    addable: bool = None  # Whether it can be added
+    removable: bool = None  # Whether it can be removed
+    addButtonClassName: str = None  # "``" # Add button CSS class name
+    itemClassName: str = None  # "``" # Value element CSS class name
+    itemsClassName: str = None  # "``" # Value wrapping element CSS class name
+    form: Form = None  # Subform configuration, same as Form
+    addButtonText: str = None  # "``" # Customize the text of the new item
+    showErrorMsg: bool = None  # True # Whether to display the error message in the lower left corner
 
 
 class Button(FormItem):
-    """按钮"""
+    """Button"""
 
-    className: str = None  # 指定添加 button 类名
-    href: str = None  # 点击跳转的地址，指定此属性 button 的行为和 a 链接一致
-    size: str = None  # 设置按钮大小 'xs'|'sm'|'md'|'lg'
-    actionType: str = None  # 设置按钮类型 'button'|'reset'|'submit'| 'clear'| 'url'
-    level: LevelEnum = None
-    # 设置按钮样式 'link'|'primary'|'enhance'|'secondary'|'info'|'success'|'warning'|'danger'|'light'| 'dark'|'default'
-    tooltip: Union[str, dict] = None  # 气泡提示内容 TooltipObject
-    tooltipPlacement: str = None  # 气泡框位置器 'top'|'right'|'bottom'|'left'
-    tooltipTrigger: str = None  # 触发 tootip 'hover'|'focus'
-    disabled: bool = None  # 按钮失效状态
-    block: bool = None  # 将按钮宽度调整为其父宽度的选项
-    loading: bool = None  # 显示按钮 loading 效果
-    loadingOn: str = None  # 显示按钮 loading 表达式
+    className: str = None  # Specify the add button class name
+    href: str = None  # Click the jump address, specify the behavior of this attribute button is consistent with the 
+    # a link 
+    size: str = None  # Set button size 'xs'|'sm'|'md'|'lg'
+    actionType: str = None  # Set the button type 'button'|'reset'|'submit'| 'clear'| 'url'
+    level: LevelEnum = None  # Set button style 'link'|'primary'|'enhance'|'secondary'|'info'|'success'|'warning
+    # '|'danger'|'light'| 'dark'|'default' 
+    tooltip: Union[str, dict] = None  # Bubble tip content TooltipObject
+    tooltipPlacement: str = None  # Balloon positioner 'top'|'right'|'bottom'|'left'
+    tooltipTrigger: str = None  # trigger tootip 'hover'|'focus'
+    disabled: bool = None  # button disabled state
+    block: bool = None  # Option to adjust button width to its parent width
+    loading: bool = None  # Show button loading effect
+    loadingOn: str = None  # Display button loading expression
 
 
 class InputArray(FormItem):
-    """数组输入框"""
+    """Array input box"""
 
     type: str = "input-array"
-    items: FormItem = None  # 配置单项表单类型
-    addable: bool = None  # 是否可新增。
-    removable: bool = None  # 是否可删除
-    draggable: bool = None  # False  # 是否可以拖动排序, 需要注意的是当启用拖动排序的时候，会多一个$id 字段
-    draggableTip: str = None  # 可拖拽的提示文字，默认为："可通过拖动每行中的【交换】按钮进行顺序调整"
-    addButtonText: str = None  # "新增"  # 新增按钮文字
-    minLength: int = None  # 限制最小长度
-    maxLength: int = None  # 限制最大长度
+    items: FormItem = None  # Configure single item form type
+    addable: bool = None  # Whether it can be added.
+    removable: bool = None  # Whether it can be removed
+    draggable: bool = None  # False # Whether drag sorting is possible, it should be noted that when drag sorting is 
+    # enabled, there will be an additional $id field 
+    draggableTip: str = None  # Draggable prompt text, the default is: "Order can be adjusted by dragging the [Swap] 
+    # button in each row" 
+    addButtonText: str = None  # "Add" # Add button text
+    minLength: int = None  # Limit the minimum length
+    maxLength: int = None  # limit max length
 
 
 class Hidden(FormItem):
-    """隐藏字段"""
+    """Hidden fields"""
 
     type: str = "hidden"
 
 
 class Checkbox(FormItem):
-    """勾选框"""
+    """Check box"""
 
     type: str = "checkbox"
-    option: str = None  # 选项说明
-    trueValue: Any = None  # 标识真值
-    falseValue: Any = None  # 标识假值
+    option: str = None  # option description
+    trueValue: Any = None  # identifies the true value
+    falseValue: Any = None  # identifies a false value
 
 
 class Radios(FormItem):
-    """单选框"""
+    """Single box"""
 
     type: str = "radios"
-    options: List[Union[dict, str]] = None  # 选项组
-    source: API = None  # 动态选项组
-    labelField: bool = None  # "label"  # 选项标签字段
-    valueField: bool = None  # "value"  # 选项值字段
-    columnsCount: int = None  # 1  # 选项按几列显示，默认为一列
-    inline: bool = None  # True  # 是否显示为一行
-    selectFirst: bool = None  # False  # 是否默认选中第一个
-    autoFill: dict = None  # 自动填充
+    options: List[Union[dict, str]] = None  # Option group
+    source: API = None  # Dynamic option group
+    labelField: bool = None  # "label" # option label field
+    valueField: bool = None  # "value" # option value field
+    columnsCount: int = None  # 1 # options are displayed in several columns, default is one column
+    inline: bool = None  # True # whether to display as one line
+    selectFirst: bool = None  # False # Whether to select the first one by default
+    autoFill: dict = None  # autofill
 
 
 class ChartRadios(Radios):
-    """单选框"""
+    """Single box"""
 
     type: str = "chart-radios"
-    config: dict = None  # echart 图表配置
-    showTooltipOnHighlight: bool = None  # False  # 高亮的时候是否显示 tooltip
-    chartValueField: str = None  # "value"  # 图表数值字段名
+    config: dict = None  # echart chart configuration
+    showTooltipOnHighlight: bool = None  # False # Whether to show tooltip when highlighted
+    chartValueField: str = None  # "value" # Chart value field name
 
 
 class Checkboxes(FormItem):
-    """复选框"""
+    """Checkbox"""
 
     type: str = "checkboxes"
-    options: OptionsNode = None  # 选项组
-    source: API = None  # 动态选项组
-    delimiter: str = None  # ","  # 拼接符
-    labelField: str = None  # "label"  # 选项标签字段
-    valueField: str = None  # "value"  # 选项值字段
-    joinValues: bool = None  # True  # 拼接值
-    extractValue: bool = None  # False  # 提取值
-    columnsCount: int = None  # 1  # 选项按几列显示，默认为一列
-    checkAll: bool = None  # False  # 是否支持全选
-    inline: bool = None  # True  # 是否显示为一行
-    defaultCheckAll: bool = None  # False  # 默认是否全选
-    creatable: bool = None  # False  # 新增选项
-    createBtnLabel: str = None  # "新增选项"  # 新增选项
-    addControls: List[FormItem] = None  # 自定义新增表单项
-    addApi: API = None  # 配置新增选项接口
-    editable: bool = None  # False  # 编辑选项
-    editControls: List[FormItem] = None  # 自定义编辑表单项
-    editApi: API = None  # 配置编辑选项接口
-    removable: bool = None  # False  # 删除选项
-    deleteApi: API = None  # 配置删除选项接口
+    options: OptionsNode = None  # option group
+    source: API = None  # Dynamic option group
+    delimiter: str = None  # "," # splicer
+    labelField: str = None  # "label" # option label field
+    valueField: str = None  # "value" # option value field
+    joinValues: bool = None  # True # join values
+    extractValue: bool = None  # False # extract value
+    columnsCount: int = None  # 1 # options are displayed in several columns, default is one column
+    checkAll: bool = None  # False # Whether to support select all
+    inline: bool = None  # True # whether to display as one line
+    defaultCheckAll: bool = None  # False # Whether to check all by default
+    creatable: bool = None  # False # New option
+    createBtnLabel: str = None  # "Add option" # Add option
+    addControls: List[FormItem] = None  # Customize new form items
+    addApi: API = None  # Configure the new option interface
+    editable: bool = None  # False # edit options
+    editControls: List[FormItem] = None  # Customize edit form items
+    editApi: API = None  # Configure editing options interface
+    removable: bool = None  # False # remove option
+    deleteApi: API = None  # Configure delete option interface
 
 
 class InputCity(FormItem):
-    """城市选择器"""
+    """City selector"""
 
     type: str = "input-city"
-    allowCity: bool = None  # True  # 允许选择城市
-    allowDistrict: bool = None  # True  # 允许选择区域
-    searchable: bool = None  # False  # 是否出搜索框
-    extractValue: bool = None  # True#是否抽取值，如果设置成 false 值格式会变成对象，包含 code、province、city和district文字信息。
+    allowCity: bool = None  # True # Allow city selection
+    allowDistrict: bool = None  # True # Allow region selection
+    searchable: bool = None  # False # Whether to display the search box
+    extractValue: bool = None  # True# Whether to extract the value, if set to false, the value format will become an
+    # object, including code, province, city and district text information. 
 
 
 class InputColor(FormItem):
-    """颜色选择器"""
+    """Color picker"""
 
     type: str = "input-color"
-    format: str = None  # "hex"  # 请选择 hex、hls、rgb或者rgba。
-    presetColors: List[str] = None  # "选择器预设颜色值"  # 选择器底部的默认颜色，数组内为空则不显示默认颜色
-    allowCustomColor: bool = None  # True  # 为false时只能选择颜色，使用 presetColors 设定颜色选择范围
-    clearable: bool = None  # "label"  # 是否显示清除按钮
-    resetValue: str = None  # ""  # 清除后，表单项值调整成该值
+    format: str = None  # "hex" # Please choose hex, hls, rgb or rgba.
+    presetColors: List[
+        str] = None  # "Selector preset color value" # The default color at the bottom of the selector, if the array 
+    # is empty, the default color will not be displayed 
+    allowCustomColor: bool = None  # True # When false, only colors can be selected, use presetColors to set the 
+    # color selection range 
+    clearable: bool = None  # "label" # Whether to display the clear button
+    resetValue: str = None  # "" # After clearing, the form item value is adjusted to this value
 
 
 class Combo(FormItem):
-    """组合"""
+    """combination"""
 
     type: str = "combo"
-    formClassName: str = None  # 单组表单项的类名
-    addButtonClassName: str = None  # 新增按钮 CSS 类名
-    items: List[FormItem] = None  # 组合展示的表单项
-    # items[x].columnClassName: str = None  # 列的类名，可以用它配置列宽度。默认平均分配。
-    # items[x].unique: bool = None  # 设置当前列值是否唯一，即不允许重复选择。
-    noBorder: bool = False  # 单组表单项是否显示边框
-    scaffold: dict = {}  # 单组表单项初始值
-    multiple: bool = False  # 是否多选
-    multiLine: bool = False  # 默认是横着展示一排，设置以后竖着展示
-    minLength: int = None  # 最少添加的条数
-    maxLength: int = None  # 最多添加的条数
-    flat: bool = False  # 是否将结果扁平化(去掉 name),只有当 items 的 length 为 1 且 multiple 为 true 的时候才有效。
-    joinValues: bool = True  # 默认为 true 当扁平化开启的时候，是否用分隔符的形式发送给后端，否则采用 array 的方式。
-    delimiter: str = None  # "False"  # 当扁平化开启并且 joinValues 为 true 时，用什么分隔符。
-    addable: bool = False  # 是否可新增
-    addButtonText: str = None  # "新增"  # 新增按钮文字
-    removable: bool = False  # 是否可删除
-    deleteApi: API = None  # 如果配置了，则删除前会发送一个 api，请求成功才完成删除
-    deleteConfirmText: str = None  # "确认要删除？"  # 当配置 deleteApi 才生效！删除时用来做用户确认
-    draggable: bool = False  # 是否可以拖动排序, 需要注意的是当启用拖动排序的时候，会多一个$id 字段
-    draggableTip: str = None  # "可通过拖动每行中的【交换】按钮进行顺序调整"  # 可拖拽的提示文字
-    subFormMode: str = None  # "normal"  # 可选normal、horizontal、inline
-    placeholder: str = None  # "``"  # 没有成员时显示。
-    canAccessSuperData: bool = False  # 指定是否可以自动获取上层的数据并映射到表单项上
-    conditions: dict = None  # 数组的形式包含所有条件的渲染类型，单个数组内的test 为判断条件，数组内的items为符合该条件后渲染的schema
-    typeSwitchable: bool = False  # 是否可切换条件，配合conditions使用
-    strictMode: bool = True  # 默认为严格模式，设置为 false 时，当其他表单项更新是，里面的表单项也可以及时获取，否则不会。
-    syncFields: List[str] = []  # 配置同步字段。只有 strictMode 为 false 时有效。
-    # 如果 Combo 层级比较深，底层的获取外层的数据可能不同步。但是给 combo 配置这个属性就能同步下来。输入格式：["os"]
-    nullable: bool = False  # 允许为空，如果子表单项里面配置验证器，且又是单条模式。可以允许用户选择清空（不填）。
+    formClassName: str = None  # The class name of a single group of form items
+    addButtonClassName: str = None  # Add button CSS class name
+    items: List[FormItem] = None  # Form items displayed in combination
+    # items[x].columnClassName: str = None # The class name of the column, which can be used to configure the column 
+    # width. The default is evenly distributed. items[x].unique: bool = None # Set whether the current column value 
+    # is unique, that is, repeated selection is not allowed. 
+    noBorder: bool = False  # Whether to display a border for a single group of form items
+    scaffold: dict = {}  # initial value for a single set of form items
+    multiple: bool = False  # Whether to select multiple
+    multiLine: bool = False  # The default is to display a row horizontally, after setting it will be displayed 
+    # vertically 
+    minLength: int = None  # Minimum number of added bars
+    maxLength: int = None  # The maximum number of bars to add
+    flat: bool = False  # Whether to flatten the result (remove the name), only valid when the length of items is 1 
+    # and multiple is true. 
+    joinValues: bool = True  # The default is true When flattening is enabled, whether to send it to the backend in 
+    # the form of a delimiter, otherwise it is in the form of an array. 
+    delimiter: str = None  # "False" # What delimiter to use when flattening is on and joinValues is true.
+    addable: bool = False  # Whether it can be added
+    addButtonText: str = None  # "Add" # Add button text
+    removable: bool = False  # Whether it can be removed
+    deleteApi: API = None  # If configured, an api will be sent before deletion, and the deletion will be completed
+    # after the request is successful
+    deleteConfirmText: str = None  # "Confirm to delete?" # It only takes effect when deleteApi is configured! Used
+    # for user confirmation when deleting
+    draggable: bool = False  # Whether drag sorting is possible, it should be noted that when drag sorting is
+    # enabled, there will be an additional $id field
+    draggableTip: str = None  # "Order can be adjusted by dragging the [Exchange] button in each row" # Draggable
+    # prompt text
+    subFormMode: str = None  # "normal" # optional normal, horizontal, inline
+    placeholder: str = None  # "``" # Displayed when there is no member.
+    canAccessSuperData: bool = False  # Specify whether the upper layer data can be automatically obtained and mapped
+    # to the form item
+    conditions: dict = None  # The form of an array contains the rendering types of all conditions. The test in a
+    # single array is the judgment condition, and the items in the array are the schema rendered after meeting the
+    # condition.
+    typeSwitchable: bool = False  # Whether to switch conditions, use with conditions
+    strictMode: bool = True  # The default is strict mode. When set to false, when other form items are updated,
+    # the form items in them can also be obtained in time, otherwise they will not.
+    syncFields: List[str] = []  # Configure sync fields. Only valid when strictMode is false.
+    # If the Combo level is deep, the data from the bottom layer may be out of sync. But configuring this property
+    # for combo can be synchronized. Input format: ["os"]
+    nullable: bool = False  # Allow null, if the validator is configured in the sub-form item, and it is a single
+    # mode. You can allow the user to choose to clear (do not fill).
 
 
 class ConditionBuilder(FormItem):
-    """组合条件"""
+    """Combined conditions"""
 
     class Field(AmisNode):
-        type: str = "text"  # 字段配置中配置成 "text"
-        label: str = None  # 字段名称。
-        placeholder: str = None  # 占位符
-        operators: List[str] = None  # 如果不要那么多，可以配置覆盖。
-        # 默认为 ['equal','not_equal','is_empty','is_not_empty','like','not_like','starts_with','ends_with']
-        defaultOp: str = None  # 默认为 "equal"
+        type: str = "text"  # The field configuration is configured as "text"
+        label: str = None  # Field name.
+        placeholder: str = None  # placeholder
+        operators: List[str] = None  # If not so many, you can configure overrides.
+        # Default is ['equal','not_equal','is_empty','is_not_empty','like','not_like','starts_with','ends_with']
+        defaultOp: str = None  # defaults to "equal"
 
     class Text(Field):
-        """文本"""
+        """text"""
 
     class Number(Field):
-        """数字"""
+        """number"""
 
         type: str = "number"
-        minimum: float = None  # 最小值
-        maximum: float = None  # 最大值
-        step: float = None  # 步长
+        minimum: float = None  # minimum value
+        maximum: float = None  # maximum value
+        step: float = None  # step size
 
     class Date(Field):
-        """日期"""
+        """date"""
 
         type: str = "date"
-        defaultValue: str = None  # 默认值
-        format: str = None  # 默认 "YYYY-MM-DD" 值格式
-        inputFormat: str = None  # 默认 "YYYY-MM-DD" 显示的日期格式。
+        defaultValue: str = None  # default value
+        format: str = None  # Default "YYYY-MM-DD" value format
+        inputFormat: str = None  # Default "YYYY-MM-DD" display date format.
 
     class Datetime(Date):
-        """日期时间"""
+        """Date Time"""
 
         type: str = "datetime"
-        timeFormat: str = None  # 默认 "HH:mm" 时间格式，决定输入框有哪些。
+        timeFormat: str = None  # The default "HH:mm" time format determines which input boxes are available.
 
     class Time(Date):
-        """时间"""
+        """time"""
 
         type: str = "datetime"
 
     class Select(Field):
-        """下拉选择"""
+        """Drop down to select"""
 
         type: str = "select"
-        options: OptionsNode = None  # 选项列表，Array<{label: string, value: any}>
-        source: API = None  # 动态选项，请配置 api。
-        searchable: bool = None  # 是否可以搜索
-        autoComplete: API = None  # 自动提示补全，每次输入新内容后，将调用接口，根据接口返回更新选项。
+        options: OptionsNode = None  # options list, Array<{label: string, value: any}>
+        source: API = None  # Dynamic options, please configure api.
+        searchable: bool = None  # Whether it can be searched
+        autoComplete: API = None  # Automatically prompt for completion, each time new content is entered,
+        # the interface will be called, and the update options will be returned according to the interface.
 
     type: str = "condition-builder"
-    fields: List[Field] = None  # 为数组类型，每个成员表示一个可选字段，支持多个层，配置示例
-    className: str = None  # 外层 dom 类名
-    fieldClassName: str = None  # 输入字段的类名
-    source: str = None  # 通过远程拉取配置项
+    fields: List[Field] = None  # It is an array type, each member represents an optional field, supports multiple
+    # layers, configuration example
+    className: str = None  # Outer dom class name
+    fieldClassName: str = None  # The class name of the input field
+    source: str = None  # Pull configuration items remotely
 
 
 class Editor(FormItem):
-    """代码编辑器"""
+    """Code Editor"""
 
     type: str = "editor"
-    language: str = None  # "javascript"  # 编辑器高亮的语言，支持通过 ${xxx} 变量获取
-    # bat、 c、 coffeescript、 cpp、 csharp、 css、 dockerfile、 fsharp、 go、 handlebars、 html、 ini、 java、
-    # javascript、 json、 less、 lua、 markdown、 msdax、 objective-c、 php、 plaintext、 postiats、 powershell、
-    # pug、 python、 r、 razor、 ruby、 sb、 scss、shell、 sol、 sql、 swift、 typescript、 vb、 xml、 yaml
-    size: str = None  # "md"  # 编辑器高度，取值可以是 md、lg、xl、xxl
-    allowFullscreen: bool = None  # False  # 是否显示全屏模式开关
-    options: dict = None  # monaco编辑器的其它配置，比如是否显示行号等，请参考这里，不过无法设置readOnly,只读模式需要使用disabled: true
+    language: str = None  # "javascript" # The language highlighted by the editor, which can be obtained through the
+    # ${xxx} variable
+    # bat, c, coffeescript, cpp, csharp, css, dockerfile, fsharp, go, handlebars, html, ini, java,
+    # javascript, json, less, lua, markdown, msdax, objective-c, php, plaintext, postiats, powershell,
+    # pug, python, r, razor, ruby, sb, scss, shell, sol, sql, swift, typescript, vb, xml, yaml
+    size: str = None  # "md" # Editor height, the value can be md, lg, xl, xxl
+    allowFullscreen: bool = None  # False # Whether to display the full screen mode switch
+    options: dict = None  # Other configurations of the monaco editor, such as whether to display line numbers, etc.,
+    # please refer to here, but readOnly cannot be set, read-only mode needs to use disabled: true
 
 
 class Markdown(AmisNode):
-    """Markdown渲染"""
+    """Markdown rendering"""
 
     type: str = "markdown"
-    name: str = None  # 字段名，指定该表单项提交时的 key
-    value: Union[int, str] = None  # 字段的值
-    className: str = None  # 表单最外层类名
-    src: API = None  # 外部地址
-    options: dict = None  # html，是否支持 html 标签，默认 false;
-    # linkify，是否自动识别链接，默认值是 true;breaks，是否回车就是换行，默认 false
+    name: str = None  # Field name, specifying the key when the form item is submitted
+    value: Union[int, str] = None  # field value
+    className: str = None  # The outermost class name of the form
+    src: API = None  # external address
+    options: dict = None  # html, whether to support html tags, default false;
+    # linkify, whether to automatically identify the link, the default value is true; breaks, whether the carriage
+    # return is a newline, the default value is false
 
 
 class InputFile(FormItem):
-    """文件上传"""
+    """File Upload"""
 
     type: str = "input-file"
-    receiver: API = None  # 上传文件接口
-    accept: str = None  # "text/plain"  # 默认只支持纯文本，要支持其他类型，请配置此属性为文件后缀.xxx
-    asBase64: bool = None  # False  # 将文件以base64的形式，赋值给当前组件
-    asBlob: bool = None  # False  # 将文件以二进制的形式，赋值给当前组件
-    maxSize: int = None  # 默认没有限制，当设置后，文件大小大于此值将不允许上传。单位为B
-    maxLength: int = None  # 默认没有限制，当设置后，一次只允许上传指定数量文件。
-    multiple: bool = None  # False  # 是否多选。
-    joinValues: bool = None  # True  # 拼接值
-    extractValue: bool = None  # False  # 提取值
-    delimiter: str = None  # ","  # 拼接符
-    autoUpload: bool = None  # True  # 否选择完就自动开始上传
-    hideUploadButton: bool = None  # False  # 隐藏上传按钮
-    stateTextMap: dict = None  # 上传状态文案
-    # 默认: {init: '', pending: '等待上传', uploading: '上传中', error: '上传出错', uploaded: '已上传',ready: ''}
-    fileField: str = None  # "file"  # 如果你不想自己存储，则可以忽略此属性。
-    nameField: str = None  # "name"  # 接口返回哪个字段用来标识文件名
-    valueField: str = None  # "value"  # 文件的值用那个字段来标识。
-    urlField: str = None  # "url"  # 文件下载地址的字段名。
-    btnLabel: str = None  # 上传按钮的文字
-    downloadUrl: Union[str, bool] = None  # 1.1.6 版本开始支持 post:http://xxx.com/${value} 这种写法
-    # 默认显示文件路径的时候会支持直接下载，可以支持加前缀如：http://xx.dom/filename= ，如果不希望这样，可以把当前配置项设置为 false。
-    useChunk: bool = None  # amis 所在服务器，限制了文件上传大小不得超出 10M，所以 amis 在用户选择大文件的时候，自动会改成分块上传模式。
-    chunkSize: int = None  # 5 * 1024 * 1024  # 分块大小
+    receiver: API = None  # Upload file interface
+    accept: str = None  # "text/plain" # Only plain text is supported by default. To support other types,
+    # please configure this property as the file suffix .xxx
+    asBase64: bool = None  # False # Assign the file to the current component in the form of base64
+    asBlob: bool = None  # False # Assign the file to the current component in binary form
+    maxSize: int = None  # There is no limit by default, when set, the file size larger than this value will not be
+    # allowed to upload. unit is B
+    maxLength: int = None  # There is no limit by default. When set, only the specified number of files can be
+    # uploaded at a time.
+    multiple: bool = None  # False # Whether to select multiple.
+    joinValues: bool = None  # True # join values
+    extractValue: bool = None  # False # extract value
+    delimiter: str = None  # "," # splicer
+    autoUpload: bool = None  # True # No selection will automatically start uploading
+    hideUploadButton: bool = None  # False # hide the upload button
+    stateTextMap: dict = None  # Upload state text Default: {init: '', pending: 'Waiting to upload', uploading:
+    # 'Uploading', error: 'Upload error', uploaded: 'Uploaded',ready: ''}
+    fileField: str = None  # "file" # You can ignore this attribute if you don't want to store it yourself.
+    nameField: str = None  # "name" # Which field is returned by the interface to identify the file name
+    valueField: str = None  # "value" # The value of the file is identified by that field.
+    urlField: str = None  # "url" # The field name of the file download address.
+    btnLabel: str = None  # The text of the upload button
+    downloadUrl: Union[str, bool] = None  # Version 1.1.6 supports post:http://xxx.com/${value}
+    # When the file path is displayed by default, it will support direct download. It can support adding a prefix
+    # such as: http://xx.dom/filename= . If you don't want this, you can set the current configuration item to false.
+    useChunk: bool = None  # The server where amis is located limits the file upload size to no more than 10M,
+    # so when amis selects a large file, it will automatically change to the chunked upload mode.
+    chunkSize: int = None  # 5 * 1024 * 1024 # chunk size
     startChunkApi: API = None  # startChunkApi
     chunkApi: API = None  # chunkApi
     finishChunkApi: API = None  # finishChunkApi
-    autoFill: Dict[str, str] = None  # 上传成功后，可以通过配置 autoFill 将上传接口返回的值填充到某个表单项中（在非表单下暂不支持）
+    autoFill: Dict[str, str] = None  # After the upload is successful, the value returned by the upload interface can
+    # be filled into a form item by configuring autoFill (not supported under non-form)
 
 
 class InputExcel(FormItem):
-    """解析 Excel"""
+    """Parse Excel"""
 
     type: str = "input-excel"
-    allSheets: bool = None  # False  # 是否解析所有 sheet
-    parseMode: str = None  # 'array' 或 'object' 解析模式
-    includeEmpty: bool = None  # True  # 是否包含空值
-    plainText: bool = None  # True  # 是否解析为纯文本
+    allSheets: bool = None  # False # Whether to parse all sheets
+    parseMode: str = None  # 'array' or 'object' parsing mode
+    includeEmpty: bool = None  # True # Whether to include empty values
+    plainText: bool = None  # True # Whether to parse as plain text
 
 
 class InputTable(FormItem):
-    """表格"""
+    """sheet"""
 
-    type: str = "input-table"  # 指定为 Table 渲染器
-    showIndex: bool = None  # False  # 显示序号
-    perPage: int = None  # 设置一页显示多少条数据。10
-    addable: bool = None  # False  # 是否可增加一行
-    editable: bool = None  # False  # 是否可编辑
-    removable: bool = None  # False  # 是否可删除
-    showAddBtn: bool = None  # True  # 是否显示添加按钮
-    addApi: API = None  # 新增时提交的 API
-    updateApi: API = None  # 修改时提交的 API
-    deleteApi: API = None  # 删除时提交的 API
-    addBtnLabel: str = None  # 增加按钮名称
-    addBtnIcon: str = None  # "plus"  # 增加按钮图标
-    copyBtnLabel: str = None  # 复制按钮文字
-    copyBtnIcon: str = None  # "copy"  # 复制按钮图标
-    editBtnLabel: str = None  # ""  # 编辑按钮名称
-    editBtnIcon: str = None  # "pencil"  # 编辑按钮图标
-    deleteBtnLabel: str = None  # ""  # 删除按钮名称
-    deleteBtnIcon: str = None  # "minus"  # 删除按钮图标
-    confirmBtnLabel: str = None  # ""  # 确认编辑按钮名称
-    confirmBtnIcon: str = None  # "check"  # 确认编辑按钮图标
-    cancelBtnLabel: str = None  # ""  # 取消编辑按钮名称
-    cancelBtnIcon: str = None  # "times"  # 取消编辑按钮图标
-    needConfirm: bool = None  # True  # 是否需要确认操作，，可用来控控制表格的操作交互
-    canAccessSuperData: bool = None  # False  # 是否可以访问父级数据，也就是表单中的同级数据，通常需要跟 strictMode 搭配使用
-    strictMode: bool = None  # True  # 为了性能，默认其他表单项项值变化不会让当前表格更新，有时候为了同步获取其他表单项字段，需要开启这个。
-    columns: list = None  # "[]"  # 列信息
-    # columns[x].quickEdit: boolean|object = None  # 配合 editable 为 true 一起使用
-    # columns[x].quickEditOnUpdate: boolean|object = None  # 可以用来区分新建模式和更新模式的编辑配置
+    type: str = "input-table"  # Specify as Table renderer
+    showIndex: bool = None  # False # Show index
+    perPage: int = None  # Set how many pieces of data are displayed on one page. 10
+    addable: bool = None  # False # Whether to add a line
+    editable: bool = None  # False # Whether editable
+    removable: bool = None  # False # Whether it can be removed
+    showAddBtn: bool = None  # True # Whether to show the add button
+    addApi: API = None  # API submitted when adding
+    updateApi: API = None  # API submitted when modified
+    deleteApi: API = None  # API submitted when deleting
+    addBtnLabel: str = None  # Add button name
+    addBtnIcon: str = None  # "plus" # Add button icon
+    copyBtnLabel: str = None  # Copy button text
+    copyBtnIcon: str = None  # "copy" # Copy button icon
+    editBtnLabel: str = None  # "" # Edit button name
+    editBtnIcon: str = None  # "pencil" # edit button icon
+    deleteBtnLabel: str = None  # "" # delete button name
+    deleteBtnIcon: str = None  # "minus" # delete button icon
+    confirmBtnLabel: str = None  # "" # Confirm edit button name
+    confirmBtnIcon: str = None  # "check" # Confirm edit button icon
+    cancelBtnLabel: str = None  # "" # Cancel edit button name
+    cancelBtnIcon: str = None  # "times" # Cancel edit button icon
+    needConfirm: bool = None  # True # Whether to confirm the operation, it can be used to control the operation
+    # interaction of the control table
+    canAccessSuperData: bool = None  # False # Whether you can access the parent data, that is, the same level data
+    # in the form, usually need to be used with strictMode
+    strictMode: bool = None  # True # For performance, the default value of other form items will not update the
+    # current table. Sometimes, in order to obtain other form item fields synchronously, you need to enable this.
+    columns: list = None  # "[]" # Column information
+    # columns[x].quickEdit: boolean|object = None # Use with editable as true columns[x].quickEditOnUpdate:
+    # boolean|object = None # Edit configuration that can be used to distinguish between new mode and update mode
 
 
 class InputGroup(FormItem):
-    """输入框组合"""
+    """Combination of input boxes"""
 
     type: str = "input-group"
-    className: str = None  # CSS 类名
-    body: List[FormItem] = None  # 表单项集合
+    className: str = None  # CSS class name
+    body: List[FormItem] = None  # Form item collection
 
 
 class Group(InputGroup):
-    """表单项组"""
+    """Form item group"""
 
     type: str = "group"
-    mode: DisplayModeEnum = None  # 展示默认，同 Form 中的模式
-    gap: str = None  # 表单项之间的间距，可选：xs、sm、normal
-    direction: str = None  # "horizontal"  # 可以配置水平展示还是垂直展示。对应的配置项分别是：vertical、horizontal
+    mode: DisplayModeEnum = None  # Display the default, the same as the mode in Form
+    gap: str = None  # Gap between form items, optional: xs, sm, normal
+    direction: str = None  # "horizontal" # Can be configured to display horizontally or vertically. The
+    # corresponding configuration items are: vertical, horizontal
 
 
 class InputImage(FormItem):
-    """图片上传"""
+    """upload picture"""
 
     class CropInfo(BaseAmisModel):
-        aspectRatio: float = None  # 裁剪比例。浮点型，默认 1 即 1:1，如果要设置 16:9 请设置 1.7777777777777777 即 16 / 9。。
-        rotatable: bool = None  # False  # 裁剪时是否可旋转
-        scalable: bool = None  # False  # 裁剪时是否可缩放
-        viewMode: int = None  # 1  # 裁剪时的查看模式，0 是无限制
+        aspectRatio: float = None  # Crop ratio. Floating point, the default is 1, which is 1:1. If you want to set
+        # 16:9, please set 1.7777777777777777, which is 16/9. .
+        rotatable: bool = None  # False # Whether to rotate when cropping
+        scalable: bool = None  # False # Whether it can be scaled when cropping
+        viewMode: int = None  # 1 # View mode when cropping, 0 is unlimited
 
     class Limit(BaseAmisModel):
-        width: int = None  # 限制图片宽度。
-        height: int = None  # 限制图片高度。
-        minWidth: int = None  # 限制图片最小宽度。
-        minHeight: int = None  # 限制图片最小高度。
-        maxWidth: int = None  # 限制图片最大宽度。
-        maxHeight: int = None  # 限制图片最大高度。
-        aspectRatio: float = None  # 限制图片宽高比，格式为浮点型数字，默认 1 即 1:1，
-        # 如果要设置 16:9 请设置 1.7777777777777777 即 16 / 9。 如果不想限制比率，请设置空字符串。
+        width: int = None  # Limit image width.
+        height: int = None  # Limit image height.
+        minWidth: int = None  # Limit image minimum width.
+        minHeight: int = None  # Limit image minimum height.
+        maxWidth: int = None  # Limit the maximum width of the image.
+        maxHeight: int = None  # Limit the maximum height of the image.
+        aspectRatio: float = None  # Limit the aspect ratio of the image, the format is a floating-point number,
+        # the default is 1, which is 1:1, If you want to set 16:9, please set 1.7777777777777777 which is 16/9. If
+        # you don't want to limit the ratio, set an empty string.
 
     type: str = "input-image"
-    receiver: API = None  # 上传文件接口
-    accept: str = None  # ".jpeg,.jpg,.png,.gif"  # 支持的图片类型格式，请配置此属性为图片后缀，例如.jpg,.png
-    maxSize: int = None  # 默认没有限制，当设置后，文件大小大于此值将不允许上传。单位为B
-    maxLength: int = None  # 默认没有限制，当设置后，一次只允许上传指定数量文件。
-    multiple: bool = None  # False  # 是否多选。
-    joinValues: bool = None  # True  # 拼接值
-    extractValue: bool = None  # False  # 提取值
-    delimiter: str = None  # ","  # 拼接符
-    autoUpload: bool = None  # True  # 否选择完就自动开始上传
-    hideUploadButton: bool = None  # False  # 隐藏上传按钮
-    fileField: str = None  # "file"  # 如果你不想自己存储，则可以忽略此属性。
-    crop: Union[bool, CropInfo] = None  # 用来设置是否支持裁剪。
-    cropFormat: str = None  # "image/png"  # 裁剪文件格式
-    cropQuality: int = None  # 1  # 裁剪文件格式的质量，用于 jpeg/webp，取值在 0 和 1 之间
-    limit: Limit = None  # 限制图片大小，超出不让上传。
-    frameImage: str = None  # 默认占位图地址
-    fixedSize: bool = None  # 是否开启固定尺寸,若开启，需同时设置 fixedSizeClassName
-    fixedSizeClassName: str = None  # 开启固定尺寸时，根据此值控制展示尺寸。
-    # 例如h-30,即图片框高为 h-30,AMIS 将自动缩放比率设置默认图所占位置的宽度，最终上传图片根据此尺寸对应缩放。
-    autoFill: Dict[str, str] = None  # 上传成功后，可以通过配置 autoFill 将上传接口返回的值填充到某个表单项中（在非表单下暂不支持）
+    receiver: API = None  # Upload file interface
+    accept: str = None  # ".jpeg,.jpg,.png,.gif" # Supported picture types and formats, please configure this
+    # property as picture suffix, such as .jpg,.png
+    maxSize: int = None  # There is no limit by default, when set, the file size larger than this value will not be
+    # allowed to upload. unit is B
+    maxLength: int = None  # There is no limit by default. When set, only the specified number of files can be
+    # uploaded at a time.
+    multiple: bool = None  # False # Whether to select multiple.
+    joinValues: bool = None  # True # join values
+    extractValue: bool = None  # False # extract value
+    delimiter: str = None  # "," # splicer
+    autoUpload: bool = None  # True # No selection will automatically start uploading
+    hideUploadButton: bool = None  # False # hide the upload button
+    fileField: str = None  # "file" # You can ignore this attribute if you don't want to store it yourself.
+    crop: Union[bool, CropInfo] = None  # Used to set whether to support cropping.
+    cropFormat: str = None  # "image/png" # crop file format
+    cropQuality: int = None  # 1 # The quality of the crop file format, for jpeg/webp, between 0 and 1
+    limit: Limit = None  # Limit the size of the image, beyond which it will not be allowed to upload.
+    frameImage: str = None  # Default placeholder image address
+    fixedSize: bool = None  # Whether to enable fixed size, if enabled, set fixedSizeClassName at the same time
+    fixedSizeClassName: str = None  # When the fixed size is turned on, the display size is controlled according to this value.
+    # For example, h-30, that is, the height of the picture frame is h-30, AMIS will automatically set the zoom ratio
+    # to the width of the position occupied by the default image, and the final uploaded image will be scaled
+    # accordingly according to this size.
+    autoFill: Dict[str, str] = None  # After the upload is successful, the value returned by the upload interface can
+    # be filled into a form item by configuring autoFill (not supported under non-form)
 
 
 class LocationPicker(FormItem):
-    """地理位置"""
+    """Location"""
 
     type: str = "location-picker"
-    vendor: str = "baidu"  # 地图厂商，目前只实现了百度地图
-    ak: str = ...  # 百度地图的 ak  # 注册地址: http://lbsyun.baidu.com/
-    clearable: bool = None  # False  # 输入框是否可清空
-    placeholder: str = None  # "请选择位置"  # 默认提示
-    coordinatesType: str = None  # "bd09"  # 默为百度坐标，可设置为'gcj02'
+    vendor: str = "baidu"  # Map vendor, currently only Baidu map is implemented
+    ak: str = ...  # ak # registered address of Baidu map: http://lbsyun.baidu.com/
+    clearable: bool = None  # False # Whether the input box can be cleared
+    placeholder: str = None  # "Please select a location" # Default prompt
+    coordinatesType: str = None  # "bd09" # Default is Baidu coordinates, can be set to 'gcj02'
 
 
 class InputNumber(FormItem):
-    """数字输入框"""
+    """Number input box"""
 
     type: str = "input-number"
-    min: Union[int, Template] = None  # 最小值
-    max: Union[int, Template] = None  # 最大值
-    step: int = None  # 步长
-    precision: int = None  # 精度，即小数点后几位
-    showSteps: bool = None  # True  # 是否显示上下点击按钮
-    prefix: str = None  # 前缀
-    suffix: str = None  # 后缀
-    kilobitSeparator: bool = None  # 千分分隔
+    min: Union[int, Template] = None  # minimum value
+    max: Union[int, Template] = None  # maximum value
+    step: int = None  # step size
+    precision: int = None  # Precision, i.e. a few decimal places
+    showSteps: bool = None  # True # Whether to show up and down click buttons
+    prefix: str = None  # prefix
+    suffix: str = None  # suffix
+    kilobitSeparator: bool = None  # Kilobit Separator
 
 
 class Picker(FormItem):
-    """列表选择器"""
+    """List selector"""
 
-    type: str = "picker"  # 列表选取，在功能上和 Select 类似，但它能显示更复杂的信息。
-    size: Union[str, SizeEnum] = None  # 支持: xs、sm、md、lg、xl、 full
-    options: OptionsNode = None  # 选项组
-    source: API = None  # 动态选项组
-    multiple: bool = None  # 是否为多选。
-    delimiter: bool = None  # False # 拼接符
-    labelField: str = None  # "label" # 选项标签字段
-    valueField: str = None  # "value" # 选项值字段
-    joinValues: bool = None  # True # 拼接值
-    extractValue: bool = None  # False # 提取值
-    autoFill: dict = None  # 自动填充
-    modalMode: Literal["dialog", "drawer"] = None  # "dialog" # 设置 dialog 或者 drawer，用来配置弹出方式。
+    type: str = "picker"  # List pick, similar in function to Select, but it can display more complex information.
+    size: Union[str, SizeEnum] = None  # Supports: xs, sm, md, lg, xl, full
+    options: OptionsNode = None  # option group
+    source: API = None  # Dynamic option group
+    multiple: bool = None  # Whether it is multiple choice.
+    delimiter: bool = None  # False # splicer
+    labelField: str = None  # "label" # option label field
+    valueField: str = None  # "value" # option value field
+    joinValues: bool = None  # True # join values
+    extractValue: bool = None  # False # extract value
+    autoFill: dict = None  # autofill
+    modalMode: Literal["dialog", "drawer"] = None  # "dialog" # Set dialog or drawer to configure the popup mode.
     pickerSchema: Union["CRUD", SchemaNode] = None  # "{mode: 'list', listItem: {title: '${label}'}}"
-    # 即用 List 类型的渲染，来展示列表信息。更多配置参考 CRUD
-    embed: bool = None  # False # 是否使用内嵌模式
+    # That is to use the rendering of the List type to display the list information. More configuration reference CRUD
+    embed: bool = None  # False # Whether to use embedded mode
 
 
 class Switch(FormItem):
-    """开关"""
+    """switch"""
 
     type: str = "switch"
-    option: str = None  # 选项说明
-    onText: str = None  # 开启时的文本
-    offText: str = None  # 关闭时的文本
-    trueValue: Any = None  # "True"  # 标识真值
-    falseValue: Any = None  # "false"  # 标识假值
+    option: str = None  # option description
+    onText: str = None  # Text when it is turned on
+    offText: str = None  # text when off
+    trueValue: Any = None  # "True" # identifies the true value
+    falseValue: Any = None  # "false" # identifies a false value
 
 
 class Static(FormItem):
-    """静态展示/标签"""
+    """Static display/label"""
 
-    type: str = "static"  # 支持通过配置type为static-xxx的形式，展示其他 非表单项 组件 static-json|static-datetime
+    type: str = "static"  # Support to display other non-form item components static-json|static-datetime by
+    # configuring type as static-xxx
 
     class Json(FormItem):
         type: str = "static-json"
         value: Union[dict, str]
 
     class Datetime(FormItem):
-        """显示日期"""
+        """Display date"""
 
         type: str = "static-datetime"
-        value: Union[int, str]  # 支持10位时间戳: 1593327764
+        value: Union[int, str]  # support 10-bit timestamp: 1593327764
 
 
 class InputText(FormItem):
-    """输入框"""
+    """Input box"""
 
     type: str = "input-text"  # input-text|input-url|input-email|input-password|divider
-    options: Union[List[str], List[dict]] = None  # 选项组
-    source: Union[str, API] = None  # 动态选项组
-    autoComplete: Union[str, API] = None  # 自动补全
-    multiple: bool = None  # 是否多选
-    delimiter: str = None  # 拼接符 ","
-    labelField: str = None  # 选项标签字段 "label"
-    valueField: str = None  # 选项值字段 "value"
-    joinValues: bool = None  # True  # 拼接值
-    extractValue: bool = None  # 提取值
-    addOn: SchemaNode = None  # 输入框附加组件，比如附带一个提示文字，或者附带一个提交按钮。
-    trimContents: bool = None  # 是否去除首尾空白文本。
-    creatable: bool = None  # 是否可以创建，默认为可以，除非设置为 false 即只能选择选项中的值
-    clearable: bool = None  # 是否可清除
-    resetValue: str = None  # 清除后设置此配置项给定的值。
-    prefix: str = None  # 前缀
-    suffix: str = None  # 后缀
-    showCounter: bool = None  # 是否显示计数器
-    minLength: int = None  # 限制最小字数
-    maxLength: int = None  # 限制最大字数
+    options: Union[List[str], List[dict]] = None  # Option group
+    source: Union[str, API] = None  # Dynamic option group
+    autoComplete: Union[str, API] = None  # autocomplete
+    multiple: bool = None  # Whether to select multiple
+    delimiter: str = None  # Splice ","
+    labelField: str = None  # option label field "label"
+    valueField: str = None  # option value field "value"
+    joinValues: bool = None  # True # join values
+    extractValue: bool = None  # extract value
+    addOn: SchemaNode = None  # Input box add-ons, such as with a prompt text, or with a submit button.
+    trimContents: bool = None  # Whether to remove leading and trailing blank text.
+    creatable: bool = None  # Whether it can be created, the default is yes, unless it is set to false, only the
+    # value in the option can be selected
+    clearable: bool = None  # Whether it can be cleared
+    resetValue: str = None  # Set the value given by this configuration item after clearing.
+    prefix: str = None  # prefix
+    suffix: str = None  # suffix
+    showCounter: bool = None  # Whether to show the counter
+    minLength: int = None  # Limit the minimum number of words
+    maxLength: int = None  # Limit the maximum number of characters
 
 
 class InputPassword(InputText):
-    """密码输框"""
+    """Password input box"""
 
     type: str = "input-password"
 
 
 class InputRichText(FormItem):
-    """富文本编辑器"""
+    """Rich Text Editor"""
 
     type: str = "input-rich-text"
-    saveAsUbb: bool = None  # 是否保存为 ubb 格式
-    receiver: API = None  # ''  # 默认的图片保存 API
-    videoReceiver: API = None  # ''  # 默认的视频保存 API
-    size: str = None  # 框的大小，可设置为 md 或者 lg
-    options: dict = None  # 需要参考 tinymce 或 froala 的文档
-    buttons: List[str] = None  # froala 专用，配置显示的按钮，tinymce 可以通过前面的 options 设置 toolbar 字符串
-    vendor: str = None  # "vendor": "froala" ,配置使用 froala 编辑器
+    saveAsUbb: bool = None  # Whether to save in ubb format
+    receiver: API = None  # '' # Default image save API
+    videoReceiver: API = None  # '' # Default video save API
+    size: str = None  # The size of the box, which can be set to md or lg
+    options: dict = None  # Need to refer to tinymce or froala documentation
+    buttons: List[str] = None  # froala dedicated, configure the displayed buttons, tinymce can set the toolbar
+    # string through the previous options
+    vendor: str = None  # "vendor": "froala" , configure to use froala editor
 
 
 class Select(FormItem):
-    """下拉框"""
+    """Drop down box"""
 
     type: str = "select"
-    options: OptionsNode = None  # 选项组
-    source: API = None  # 动态选项组
-    autoComplete: API = None  # 自动提示补全
-    delimiter: Union[bool, str] = None  # False  # 拼接符
-    labelField: str = None  # "label"  # 选项标签字段
-    valueField: str = None  # "value"  # 选项值字段
-    joinValues: bool = None  # True  # 拼接值
-    extractValue: bool = None  # False  # 提取值
-    checkAll: bool = None  # False  # 是否支持全选
-    checkAllLabel: str = None  # "全选"  # 全选的文字
-    checkAllBySearch: bool = None  # False  # 有检索时只全选检索命中的项
-    defaultCheckAll: bool = None  # False  # 默认是否全选
-    creatable: bool = None  # False  # 新增选项
-    multiple: bool = None  # False  # 多选
-    searchable: bool = None  # False  # 检索
-    createBtnLabel: str = None  # "新增选项"  # 新增选项
-    addControls: List[FormItem] = None  # 自定义新增表单项
-    addApi: API = None  # 配置新增选项接口
-    editable: bool = None  # False  # 编辑选项
-    editControls: List[FormItem] = None  # 自定义编辑表单项
-    editApi: API = None  # 配置编辑选项接口
-    removable: bool = None  # False  # 删除选项
-    deleteApi: API = None  # 配置删除选项接口
-    autoFill: dict = None  # 自动填充
-    menuTpl: str = None  # 支持配置自定义菜单
-    clearable: bool = None  # 单选模式下是否支持清空
-    hideSelected: bool = None  # False  # 隐藏已选选项
-    mobileClassName: str = None  # 移动端浮层类名
-    selectMode: str = None  # 可选：group、table、tree、chained、associated。分别为：列表形式、表格形式、树形选择形式、
-    # 级联选择形式， 关联选择形式（与级联选择的区别在于，级联是无限极，而关联只有一级，关联左边可以是个 tree）。
-    searchResultMode: str = None  # 如果不设置将采用 selectMode 的值，可以单独配置，参考 selectMode，决定搜索结果的展示形式。
-    columns: List[dict] = None  # 当展示形式为 table 可以用来配置展示哪些列，跟 table 中的 columns 配置相似，只是只有展示功能。
-    leftOptions: List[dict] = None  # 当展示形式为 associated 时用来配置左边的选项集。
-    leftMode: str = None  # 当展示形式为 associated 时用来配置左边的选择形式，支持 list 或者 tree。默认为 list。
-    rightMode: str = None  # 当展示形式为 associated 时用来配置右边的选择形式，可选：list、table、tree、chained。
+    options: OptionsNode = None  # option group
+    source: API = None  # Dynamic option group
+    autoComplete: API = None  # Automatic prompt completion
+    delimiter: Union[bool, str] = None  # False # Splice
+    labelField: str = None  # "label" # option label field
+    valueField: str = None  # "value" # option value field
+    joinValues: bool = None  # True # join values
+    extractValue: bool = None  # False # extract value
+    checkAll: bool = None  # False # Whether to support select all
+    checkAllLabel: str = None  # "Select All" # Text to be selected
+    checkAllBySearch: bool = None  # False # When there is a search, only all items hit by the search are selected
+    defaultCheckAll: bool = None  # False # Whether to check all by default
+    creatable: bool = None  # False # New option
+    multiple: bool = None  # False # Multiple choice
+    searchable: bool = None  # False # search
+    createBtnLabel: str = None  # "Add option" # Add option
+    addControls: List[FormItem] = None  # Customize new form items
+    addApi: API = None  # Configure the new option interface
+    editable: bool = None  # False # edit options
+    editControls: List[FormItem] = None  # Customize edit form items
+    editApi: API = None  # Configure editing options interface
+    removable: bool = None  # False # remove option
+    deleteApi: API = None  # Configure delete option interface
+    autoFill: dict = None  # autofill
+    menuTpl: str = None  # Supports configuring custom menus
+    clearable: bool = None  # Whether to support clearing in radio mode
+    hideSelected: bool = None  # False # hide the selected option
+    mobileClassName: str = None  # Mobile floating class name
+    selectMode: str = None  # Optional: group, table, tree, chained, associated. They are: list form, table form,
+    # tree selection form, Cascade selection form, association selection form (the difference from cascading
+    # selection is that the cascade is infinite, while the association has only one level, and the left side of the
+    # association can be a tree).
+    searchResultMode: str = None  # If the value of selectMode is not set, it can be configured separately. Refer to
+    # selectMode to determine the display form of search results.
+    columns: List[dict] = None  # When the display form is table, it can be used to configure which columns are
+    # displayed, which is similar to the columns configuration in table, but only has the display function.
+    leftOptions: List[dict] = None  # Used to configure the left option set when the display form is associated.
+    leftMode: str = None  # When the display form is associated, it is used to configure the left selection form,
+    # support list or tree. Default is list.
+    rightMode: str = None  # When the display form is associated, it is used to configure the right selection form,
+    # optional: list, table, tree, chained.
 
 
 class NestedSelect(Select):
-    """级联选择器"""
+    """Cascade selector"""
 
     type: str = "nested-select"
-    cascade: bool = None  # False  # 设置 true时，当选中父节点时不自动选择子节点。
-    withChildren: bool = None  # False  # 设置 true时，选中父节点时，值里面将包含子节点的值，否则只会保留父节点的值。
-    onlyChildren: bool = None  # False  # 多选时，选中父节点时，是否只将其子节点加入到值中。
-    searchPromptText: str = None  # "输入内容进行检索"  # 搜索框占位文本
-    noResultsText: str = None  # "未找到任何结果"  # 无结果时的文本
-    hideNodePathLabel: bool = None  # False  # 是否隐藏选择框中已选择节点的路径 label 信息
-    onlyLeaf: bool = None  # False  # 只允许选择叶子节点
+    cascade: bool = None  # False # When set to true, child nodes are not automatically selected when the parent node
+    # is selected.
+    withChildren: bool = None  # False # When set to true, when the parent node is selected, the value of the child
+    # node will be included in the value, otherwise only the value of the parent node will be retained.
+    onlyChildren: bool = None  # False # For multiple selections, whether to add only its child nodes to the value
+    # when the parent node is selected.
+    searchPromptText: str = None  # "Enter content to search" # Search box placeholder text
+    noResultsText: str = None  # "No results found" # Text if no results
+    hideNodePathLabel: bool = None  # False # Whether to hide the path label information of the selected node in the
+    # selection box
+    onlyLeaf: bool = None  # False # Only leaf nodes are allowed to be selected
 
 
 class Textarea(FormItem):
-    """多行文本输入框"""
+    """Multi-line text input box"""
 
     type: str = "textarea"
-    minRows: int = None  # 最小行数
-    maxRows: int = None  # 最大行数
-    trimContents: bool = None  # 是否去除首尾空白文本
-    readOnly: bool = None  # 是否只读
-    showCounter: bool = True  # 是否显示计数器
-    minLength: int = None  # 限制最小字数
-    maxLength: int = None  # 限制最大字数
+    minRows: int = None  # Minimum number of rows
+    maxRows: int = None  # maximum number of rows
+    trimContents: bool = None  # Whether to remove leading and trailing blank text
+    readOnly: bool = None  # read-only
+    showCounter: bool = True  # whether to show the counter
+    minLength: int = None  # Limit the minimum number of words
+    maxLength: int = None  # Limit the maximum number of characters
 
 
 class InputMonth(FormItem):
-    """月份"""
+    """month"""
 
     type: str = "input-month"
-    value: str = None  # 默认值
-    format: str = None  # "X"  # 月份选择器值格式，更多格式类型请参考 moment
-    inputFormat: str = None  # "YYYY-MM"  # 月份选择器显示格式，即时间戳格式，更多格式类型请参考 moment
-    placeholder: str = None  # "请选择月份"  # 占位文本
-    clearable: bool = None  # True  # 是否可清除
+    value: str = None  # default value
+    format: str = None  # "X" # Month selector value format, please refer to moment for more format types
+    inputFormat: str = None  # "YYYY-MM" # The display format of the month selector, that is, the timestamp format.
+    # For more format types, please refer to moment
+    placeholder: str = None  # "Please select a month" # placeholder text
+    clearable: bool = None  # True # Whether it can be cleared
 
 
 class InputTime(FormItem):
-    """时间"""
+    """time"""
 
     type: str = "input-time"
-    value: str = None  # 默认值
-    timeFormat: str = None  # "HH:mm"  # 时间选择器值格式，更多格式类型请参考 moment
-    format: str = None  # "X"  # 时间选择器值格式，更多格式类型请参考 moment
-    inputFormat: str = None  # "HH:mm"  # 时间选择器显示格式，即时间戳格式，更多格式类型请参考 moment
-    placeholder: str = None  # "请选择时间"  # 占位文本
-    clearable: bool = None  # True  # 是否可清除
-    timeConstraints: dict = None  # True  # 请参考： react-datetime
+    value: str = None  # default value
+    timeFormat: str = None  # "HH:mm" # Time selector value format, please refer to moment for more format types
+    format: str = None  # "X" # Time selector value format, please refer to moment for more format types
+    inputFormat: str = None  # "HH:mm" # Time selector display format, that is, timestamp format, please refer to
+    # moment for more format types
+    placeholder: str = None  # "Please select a time" # placeholder text
+    clearable: bool = None  # True # Whether it can be cleared
+    timeConstraints: dict = None  # True # Please refer to: react-datetime
 
 
 class InputDatetime(FormItem):
-    """日期"""
+    """date"""
 
     type: str = "input-datetime"
-    value: str = None  # 默认值
-    format: str = None  # "X"  # 日期时间选择器值格式，更多格式类型请参考 文档
-    inputFormat: str = None  # "YYYY-MM-DD HH:mm:ss"  # 日期时间选择器显示格式，即时间戳格式，更多格式类型请参考 文档
-    placeholder: str = None  # "请选择日期以及时间"  # 占位文本
-    shortcuts: str = None  # 日期时间快捷键
-    minDate: str = None  # 限制最小日期时间
-    maxDate: str = None  # 限制最大日期时间
-    utc: bool = None  # False  # 保存 utc 值
-    clearable: bool = None  # True  # 是否可清除
-    embed: bool = None  # False  # 是否内联
-    timeConstraints: dict = None  # True  # 请参考： react-datetime
+    value: str = None  # default value
+    format: str = None  # "X" # Date time picker value format, please refer to the documentation for more format types
+    inputFormat: str = None  # "YYYY-MM-DD HH:mm:ss" # Date time picker display format, namely timestamp format,
+    # please refer to the documentation for more format types
+    placeholder: str = None  # "Please select a date and time" # placeholder text
+    shortcuts: str = None  # datetime shortcuts
+    minDate: str = None  # Limit the minimum date and time
+    maxDate: str = None  # Limit maximum date time
+    utc: bool = None  # False # save utc value
+    clearable: bool = None  # True # Whether it can be cleared
+    embed: bool = None  # False # Whether to inline
+    timeConstraints: dict = None  # True # Please refer to: react-datetime
 
 
 class InputDate(FormItem):
-    """日期"""
+    """date"""
 
     type: str = "input-date"
-    value: str = None  # 默认值
-    format: str = None  # "X"  # 日期选择器值格式，更多格式类型请参考 文档
-    inputFormat: str = None  # "YYYY-DD-MM"  # 日期选择器显示格式，即时间戳格式，更多格式类型请参考 文档
-    placeholder: str = None  # "请选择日期"  # 占位文本
-    shortcuts: str = None  # 日期快捷键
-    minDate: str = None  # 限制最小日期
-    maxDate: str = None  # 限制最大日期
-    utc: bool = None  # False  # 保存 utc 值
-    clearable: bool = None  # True  # 是否可清除
-    embed: bool = None  # False  # 是否内联模式
-    timeConstraints: dict = None  # True  # 请参考： react-datetime
-    closeOnSelect: bool = None  # False  # 点选日期后，是否马上关闭选择框
-    schedules: Union[list, str] = None  # 日历中展示日程，可设置静态数据或从上下文中取数据，className参考背景色
+    value: str = None  # default value
+    format: str = None  # "X" # Date picker value format, please refer to the documentation for more format types
+    inputFormat: str = None  # "YYYY-DD-MM" # Date picker display format, that is, timestamp format, please refer to
+    # the documentation for more format types
+    placeholder: str = None  # "Please select a date" # placeholder text
+    shortcuts: str = None  # date shortcuts
+    minDate: str = None  # Limit the minimum date
+    maxDate: str = None  # limit max date
+    utc: bool = None  # False # save utc value
+    clearable: bool = None  # True # Whether it can be cleared
+    embed: bool = None  # False # Whether to inline mode
+    timeConstraints: dict = None  # True # Please refer to: react-datetime
+    closeOnSelect: bool = None  # False # Whether to close the selection box immediately after clicking the date
+    schedules: Union[list, str] = None  # The schedule is displayed in the calendar, static data can be set or data
+    # can be taken from the context, className refers to the background color
     scheduleClassNames: List[str] = None  # "['bg-warning','bg-danger','bg-success','bg-info','bg-secondary']"
-    # 日历中展示日程的颜色，参考背景色
-    scheduleAction: SchemaNode = None  # 自定义日程展示
-    largeMode: bool = None  # False  # 放大模式
+    # The color of the event displayed in the calendar, refer to the background color
+    scheduleAction: SchemaNode = None  # Custom schedule display
+    largeMode: bool = None  # False # zoom mode
 
 
 class InputTimeRange(FormItem):
-    """时间范围"""
+    """time limit"""
 
     type: str = "input-time-range"
-    timeFormat: str = None  # "HH:mm"  # 时间范围选择器值格式
-    format: str = None  # "HH:mm"  # 时间范围选择器值格式
-    inputFormat: str = None  # "HH:mm"  # 时间范围选择器显示格式
-    placeholder: str = None  # "请选择时间范围"  # 占位文本
-    clearable: bool = None  # True  # 是否可清除
-    embed: bool = None  # False  # 是否内联模式
+    timeFormat: str = None  # "HH:mm" # Time range selector value format
+    format: str = None  # "HH:mm" # time range selector value format
+    inputFormat: str = None  # "HH:mm" # Time range selector display format
+    placeholder: str = None  # "Please select a time range" # placeholder text
+    clearable: bool = None  # True # Whether it can be cleared
+    embed: bool = None  # False # Whether to inline mode
 
 
 class InputDatetimeRange(InputTimeRange):
-    """日期时间范围"""
+    """Date time range"""
 
     type: str = "input-datetime-range"
-    ranges: Union[str, List[str]] = None  # "yesterday,7daysago,prevweek,thismonth,prevmonth,prevquarter" 日期范围快捷键，
-    # 可选：today,yesterday,1dayago,7daysago,30daysago,90daysago,prevweek,thismonth,thisquarter,prevmonth,prevquarter
-    minDate: str = None  # 限制最小日期时间，用法同 限制范围
-    maxDate: str = None  # 限制最大日期时间，用法同 限制范围
-    utc: bool = None  # False  # 保存 UTC 值
+    ranges: Union[str, List[str]] = None  # "yesterday,7daysago,prevweek,thismonth,prevmonth,prevquarter" date range
+    # shortcut keys, Optional: today,yesterday,1dayago,7daysago,30daysago,90daysago,prevweek,thismonth,thisquarter,
+    # prevmonth,prevquarter
+    minDate: str = None  # Limit the minimum date and time, the usage is the same as the limit range
+    maxDate: str = None  # Limit the maximum date and time, the usage is the same as the limit range
+    utc: bool = None  # False # save UTC value
 
 
 class InputDateRange(InputDatetimeRange):
-    """日期范围"""
+    """Date Range"""
 
     type: str = "input-date-range"
-    minDuration: str = None  # 限制最小跨度，如： 2days
-    maxDuration: str = None  # 限制最大跨度，如：1year
+    minDuration: str = None  # Limit the minimum span, such as: 2days
+    maxDuration: str = None  # Limit the maximum span, such as: 1year
 
 
 class InputMonthRange(InputDateRange):
-    """月份范围"""
+    """month range"""
 
     type: str = "input-month-range"
 
 
 class Transfer(FormItem):
-    """穿梭器"""
+    """Shuttle"""
 
     type: Literal["transfer", "transfer-picker", "tabs-transfer", "tabs-transfer-picker"] = "transfer"
-    options: OptionsNode = None  # 选项组
-    source: API = None  # 动态选项组
-    delimiter: str = None  # "False"  # 拼接符
-    joinValues: bool = None  # True  # 拼接值
-    extractValue: bool = None  # False  # 提取值
-    searchable: bool = None  # False  # 当设置为 true 时表示可以通过输入部分内容检索出选项。
-    searchApi: API = None  # 如果想通过接口检索，可以设置个 api。
-    statistics: bool = None  # True  # 是否显示统计数据
-    selectTitle: str = None  # "请选择"  # 左侧的标题文字
-    resultTitle: str = None  # "当前选择"  # 右侧结果的标题文字
-    sortable: bool = None  # False  # 结果可以进行拖拽排序
-    selectMode: str = None  # "list"  # 可选：list、table、tree、chained、associated。分别为：列表形式、表格形式、树形选择形式、
-    # 级联选择形式，关联选择形式（与级联选择的区别在于，级联是无限极，而关联只有一级，关联左边可以是个 tree）。
-    searchResultMode: str = None  # 如果不设置将采用 selectMode 的值，可以单独配置，参考 selectMode，决定搜索结果的展示形式。
-    columns: List[dict] = None  # 当展示形式为 table 可以用来配置展示哪些列，跟 table 中的 columns 配置相似，只是只有展示功能。
-    leftOptions: List[dict] = None  # 当展示形式为 associated 时用来配置左边的选项集。
-    leftMode: str = None  # 当展示形式为 associated 时用来配置左边的选择形式，支持 list 或者 tree。默认为 list。
-    rightMode: str = None  # 当展示形式为 associated 时用来配置右边的选择形式，可选：list、table、tree、chained。
-    menuTpl: SchemaNode = None  # 用来自定义选项展示
-    valueTpl: SchemaNode = None  # 用来自定义值的展示
+    options: OptionsNode = None  # option group
+    source: API = None  # Dynamic option group
+    delimiter: str = None  # "False" # splicer
+    joinValues: bool = None  # True # join values
+    extractValue: bool = None  # False # extract value
+    searchable: bool = None  # False When set to true, it means that options can be retrieved by entering partial content.
+    searchApi: API = None  # If you want to retrieve through the interface, you can set an api.
+    statistics: bool = None  # True # Whether to display statistics
+    selectTitle: str = None  # "Please select" # Title text on the left
+    resultTitle: str = None  # "current selection" # title text of the result on the right
+    sortable: bool = None  # False # The result can be sorted by drag and drop
+    selectMode: str = None  # "list" # Optional: list, table, tree, chained, associated. They are: list form,
+    # table form, tree selection form, Cascade selection form, association selection form (the difference from
+    # cascading selection is that the cascade is infinite, while the association has only one level, and the left
+    # side of the association can be a tree).
+    searchResultMode: str = None  # If the value of selectMode is not set, it can be configured separately. Refer to
+    # selectMode to determine the display form of search results.
+    columns: List[dict] = None  # When the display form is table, it can be used to configure which columns are
+    # displayed, which is similar to the columns configuration in table, but only has the display function.
+    leftOptions: List[dict] = None  # Used to configure the left option set when the display form is associated.
+    leftMode: str = None  # When the display form is associated, it is used to configure the left selection form,
+    # support list or tree. Default is list.
+    rightMode: str = None  # When the display form is associated, it is used to configure the right selection form,
+    # optional: list, table, tree, chained.
+    menuTpl: SchemaNode = None  # Used to customize option display
+    valueTpl: SchemaNode = None  # Used to customize the display of the value
 
 
 class TransferPicker(Transfer):
-    """穿梭选择器"""
+    """Shuttle selector"""
 
     type: str = "transfer-picker"
 
 
 class TabsTransfer(Transfer):
-    """组合穿梭器"""
+    """Combination shuttle"""
 
     type: str = "tabs-transfer"
 
 
 class TabsTransferPicker(Transfer):
-    """组合穿梭选择器"""
+    """Combination shuttle selector"""
 
     type: str = "tabs-transfer-picker"
 
 
 class InputTree(FormItem):
-    """树形选择框"""
+    """Tree selection box"""
 
     type: str = "input-tree"
-    options: OptionsNode = None  # 选项组
-    source: API = None  # 动态选项组
-    autoComplete: API = None  # 自动提示补全
-    multiple: bool = None  # False  # 是否多选
-    delimiter: str = None  # "False"  # 拼接符
-    labelField: str = None  # "label"  # 选项标签字段
-    valueField: str = None  # "value"  # 选项值字段
-    iconField: str = None  # "icon"  # 图标值字段
-    joinValues: bool = None  # True  # 拼接值
-    extractValue: bool = None  # False  # 提取值
-    creatable: bool = None  # False  # 新增选项
-    addControls: List[FormItem] = None  # 自定义新增表单项
-    addApi: API = None  # 配置新增选项接口
-    editable: bool = None  # False  # 编辑选项
-    editControls: List[FormItem] = None  # 自定义编辑表单项
-    editApi: API = None  # 配置编辑选项接口
-    removable: bool = None  # False  # 删除选项
-    deleteApi: API = None  # 配置删除选项接口
-    searchable: bool = None  # False  # 是否可检索，仅在 type 为 tree-select 的时候生效
-    hideRoot: bool = None  # True  # 如果想要显示个顶级节点，请设置为 false
-    rootLabel: bool = None  # "顶级"  # 当 hideRoot 不为 false 时有用，用来设置顶级节点的文字。
-    showIcon: bool = None  # True  # 是否显示图标
-    showRadio: bool = None  # False  # 是否显示单选按钮，multiple 为 false 是有效。
-    initiallyOpen: bool = None  # True  # 设置是否默认展开所有层级。
-    unfoldedLevel: int = None  # 0  # 设置默认展开的级数，只有initiallyOpen不是true时生效。
-    cascade: bool = None  # False  # 当选中父节点时不自动选择子节点。
-    withChildren: bool = None  # False  # 选中父节点时，值里面将包含子节点的值，否则只会保留父节点的值。
-    onlyChildren: bool = None  # False  # 多选时，选中父节点时，是否只将其子节点加入到值中。
-    rootCreatable: bool = None  # False  # 是否可以创建顶级节点
-    rootCreateTip: str = None  # "添加一级节点"  # 创建顶级节点的悬浮提示
-    minLength: int = None  # 最少选中的节点数
-    maxLength: int = None  # 最多选中的节点数
-    treeContainerClassName: str = None  # tree 最外层容器类名
-    enableNodePath: bool = None  # False  # 是否开启节点路径模式
-    pathSeparator: str = None  # "/"  # 节点路径的分隔符，enableNodePath为true时生效
-    deferApi: API = None  # 懒加载的选项请配置 defer 为 true，然后配置 deferApi 即可完成懒加载
+    options: OptionsNode = None  # option group
+    source: API = None  # Dynamic option group
+    autoComplete: API = None  # Automatic prompt completion
+    multiple: bool = None  # False # Whether to select multiple
+    delimiter: str = None  # "False" # splicer
+    labelField: str = None  # "label" # option label field
+    valueField: str = None  # "value" # option value field
+    iconField: str = None  # "icon" # icon value field
+    joinValues: bool = None  # True # join values
+    extractValue: bool = None  # False # extract value
+    creatable: bool = None  # False # New option
+    addControls: List[FormItem] = None  # Customize new form items
+    addApi: API = None  # Configure the new option interface
+    editable: bool = None  # False # edit options
+    editControls: List[FormItem] = None  # Customize edit form items
+    editApi: API = None  # Configure editing options interface
+    removable: bool = None  # False # remove option
+    deleteApi: API = None  # Configure delete option interface
+    searchable: bool = None  # False # Whether it is searchable, it only takes effect when type is tree-select
+    hideRoot: bool = None  # True # Set to false if you want to show a top-level node
+    rootLabel: bool = None  # "top level" # Useful when hideRoot is not false, used to set the text of the top level node.
+    showIcon: bool = None  # True # Whether to show the icon
+    showRadio: bool = None  # False # Whether to show radio buttons, multiple is false is valid.
+    initiallyOpen: bool = None  # True # Set whether to expand all levels by default.
+    unfoldedLevel: int = None  # 0 # Set the default unfolded level, which only takes effect when initiallyOpen is
+    # not true.
+    cascade: bool = None  # False # Do not automatically select child nodes when parent node is selected.
+    withChildren: bool = None  # False # When the parent node is selected, the value will contain the value of the
+    # child node, otherwise only the value of the parent node will be retained.
+    onlyChildren: bool = None  # False # For multiple selections, whether to add only its child nodes to the value
+    # when the parent node is selected.
+    rootCreatable: bool = None  # False # Whether top-level nodes can be created
+    rootCreateTip: str = None  # "Add a first-level node" # Create a hovering tip for a top-level node
+    minLength: int = None  # Minimum number of selected nodes
+    maxLength: int = None  # Maximum number of nodes selected
+    treeContainerClassName: str = None  # tree outermost container class name
+    enableNodePath: bool = None  # False # Whether to enable node path mode
+    pathSeparator: str = None  # "/" # The separator of the node path, it takes effect when enableNodePath is true
+    deferApi: API = None  # For lazy loading options, please configure defer to true, and then configure deferApi to
+    # complete lazy loading
     selectFirst: bool = None
 
 
 class TreeSelect(InputTree):
-    """树形选择器"""
+    """Tree selector"""
 
     type: str = "tree-select"
-    hideNodePathLabel: bool = None  # 是否隐藏选择框中已选择节点的路径 label 信息
+    hideNodePathLabel: bool = None  # Whether to hide the path label information of the selected node in the selection box
 
 
 class Image(AmisNode):
-    """图片"""
+    """picture"""
 
-    type: str = "image"  # 如果在 Table、Card 和 List 中，为"image"；在 Form 中用作静态展示，为"static-image"
-    className: str = None  # 外层 CSS 类名
-    imageClassName: str = None  # 图片 CSS 类名
-    thumbClassName: str = None  # 图片缩率图 CSS 类名
-    height: int = None  # 图片缩率高度
-    width: int = None  # 图片缩率宽度
-    title: str = None  # 标题
-    imageCaption: str = None  # 描述
-    placeholder: str = None  # 占位文本
-    defaultImage: str = None  # 无数据时显示的图片
-    src: str = None  # 缩略图地址
-    href: Template = None  # 外部链接地址
-    originalSrc: str = None  # 原图地址
-    enlargeAble: bool = None  # 支持放大预览
-    enlargeTitle: str = None  # 放大预览的标题
-    enlargeCaption: str = None  # 放大预览的描述
-    thumbMode: str = None  # "contain"  # 预览图模式，可选：'w-full','h-full','contain','cover'
-    thumbRatio: str = None  # "1:1"  # 预览图比例，可选：'1:1','4:3','16:9'
-    imageMode: str = None  # "thumb"  # 图片展示模式，可选：'thumb','original' 即：缩略图模式 或者 原图模式
+    type: str = "image"  # "image" if used in Table, Card and List; "static-image" if used as static display in Form
+    className: str = None  # Outer CSS class name
+    imageClassName: str = None  # Image CSS class name
+    thumbClassName: str = None  # Thumbnail CSS class name
+    height: int = None  # Image reduction height
+    width: int = None  # Image reduction width
+    title: str = None  # title
+    imageCaption: str = None  # description
+    placeholder: str = None  # placeholder text
+    defaultImage: str = None  # The image displayed when there is no data
+    src: str = None  # Thumbnail address
+    href: Template = None  # External link address
+    originalSrc: str = None  # Original image address
+    enlargeAble: bool = None  # Support zoom in preview
+    enlargeTitle: str = None  # enlarge the title of the preview
+    enlargeCaption: str = None  # Description of the enlarged preview
+    thumbMode: str = None  # "contain" # preview mode, optional: 'w-full','h-full','contain','cover'
+    thumbRatio: str = None  # "1:1" # Preview ratio, optional: '1:1','4:3','16:9'
+    imageMode: str = None  # "thumb" Image display mode, optional: 'thumb', 'original' ie: thumbnail mode or original
+    # image mode
 
 
 class Images(AmisNode):
-    """图片集"""
+    """Photo album"""
 
-    type: str = "images"  # 如果在 Table、Card 和 List 中，为"images"；在 Form 中用作静态展示，为"static-images"
-    className: str = None  # 外层 CSS 类名
-    defaultImage: str = None  # 默认展示图片
-    value: Union[str, List[str], List[dict]] = None  # 图片数组
-    source: str = None  # 数据源
-    delimiter: str = None  # ","  # 分隔符，当 value 为字符串时，用该值进行分隔拆分
-    src: str = None  # 预览图地址，支持数据映射获取对象中图片变量
-    originalSrc: str = None  # 原图地址，支持数据映射获取对象中图片变量
-    enlargeAble: bool = None  # 支持放大预览
-    thumbMode: str = None  # "contain"  # 预览图模式，可选：'w-full','h-full','contain','cover'
-    thumbRatio: str = None  # "1:1"  # 预览图比例，可选：'1:1','4:3','16:9'
+    type: str = "images"  # "images" if used in Table, Card and List; "static-images" if used as static display in Form
+    className: str = None  # Outer CSS class name
+    defaultImage: str = None  # Default display image
+    value: Union[str, List[str], List[dict]] = None  # Image array
+    source: str = None  # data source
+    delimiter: str = None  # "," # Delimiter, when value is a string, use this value to separate and split
+    src: str = None  # Preview image address, support data mapping to obtain image variables in the object
+    originalSrc: str = None  # Original image address, support data mapping to obtain image variables in the object
+    enlargeAble: bool = None  # Support zoom in preview
+    thumbMode: str = None  # "contain" # preview mode, optional: 'w-full','h-full','contain','cover'
+    thumbRatio: str = None  # "1:1" # Preview ratio, optional: '1:1','4:3','16:9'
 
 
 class Carousel(AmisNode):
-    """轮播图"""
+    """Carousel"""
 
     class Item(AmisNode):
-        image: str = None  # 图片链接
-        href: str = None  # 图片打开网址的链接
-        imageClassName: str = None  # 图片类名
-        title: str = None  # 图片标题
-        titleClassName: str = None  # 图片标题类名
-        description: str = None  # 图片描述
-        descriptionClassName: str = None  # 图片描述类名
-        html: str = None  # HTML 自定义，同Tpl一致
+        image: str = None  # Image link
+        href: str = None  # Image open URL link
+        imageClassName: str = None  # Image class name
+        title: str = None  # image title
+        titleClassName: str = None  # Image title class name
+        description: str = None  # Picture description
+        descriptionClassName: str = None  # Picture description class name
+        html: str = None  # HTML custom, same as Tpl
 
-    type: str = "carousel"  # 指定为 Carousel 渲染器
-    className: str = None  # "panel-default"  # 外层 Dom 的类名
-    options: List[Item] = None  # "[]"  # 轮播面板数据
-    itemSchema: dict = None  # 自定义schema来展示数据
-    auto: bool = True  # 是否自动轮播
-    interval: str = None  # "5s"  # 切换动画间隔
-    duration: str = None  # "0.5s"  # 切换动画时长
-    width: str = None  # "auto"  # 宽度
-    height: str = None  # "200px"  # 高度
-    controls: List[str] = None  # "['dots','arrows']"  # 显示左右箭头、底部圆点索引
-    controlsTheme: str = None  # "light"  # 左右箭头、底部圆点索引颜色，默认light，另有dark模式
-    animation: str = None  # "fade"  # 切换动画效果，默认fade，另有slide模式
-    thumbMode: str = None  # "cover"|"contain"  # 图片默认缩放模式
+    type: str = "carousel"  # Specify as the Carousel renderer
+    className: str = None  # "panel-default" # The class name of the outer Dom
+    options: List[Item] = None  # "[]" # Carousel panel data
+    itemSchema: dict = None  # custom schema to display data
+    auto: bool = True  # Whether to rotate automatically
+    interval: str = None  # "5s" # Switch animation interval
+    duration: str = None  # "0.5s" # Switch animation duration
+    width: str = None  # "auto" # width
+    height: str = None  # "200px" # height
+    controls: List[str] = None  # "['dots','arrows']" # Display left and right arrows, bottom dot index
+    controlsTheme: str = None  # "light" # Left and right arrows, bottom dot index color, default light, and dark mode
+    animation: str = None  # "fade" # Switch animation effect, default fade, and slide mode
+    thumbMode: str = None  # "cover"|"contain" # The default zoom mode of the picture
 
 
 class Mapping(AmisNode):
-    """映射"""
+    """Mapping"""
 
-    type: str = "mapping"  # 如果在 Table、Card 和 List 中，为"mapping"；在 Form 中用作静态展示，为"static-mapping"
-    className: str = None  # 外层 CSS 类名
-    placeholder: str = None  # 占位文本
-    map: dict = None  # 映射配置
-    source: API = None  # API 或 数据映射
+    type: str = "mapping"  # "mapping" if used in Table, Card and List; "static-mapping" if used as static display in Form
+    className: str = None  # Outer CSS class name
+    placeholder: str = None  # placeholder text
+    map: dict = None  # map configuration
+    source: API = None  # API or data map
 
 
 class CRUD(AmisNode):
-    """增删改查"""
+    """Add, delete, modify, check"""
 
     class Messages(AmisNode):
-        fetchFailed: str = None  # 获取失败时提示
-        saveOrderFailed: str = None  # 保存顺序失败提示
-        saveOrderSuccess: str = None  # 保存顺序成功提示
-        quickSaveFailed: str = None  # 快速保存失败提示
-        quickSaveSuccess: str = None  # 快速保存成功提示
+        fetchFailed: str = None  # Prompt when fetch fails
+        saveOrderFailed: str = None  # Failed to save order
+        saveOrderSuccess: str = None  # Save order success prompt
+        quickSaveFailed: str = None  # Quick save failure prompt
+        quickSaveSuccess: str = None  # Quick save success prompt
 
-    type: str = "crud"  # type 指定为 CRUD 渲染器
-    mode: str = None  # "table"  # "table" 、 "cards" 或者 "list"
-    title: str = None  # ""  # 可设置成空，当设置成空时，没有标题栏
-    className: str = None  # 表格外层 Dom 的类名
-    api: API = None  # CRUD 用来获取列表数据的 api。
-    loadDataOnce: bool = None  # 是否一次性加载所有数据（前端分页）
-    loadDataOnceFetchOnFilter: bool = None  # True  # 在开启 loadDataOnce 时，filter 时是否去重新请求 api
-    source: str = None  # 数据映射接口返回某字段的值，不设置会默认使用接口返回的${items}或者${rows}，也可以设置成上层数据源的内容
-    filter: Union[SchemaNode, Form] = None  # 设置过滤器，当该表单提交后，会把数据带给当前 mode 刷新列表。
-    filterTogglable: bool = None  # False  # 是否可显隐过滤器
-    filterDefaultVisible: bool = None  # True  # 设置过滤器默认是否可见。
-    initFetch: bool = None  # True  # 是否初始化的时候拉取数据, 只针对有 filter 的情况, 没有 filter 初始都会拉取数据
-    interval: int = None  # 刷新时间(最低 1000)
-    silentPolling: bool = None  # 配置刷新时是否隐藏加载动画
-    stopAutoRefreshWhen: str = None  # 通过表达式来配置停止刷新的条件
-    stopAutoRefreshWhenModalIsOpen: bool = None  # 当有弹框时关闭自动刷新，关闭弹框又恢复
-    syncLocation: bool = None  # False  # 是否将过滤条件的参数同步到地址栏, !!!开启后可能改变数据类型,无法通过fastpi数据校验
-    draggable: bool = None  # 是否可通过拖拽排序
-    itemDraggableOn: bool = None  # 用表达式来配置是否可拖拽排序
-    saveOrderApi: API = None  # 保存排序的 api。
-    quickSaveApi: API = None  # 快速编辑后用来批量保存的 API。
-    quickSaveItemApi: API = None  # 快速编辑配置成及时保存时使用的 API。
-    bulkActions: List[Action] = None  # 批量操作列表，配置后，表格可进行选中操作。
-    defaultChecked: bool = None  # 当可批量操作时，默认是否全部勾选。
-    messages: Messages = None  # 覆盖消息提示，如果不指定，将采用 api 返回的 message
-    primaryField: str = None  # 设置 ID 字段名。'id'
-    perPage: int = None  # 设置一页显示多少条数据。10
-    defaultParams: dict = None  # 设置默认 filter 默认参数，会在查询的时候一起发给后端
-    pageField: str = None  # 设置分页页码字段名。 "page"
-    perPageField: str = None  # "perPage"  # 设置分页一页显示的多少条数据的字段名。注意：最好与 defaultParams 一起使用，请看下面例子。
-    perPageAvailable: List[int] = None  # [5, 10, 20, 50, 100]  # 设置一页显示多少条数据下拉框可选条数。
-    orderField: str = None  # 设置用来确定位置的字段名，设置后新的顺序将被赋值到该字段中。
-    hideQuickSaveBtn: bool = None  # 隐藏顶部快速保存提示
-    autoJumpToTopOnPagerChange: bool = None  # 当切分页的时候，是否自动跳顶部。
-    syncResponse2Query: bool = None  # True  # 将返回数据同步到过滤器上。
+    type: str = "crud"  # type specifies the CRUD renderer
+    mode: str = None  # "table" # "table" , "cards" or "list"
+    title: str = None  # "" # Can be set to empty, when set to empty, there is no title bar
+    className: str = None  # The class name of the outer Dom of the table
+    api: API = None  # The api that CRUD uses to get list data.
+    loadDataOnce: bool = None  # Whether to load all data at once (front-end paging)
+    loadDataOnceFetchOnFilter: bool = None  # True # When loadDataOnce is turned on, whether to re-request the api
+    # when filtering
+    source: str = None  # The data mapping interface returns the value of a field. If it is not set, the ${items} or
+    # ${rows} returned by the interface will be used by default. It can also be set to the content of the upper data
+    # source.
+    filter: Union[SchemaNode, Form] = None  # Set the filter, when the form is submitted, it will bring the data to
+    # the current mode refresh list.
+    filterTogglable: bool = None  # False # Whether the filter can be displayed or hidden
+    filterDefaultVisible: bool = None  # True # Set whether the filter is visible by default.
+    initFetch: bool = None  # True # Whether to pull data during initialization, only for the case with filter,
+    # without filter, data will be pulled initially
+    interval: int = None  # refresh time (minimum 1000)
+    silentPolling: bool = None  # Configure whether to hide the loading animation when refreshing
+    stopAutoRefreshWhen: str = None  # Configure the condition for stopping refresh by expression
+    stopAutoRefreshWhenModalIsOpen: bool = None  # Turn off auto refresh when there is a popup, close the popup and
+    # restore
+    syncLocation: bool = None  # False # Whether to synchronize the parameters of the filter conditions to the
+    # address bar, !!! After opening, the data type may be changed, and it cannot pass the fastpi data verification
+    draggable: bool = None  # Whether it can be sorted by dragging
+    itemDraggableOn: bool = None  # Use expressions to configure whether drag and drop sorting is possible
+    saveOrderApi: API = None  # Save order api.
+    quickSaveApi: API = None  # API for batch saving after quick editing.
+    quickSaveItemApi: API = None  # API to use when quick edit is configured to save in time.
+    bulkActions: List[Action] = None  # Batch operation list, after configuration, the table can be selected.
+    defaultChecked: bool = None  # When batch operations are available, whether to check all by default.
+    messages: Messages = None  # Override the message prompt, if not specified, the message returned by the api will
+    # be used
+    primaryField: str = None  # Set the ID field name. 'id'
+    perPage: int = None  # Set how many pieces of data are displayed on one page. 10
+    defaultParams: dict = None  # Set the default filter default parameters, which will be sent to the backend
+    # together when querying
+    pageField: str = None  # Set the pagination page number field name. "page"
+    perPageField: str = None  # "perPage" # Set the field name of how many pieces of data are displayed on one page.
+    # Note: Best used with defaultParams, see example below.
+    perPageAvailable: List[int] = None  # [5, 10, 20, 50, 100] # Set how many data drop-down boxes can be displayed
+    # on one page.
+    orderField: str = None  # Set the field name used to determine the position. After setting, the new order will be
+    # assigned to this field.
+    hideQuickSaveBtn: bool = None  # Hide the top quick save prompt
+    autoJumpToTopOnPagerChange: bool = None  # Whether to automatically jump to the top when splitting pages.
+    syncResponse2Query: bool = None  # True # Synchronize the returned data to the filter.
     keepItemSelectionOnPageChange: bool = None  # True
-    # 保留条目选择，默认分页、搜素后，用户选择条目会被清空，开启此选项后会保留用户选择，可以实现跨页面批量操作。
-    labelTpl: str = None  # 单条描述模板，keepItemSelectionOnPageChange
-    # 设置为true后会把所有已选择条目列出来，此选项可以用来定制条目展示文案。
-    headerToolbar: list = None  # ['bulkActions','pagination']  # 顶部工具栏配置
-    footerToolbar: list = None  # ['statistics','pagination']  # 底部工具栏配置
-    alwaysShowPagination: bool = None  # 是否总是显示分页
-    affixHeader: bool = None  # True  # 是否固定表头(table 下)
-    autoGenerateFilter: bool = None  # 是否开启查询区域，开启后会根据列元素的 searchable 属性值，自动生成查询条件表单
-    itemAction: Action = None  # 实现点击某一行后进行自定义操作，支持 action 里的所有配置，比如弹框、刷新其它组件等。
+    # Retain item selection. After the default paging and searching, the user-selected item will be cleared. After
+    # this option is enabled, the user's selection will be retained, enabling cross-page batch operations.
+    labelTpl: str = None  # Single description template, keepItemSelectionOnPageChange
+    # When set to true, all selected items will be listed. This option can be used to customize the entry display copy.
+    headerToolbar: list = None  # ['bulkActions','pagination'] # Top toolbar configuration
+    footerToolbar: list = None  # ['statistics','pagination'] # Bottom toolbar configuration
+    alwaysShowPagination: bool = None  # Whether to always show pagination
+    affixHeader: bool = None  # True # Whether to fix the header (under table)
+    autoGenerateFilter: bool = None  # Whether to open the query area, after it is enabled, the query condition form
+    # will be automatically generated according to the searchable attribute value of the column element
+    itemAction: Action = None  # Implement custom actions after clicking a row, support all configurations in action,
+    # such as pop-up boxes, refresh other components, etc.
 
 
 class TableColumn(AmisNode):
-    """列配置"""
+    """Column configuration"""
 
     type: str = None  # Literal['text','audio','image','link','tpl','mapping','carousel','date',
     # 'progress','status','switch','list','json','operation']
-    label: Template = None  # 表头文本内容
-    name: str = None  # 通过名称关联数据
-    tpl: Template = None  # 模板
-    fixed: str = None  # 是否固定当前列 left|right|none
-    popOver: Union[bool, dict] = None  # 弹出框
-    quickEdit: Union[bool, dict] = None  # 快速编辑
-    copyable: Union[bool, dict] = None  # 是否可复制  boolean 或 {icon: string, content:string}
-    sortable: bool = None  # False  # 是否可排序
-    searchable: Union[bool, SchemaNode] = None  # False  # 是否可快速搜索  boolean|Schema
-    width: Union[str, int] = None  # 列宽
-    remark: Remark = None  # 提示信息
-    breakpoint: str = None  # *,ls. 列太多时，内容没办法全部显示完，可以让部分信息在底部显示，可以让用户展开查看详情
-    filterable: Dict[str, Any] = None  # 过滤器配置
-    toggled: bool = None  # 是否默认展开,在列配置中可以通过配置 toggled 为 false 默认不展示这列
-    backgroundScale: int = None  # 可以用来根据数据控制自动分配色阶
+    label: Template = None  # header text content
+    name: str = None  # Associate data by name
+    tpl: Template = None  # Template
+    fixed: str = None  # Whether to fix the current column left|right|none
+    popOver: Union[bool, dict] = None  # popover
+    quickEdit: Union[bool, dict] = None  # quick edit
+    copyable: Union[bool, dict] = None  # Whether to copy boolean or {icon: string, content:string}
+    sortable: bool = None  # False # Whether it is sortable
+    searchable: Union[bool, SchemaNode] = None  # False # Whether to quickly search boolean|Schema
+    width: Union[str, int] = None  # column width
+    remark: Remark = None  # prompt message
+    breakpoint: str = None  # *,ls. When there are too many columns, the content cannot be displayed completely,
+    # some information can be displayed at the bottom, and users can expand to view the details
+    filterable: Dict[str, Any] = None  # filter configuration
+    toggled: bool = None  # Whether to expand by default, in the column configuration, you can configure toggled to
+    # false to not display this column by default
+    backgroundScale: int = None  # Can be used to automatically assign color scales based on data control
 
 
 class ColumnOperation(TableColumn):
-    """操作列"""
+    """Action column"""
 
     type: str = "operation"
     buttons: List[Union[Action, AmisNode]] = None
 
 
 class ColumnImage(Image, TableColumn):
-    """图片列"""
+    """Picture column"""
 
     pass
 
 
 class ColumnImages(Images, TableColumn):
-    """图片集列"""
+    """Picture collection column"""
 
     pass
 
 
 class ColumnMapping(Mapping, TableColumn):
-    """映射列"""
+    """Map column"""
 
     pass
 
 
 class Table(AmisNode):
-    """表格"""
+    """sheet"""
 
-    type: str = "table"  # 指定为 table 渲染器
-    title: str = None  # 标题
-    source: str = None  # "${items}"  # 数据源, 绑定当前环境变量
-    affixHeader: bool = None  # True  # 是否固定表头
-    columnsTogglable: Union[str, bool] = None  # "auto"  # 展示列显示开关, 自动即：列数量大于或等于 5 个时自动开启
-    placeholder: str = None  # "暂无数据"  # 当没数据的时候的文字提示
-    className: str = None  # "panel-default"  # 外层 CSS 类名
-    tableClassName: str = None  # "table-db table-striped"  # 表格 CSS 类名
-    headerClassName: str = None  # "Action.md-table-header"  # 顶部外层 CSS 类名
-    footerClassName: str = None  # "Action.md-table-footer"  # 底部外层 CSS 类名
-    toolbarClassName: str = None  # "Action.md-table-toolbar"  # 工具栏 CSS 类名
-    columns: List[Union[TableColumn, SchemaNode]] = None  # 用来设置列信息
-    combineNum: int = None  # 自动合并单元格
-    itemActions: List[Action] = None  # 悬浮行操作按钮组
-    itemCheckableOn: Expression = None  # 配置当前行是否可勾选的条件，要用 表达式
-    itemDraggableOn: Expression = None  # 配置当前行是否可拖拽的条件，要用 表达式
-    checkOnItemClick: bool = None  # False  # 点击数据行是否可以勾选当前行
-    rowClassName: str = None  # 给行添加 CSS 类名
-    rowClassNameExpr: Template = None  # 通过模板给行添加 CSS 类名
-    prefixRow: list = None  # 顶部总结行
-    affixRow: list = None  # 底部总结行
-    itemBadge: "Badge" = None  # 行角标配置
-    autoFillHeight: bool = None  # 内容区域自适应高度
-    footable: Union[bool, dict] = None  # 列太多时，内容没办法全部显示完，可以让部分信息在底部显示，可以让用户展开查看详情。
-    # 配置很简单，只需要开启 footable 属性，同时将想在底部展示的列加个 breakpoint 属性为 * 即可。
+    type: str = "table"  # Specify as table renderer
+    title: str = None  # title
+    source: str = None  # "${items}" # Data source, bind the current environment variable
+    affixHeader: bool = None  # True # Whether to fix the header
+    columnsTogglable: Union[str, bool] = None  # "auto" # Display column display switch, automatic: it is
+    # automatically turned on when the number of columns is greater than or equal to 5
+    placeholder: str = None  # "No data" # Text prompt when there is no data
+    className: str = None  # "panel-default" # Outer CSS class name
+    tableClassName: str = None  # "table-db table-striped" # table CSS class name
+    headerClassName: str = None  # "Action.md-table-header" # Top outer CSS class name
+    footerClassName: str = None  # "Action.md-table-footer" # Bottom outer CSS class name
+    toolbarClassName: str = None  # "Action.md-table-toolbar" # Toolbar CSS class name
+    columns: List[Union[TableColumn, SchemaNode]] = None  # Used to set column information
+    combineNum: int = None  # Automatically combine cells
+    itemActions: List[Action] = None  # Floating row action button group
+    itemCheckableOn: Expression = None  # Configure the condition for whether the current row can be checked, use an
+    # expression
+    itemDraggableOn: Expression = None  # To configure whether the current row can be dragged or not, use an expression
+    checkOnItemClick: bool = None  # False # Whether clicking on the data row can check the current row
+    rowClassName: str = None  # Add CSS class name to row
+    rowClassNameExpr: Template = None  # Add CSS class name to row via template
+    prefixRow: list = None  # top summary row
+    affixRow: list = None  # Bottom summary row
+    itemBadge: "Badge" = None  # Row badge configuration
+    autoFillHeight: bool = None  # Content area adaptive height
+    footable: Union[bool, dict] = None  # When there are too many columns, the content cannot be fully displayed.
+    # Some information can be displayed at the bottom, allowing users to expand to view the details. The
+    # configuration is very simple, just turn on the footable attribute, and add a breakpoint attribute to the column
+    # you want to display at the bottom as *.
 
 
 class Chart(AmisNode):
-    """图表: https://echarts.apache.org/zh/option.html#title"""
+    """Chart: https://echarts.apache.org/en/option.html#title"""
 
-    type: str = "chart"  # 指定为 chart 渲染器
-    className: str = None  # 外层 Dom 的类名
-    body: SchemaNode = None  # 内容容器
-    api: API = None  # 配置项接口地址
-    source: dict = None  # 通过数据映射获取数据链中变量值作为配置
-    initFetch: bool = None  # 组件初始化时，是否请求接口
-    interval: int = None  # 刷新时间(最小 1000)
-    config: Union[dict, str] = None  # 设置 eschars 的配置项,当为string的时候可以设置 function 等配置项
-    style: dict = None  # 设置根元素的 style
-    width: str = None  # 设置根元素的宽度
-    height: str = None  # 设置根元素的高度
-    replaceChartOption: bool = None  # False  # 每次更新是完全覆盖配置项还是追加？
-    trackExpression: str = None  # 当这个表达式的值有变化时更新图表
+    type: str = "chart"  # specify the chart renderer
+    className: str = None  # The class name of the outer Dom
+    body: SchemaNode = None  # Content container
+    api: API = None  # Configuration item interface address
+    source: dict = None  # Get the variable value in the data chain as configuration through data mapping
+    initFetch: bool = None  # Whether to request the interface when the component is initialized
+    interval: int = None  # refresh time (minimum 1000)
+    config: Union[dict, str] = None  # Set the configuration item of eschars, when it is string, you can set
+    # configuration items such as function
+    style: dict = None  # Set the style of the root element
+    width: str = None  # Set the width of the root element
+    height: str = None  # Set the height of the root element
+    replaceChartOption: bool = None  # False # Does each update completely overwrite the configuration item or append it?
+    trackExpression: str = None  # Update the chart when the value of this expression changes
 
 
 class Code(AmisNode):
-    """代码高亮"""
+    """Code highlighting"""
 
     type: str = "code"
-    className: str = None  # 外层 CSS 类名
-    value: str = None  # 显示的颜色值
-    name: str = None  # 在其他组件中，时，用作变量映射
-    language: str = None  # 所使用的高亮语言，默认是 plaintext
-    tabSize: int = None  # 4  # 默认 tab 大小
-    editorTheme: str = None  # "'vs'"  # 主题，还有 'vs-dark'
-    wordWrap: str = None  # "True"  # 是否折行
+    className: str = None  # Outer CSS class name
+    value: str = None  # display color value
+    name: str = None  # In other components, when used as variable mapping
+    language: str = None  # The highlighted language used, the default is plaintext
+    tabSize: int = None  # 4 # Default tab size
+    editorTheme: str = None  # "'vs'" # theme, and 'vs-dark'
+    wordWrap: str = None  # "True" # Whether to wrap
 
 
 class Json(AmisNode):
-    """JSON 展示组件"""
+    """JSON display component"""
 
-    type: str = "json"  # 如果在 Table、Card 和 List 中，为"json"；在 Form 中用作静态展示，为"static-json"
-    className: str = None  # 外层 CSS 类名
-    value: Union[dict, str] = None  # json 值，如果是 string 会自动 parse
-    source: str = None  # 通过数据映射获取数据链中的值
-    placeholder: str = None  # 占位文本
-    levelExpand: int = None  # 1  # 默认展开的层级
-    jsonTheme: str = None  # "twilight"  # 主题，可选twilight和eighties
-    mutable: bool = None  # False  # 是否可修改
-    displayDataTypes: bool = None  # False  # 是否显示数据类型
+    type: str = "json"  # "json" if in Table, Card and List; "static-json" if used for static display in Form
+    className: str = None  # Outer CSS class name
+    value: Union[dict, str] = None  # json value, if it is string, it will be parsed automatically
+    source: str = None  # Get the value in the data chain through the data map
+    placeholder: str = None  # placeholder text
+    levelExpand: int = None  # 1 # Default expanded level
+    jsonTheme: str = None  # "twilight" # Theme, optional twilight and eighties
+    mutable: bool = None  # False # Whether it can be modified
+    displayDataTypes: bool = None  # False # Whether to display data types
 
 
 class Link(AmisNode):
-    """链接"""
+    """Link"""
 
-    type: str = "link"  # 如果在 Table、Card 和 List 中，为"link"；在 Form 中用作静态展示，为"static-link"
-    body: str = None  # 标签内文本
-    href: str = None  # 链接地址
-    blank: bool = None  # 是否在新标签页打开
-    htmlTarget: str = None  # a 标签的 target，优先于 blank 属性
-    title: str = None  # a 标签的 title
-    disabled: bool = None  # 禁用超链接
-    icon: str = None  # 超链接图标，以加强显示
-    rightIcon: str = None  # 右侧图标
+    type: str = "link"  # "link" if used in Table, Card and List; "static-link" if used as static display in Form
+    body: str = None  # Text inside the tag
+    href: str = None  # link address
+    blank: bool = None  # whether to open in a new tab
+    htmlTarget: str = None  # The target of the a tag, which takes precedence over the blank attribute
+    title: str = None  # the title of the a tag
+    disabled: bool = None  # disable hyperlinks
+    icon: str = None  # Hyperlink icon to enhance display
+    rightIcon: str = None  # right icon
 
 
 class Log(AmisNode):
-    """实时日志"""
+    """Real-time log"""
 
     type: str = "log"
-    source: API = None  # 支持变量,可以初始设置为空，这样初始不会加载，而等这个变量有值的时候再加载
-    height: int = None  # 500  # 展示区域高度
-    className: str = None  # 外层 CSS 类名
-    autoScroll: bool = None  # True  # 是否自动滚动
-    placeholder: str = None  # 加载中的文字
-    encoding: str = None  # "utf-8"  # 返回内容的字符编码
+    source: API = None  # Support variables, which can be initially set to empty, so that it will not be loaded
+    # initially, and will be loaded when the variable has a value
+    height: int = None  # 500 # Display area height
+    className: str = None  # Outer CSS class name
+    autoScroll: bool = None  # True # Whether to scroll automatically
+    placeholder: str = None  # The text being loaded
+    encoding: str = None  # "utf-8" # The character encoding of the returned content
 
 
 class Property(AmisNode):
-    """属性表"""
+    """Property sheet"""
 
     class Item(AmisNode):
-        label: Template = None  # 属性名
-        content: Template = None  # 属性值
-        span: int = None  # 属性值跨几列
-        visibleOn: Expression = None  # 显示表达式
-        hiddenOn: Expression = None  # 隐藏表达式
+        label: Template = None  # attribute name
+        content: Template = None  # attribute value
+        span: int = None  # attribute values span several columns
+        visibleOn: Expression = None  # Display expression
+        hiddenOn: Expression = None  # hidden expression
 
     type: str = "property"
-    className: str = None  # 外层 dom 的类名
-    style: dict = None  # 外层 dom 的样式
-    labelStyle: dict = None  # 属性名的样式
-    contentStyle: dict = None  # 属性值的样式
-    column: int = None  # 3  # 每行几列
-    mode: str = None  # 'table'  # 显示模式，目前只有 'table' 和 'simple'
-    separator: str = None  # ','  # 'simple' 模式下属性名和值之间的分隔符
-    source: Template = None  # 数据源
-    title: str = None  # 标题
-    items: List[Item] = None  # 数据项
+    className: str = None  # The class name of the outer dom
+    style: dict = None  # The style of the outer dom
+    labelStyle: dict = None  # style of attribute name
+    contentStyle: dict = None  # style of attribute value
+    column: int = None  # 3 # several columns per row
+    mode: str = None  # 'table' # Display mode, currently only 'table' and 'simple'
+    separator: str = None  # ',' # Separator between attribute name and value in 'simple' mode
+    source: Template = None  # data source
+    title: str = None  # title
+    items: List[Item] = None  # data items
 
 
 class QRCode(AmisNode):
-    """二维码"""
+    """QR code"""
 
-    type: str = "qr-code"  # 指定为 QRCode 渲染器
-    value: Template  # 扫描二维码后显示的文本，如果要显示某个页面请输入完整 url（"http://..."或"https://..."开头），支持使用 模板
-    className: str = None  # 外层 Dom 的类名
-    qrcodeClassName: str = None  # 二维码 SVG 的类名
-    codeSize: int = None  # 128  # 二维码的宽高大小
-    backgroundColor: str = None  # "#fff"  # 二维码背景色
-    foregroundColor: str = None  # "#000"  # 二维码前景色
-    level: str = None  # "L"  # 二维码复杂级别，有（'L' 'M' 'Q' 'H'）四种
+    type: str = "qr-code"  # Specify as QRCode renderer
+    value: Template  # The text displayed after scanning the QR code, if you want to display a page, please enter the
+    # full url (starting with "http://..." or "https://..."), templates are supported
+    className: str = None  # The class name of the outer Dom
+    qrcodeClassName: str = None  # QR code SVG class name
+    codeSize: int = None  # 128 # The width and height of the QR code
+    backgroundColor: str = None  # "#fff" # QR code background color
+    foregroundColor: str = None  # "#000" # QR code foreground color
+    level: str = None  # "L" # QR code complexity level, there are four types ('L' 'M' 'Q' 'H')
 
 
 class Video(AmisNode):
-    """视频"""
+    """video"""
 
-    type: str = "video"  # 指定为 video 渲染器
-    className: str = None  # 外层 Dom 的类名
-    src: str = None  # 视频地址
-    isLive: bool = None  # False  # 是否为直播，视频为直播时需要添加上，支持flv和hls格式
-    videoType: str = None  # 指定直播视频格式
-    poster: str = None  # 视频封面地址
-    muted: bool = None  # 是否静音
-    autoPlay: bool = None  # 是否自动播放
-    rates: List[float] = None  # 倍数，格式为[1.0, 1.5, 2.0]
+    type: str = "video"  # specify the video renderer
+    className: str = None  # The class name of the outer Dom
+    src: str = None  # video address
+    isLive: bool = None  # False # Whether it is a live broadcast, it needs to be added when the video is live,
+    # supports flv and hls formats
+    videoType: str = None  # Specify the live video format
+    poster: str = None  # Video cover address
+    muted: bool = None  # Whether to mute
+    autoPlay: bool = None  # Whether to play automatically
+    rates: List[float] = None  # Multiples in the format [1.0, 1.5, 2.0]
 
 
 class Alert(AmisNode):
-    """提示"""
+    """hint"""
 
-    type: str = "alert"  # 指定为 alert 渲染器
-    className: str = None  # 外层 Dom 的类名
-    level: str = None  # "info"  # 级别，可以是：info、success、warning 或者 danger
-    body: SchemaNode = None  # 显示内容
-    showCloseButton: bool = None  # False  # 是否显示关闭按钮
-    closeButtonClassName: str = None  # 关闭按钮的 CSS 类名
-    showIcon: bool = None  # False  # 是否显示 icon
-    icon: str = None  # 自定义 icon
-    iconClassName: str = None  # icon 的 CSS 类名
+    type: str = "alert"  # Specify as the alert renderer
+    className: str = None  # The class name of the outer Dom
+    level: str = None  # "info" # Level, can be: info, success, warning or danger
+    body: SchemaNode = None  # Display content
+    showCloseButton: bool = None  # False # Whether to show the close button
+    closeButtonClassName: str = None  # CSS class name of the close button
+    showIcon: bool = None  # False # Whether to show icon
+    icon: str = None  # custom icon
+    iconClassName: str = None  # CSS class name of icon
 
 
 class Dialog(AmisNode):
-    """对话框"""
+    """Dialog"""
 
-    type: str = "dialog"  # 指定为 Dialog 渲染器
-    title: SchemaNode = None  # 弹出层标题
-    body: SchemaNode = None  # 往 Dialog 内容区加内容
-    size: Union[str, SizeEnum] = None  # 指定 dialog 大小，支持: xs、sm、md、lg、xl、full
-    bodyClassName: str = None  # "modal-body"  # Dialog body 区域的样式类名
-    closeOnEsc: bool = None  # False  # 是否支持按 Esc 关闭 Dialog
-    showCloseButton: bool = None  # True  # 是否显示右上角的关闭按钮
-    showErrorMsg: bool = None  # True  # 是否在弹框左下角显示报错信息
-    disabled: bool = None  # False  # 如果设置此属性，则该 Dialog 只读没有提交操作。
-    actions: List[Action] = None  # 如果想不显示底部按钮，可以配置：[]  "【确认】和【取消】"
-    data: dict = None  # 支持数据映射，如果不设定将默认将触发按钮的上下文中继承数据。
+    type: str = "dialog"  # Specify as Dialog renderer
+    title: SchemaNode = None  # Popup layer title
+    body: SchemaNode = None  # Add content to the Dialog content area
+    size: Union[str, SizeEnum] = None  # Specify the dialog size, support: xs, sm, md, lg, xl, full
+    bodyClassName: str = None  # "modal-body" # The style class name of the Dialog body area
+    closeOnEsc: bool = None  # False # Whether to support pressing Esc to close Dialog
+    showCloseButton: bool = None  # True # Whether to show the close button in the upper right corner
+    showErrorMsg: bool = None  # True # Whether to display the error message in the lower left corner of the popup
+    disabled: bool = None  # False # If this property is set, the Dialog is read-only and has no submit operation.
+    actions: List[Action] = None  # If you want to not display the bottom button, you can configure: [] "[Confirm]
+    # and [Cancel]"
+    data: dict = None  # Support data mapping, if not set, it will inherit the data in the context of the trigger
+    # button by default.
 
 
 class Drawer(AmisNode):
-    """抽屉"""
+    """drawer"""
 
-    type: str = "drawer"  # "drawer" 指定为 Drawer 渲染器
-    title: SchemaNode = None  # 弹出层标题
-    body: SchemaNode = None  # 往 Drawer 内容区加内容
-    size: Union[str, SizeEnum] = None  # 指定 Drawer 大小，支持: xs、sm、md、lg
-    position: str = None  # 'left'  # 位置
-    bodyClassName: str = None  # "modal-body"  # Drawer body 区域的样式类名
-    closeOnEsc: bool = None  # False  # 是否支持按 Esc 关闭 Drawer
-    closeOnOutside: bool = None  # False  # 点击内容区外是否关闭 Drawer
-    overlay: bool = None  # True  # 是否显示蒙层
-    resizable: bool = None  # False  # 是否可通过拖拽改变 Drawer 大小
-    actions: List[Action] = None  # 可以不设置，默认只有两个按钮。 "【确认】和【取消】"
-    data: dict = None  # 支持 数据映射，如果不设定将默认将触发按钮的上下文中继承数据。
+    type: str = "drawer"  # "drawer" specifies the Drawer renderer
+    title: SchemaNode = None  # Popup layer title
+    body: SchemaNode = None  # Add content to the Drawer content area
+    size: Union[str, SizeEnum] = None  # Specify Drawer size, support: xs, sm, md, lg
+    position: str = None  # 'left' # position
+    bodyClassName: str = None  # "modal-body" # The style class name of the Drawer body area
+    closeOnEsc: bool = None  # False # Whether to support pressing Esc to close Drawer
+    closeOnOutside: bool = None  # False # Whether to close the Drawer when clicking outside the content area
+    overlay: bool = None  # True # Whether to display the overlay
+    resizable: bool = None  # False # Whether the size of the Drawer can be changed by dragging and dropping
+    actions: List[Action] = None  # Can not be set, there are only two buttons by default. "[Confirm] and [Cancel]"
+    data: dict = None  # Support data mapping, if not set, it will inherit the data in the context of the trigger
+    # button by default.
 
 
 class Iframe(AmisNode):
     """Iframe"""
 
-    type: str = "iframe"  # 指定为 iFrame 渲染器
-    className: str = None  # iFrame 的类名
+    type: str = "iframe"  # Specify as iFrame renderer
+    className: str = None  # iFrame class name
     frameBorder: list = None  # frameBorder
-    style: dict = None  # 样式对象
-    src: str = None  # iframe 地址
-    allow: str = None  # allow 配置
-    sandbox: str = None  # sandbox 配置
-    referrerpolicy: str = None  # referrerpolicy 配置
-    height: Union[int, str] = None  # "100%"#  iframe 高度
-    width: Union[int, str] = None  # "100%" # iframe 宽度
+    style: dict = None  # style object
+    src: str = None  # iframe address
+    allow: str = None  # allow configuration
+    sandbox: str = None  # sandbox configuration
+    referrerpolicy: str = None  # referrerpolicy configuration
+    height: Union[int, str] = None  # "100%" # iframe height
+    width: Union[int, str] = None  # "100%" # iframe width
 
 
 class Spinner(AmisNode):
-    """加载中"""
+    """Loading"""
 
     type: str = "spinner"
 
 
 class TableCRUD(CRUD, Table):
-    """表格CRUD"""
+    """Form CRUD"""
 
 
 class Avatar(AmisNode):
-    """头像"""
+    """avatar"""
 
     type: str = "avatar"
-    className: str = None  # 外层 dom 的类名
-    fit: str = None  # "cover"  # 图片缩放类型
-    src: str = None  # 图片地址
-    text: str = None  # 文字
-    icon: str = None  # 图标
-    shape: str = None  # "circle"  # 形状，也可以是 square
-    size: int = None  # 40  # 大小
-    style: dict = None  # 外层 dom 的样式
+    className: str = None  # The class name of the outer dom
+    fit: str = None  # "cover" # Image zoom type
+    src: str = None  # Image address
+    text: str = None  # text
+    icon: str = None  # icon
+    shape: str = None  # "circle" # shape, can also be square
+    size: int = None  # 40 # size
+    style: dict = None  # The style of the outer dom
 
 
 class Audio(AmisNode):
-    """音频"""
+    """Audio"""
 
-    type: str = "audio"  # 指定为 audio 渲染器
-    className: str = None  # 外层 Dom 的类名
-    inline: bool = None  # True  # 是否是内联模式
-    src: str = None  # 音频地址
-    loop: bool = None  # False  # 是否循环播放
-    autoPlay: bool = None  # False  # 是否自动播放
-    rates: List[float] = None  # "[]"  # 可配置音频播放倍速如：[1.0, 1.5, 2.0]
-    controls: List[str] = None  # "['rates','play','time','process','volume']"  # 内部模块定制化
+    type: str = "audio"  # specify the audio renderer
+    className: str = None  # The class name of the outer Dom
+    inline: bool = None  # True # Whether it is inline mode
+    src: str = None  # audio address
+    loop: bool = None  # False # Whether to loop playback
+    autoPlay: bool = None  # False # Whether to play automatically
+    rates: List[float] = None  # "[]" # Configurable audio playback speed such as: [1.0, 1.5, 2.0]
+    controls: List[str] = None  # "['rates','play','time','process','volume']" # Internal module customization
 
 
 class Status(AmisNode):
-    """状态"""
+    """state"""
 
-    type: str = "status"  # 指定为 Status 渲染器
-    className: str = None  # 外层 Dom 的类名
-    placeholder: str = None  # 占位文本
-    map: dict = None  # 映射图标
-    labelMap: dict = None  # 映射文本
+    type: str = "status"  # Specify as Status renderer
+    className: str = None  # The class name of the outer Dom
+    placeholder: str = None  # placeholder text
+    map: dict = None  # map icon
+    labelMap: dict = None  # map text
 
 
 class Tasks(AmisNode):
-    """任务操作集合"""
+    """Task operation collection"""
 
     class Item(AmisNode):
-        label: str = None  # 任务名称
-        key: str = None  # 任务键值，请唯一区分
-        remark: str = None  # 当前任务状态，支持 html
-        status: str = None  # 任务状态： 0: 初始状态，不可操作。1: 就绪，可操作状态。2: 进行中，还没有结束。
-        # 3：有错误，不可重试。4: 已正常结束。5：有错误，且可以重试。
+        label: str = None  # task name
+        key: str = None  # Task key value, please distinguish it uniquely
+        remark: str = None  # Current task status, support html
+        status: str = None  # Task status: 0: Initial status, inoperable. 1: Ready, operational state. 2: In
+        # progress, not over yet.
+        # 3: There is an error, no retry. 4: Completed normally. 5: There is an error, and you can try again.
 
-    type: str = "tasks"  # 指定为 Tasks 渲染器
-    className: str = None  # 外层 Dom 的类名
-    tableClassName: str = None  # table Dom 的类名
-    items: List[Item] = None  # 任务列表
-    checkApi: API = None  # 返回任务列表，返回的数据请参考 items。
-    submitApi: API = None  # 提交任务使用的 API
-    reSubmitApi: API = None  # 如果任务失败，且可以重试，提交的时候会使用此 API
-    interval: int = None  # 3000  # 当有任务进行中，会每隔一段时间再次检测，而时间间隔就是通过此项配置，默认 3s。
-    taskNameLabel: str = None  # "任务名称"  # 任务名称列说明
-    operationLabel: str = None  # "操作"  # 操作列说明
-    statusLabel: str = None  # "状态"  # 状态列说明
-    remarkLabel: str = None  # "备注"  # 备注列说明
-    btnText: str = None  # "上线"  # 操作按钮文字
-    retryBtnText: str = None  # "重试"  # 重试操作按钮文字
-    btnClassName: str = None  # "btn-sm btn-default"  # 配置容器按钮 className
-    retryBtnClassName: str = None  # "btn-sm btn-danger"  # 配置容器重试按钮 className
-    statusLabelMap: List[str] = None  # 状态显示对应的类名配置
+    type: str = "tasks"  # Specify as Tasks renderer
+    className: str = None  # The class name of the outer Dom
+    tableClassName: str = None  # class name of table Dom
+    items: List[Item] = None  # task list
+    checkApi: API = None  # Return the task list, please refer to items for the returned data.
+    submitApi: API = None  # API used for submitting tasks
+    reSubmitApi: API = None  # If the task fails and can be retried, this API will be used when submitting
+    interval: int = None  # 3000 # When there is a task in progress, it will be checked again at regular intervals,
+    # and the time interval is configured through this, the default is 3s.
+    taskNameLabel: str = None  # "task name" # task name column description
+    operationLabel: str = None  # "Operation" # Operation column description
+    statusLabel: str = None  # "status" # description of status column
+    remarkLabel: str = None  # "Remark" # Remark column description
+    btnText: str = None  # "Online" # Action button text
+    retryBtnText: str = None  # "Retry" # Retry action button text
+    btnClassName: str = None  # "btn-sm btn-default" # Configure the container button className
+    retryBtnClassName: str = None  # "btn-sm btn-danger" # Configure container retry button className
+    statusLabelMap: List[str] = None  # Status display corresponding class name configuration
     # "["label-warning", "label-info", "label-success", "label-danger", "label-default", "label-danger"]"
-    statusTextMap: List[str] = None  # "["未开始", "就绪", "进行中", "出错", "已完成", "出错"]" # 状态显示对应的文字显示配置
+    statusTextMap: List[str] = None  # "["Not started", "Ready", "In progress", "Error", "Completed", "Error"]" #
+    # Status display corresponding text display configuration
 
 
 class Wizard(AmisNode):
-    """向导"""
+    """Wizard"""
 
     class Step(AmisNode):
-        title: str = None  # 步骤标题
-        mode: str = None  # 展示默认，跟 Form 中的模式一样，选择： normal、horizontal或者inline。
-        horizontal: Horizontal = None  # 当为水平模式时，用来控制左右占比
-        api: API = None  # 当前步骤保存接口，可以不配置。
-        initApi: API = None  # 当前步骤数据初始化接口。
-        initFetch: bool = None  # 当前步骤数据初始化接口是否初始拉取。
-        initFetchOn: Expression = None  # 当前步骤数据初始化接口是否初始拉取，用表达式来决定。
-        body: List[FormItem] = None  # 当前步骤的表单项集合，请参考 FormItem。
+        title: str = None  # Step title
+        mode: str = None  # Display the default, the same as the mode in Form, choose: normal, horizontal or inline.
+        horizontal: Horizontal = None  # When in horizontal mode, it is used to control the ratio of left and right
+        api: API = None  # The current step saves the interface, which can be left unconfigured.
+        initApi: API = None  # The current step data initialization interface.
+        initFetch: bool = None  # Whether the current step data initialization interface is initially fetched.
+        initFetchOn: Expression = None  # Whether the current step data initialization interface is initially fetched
+        # is determined by an expression.
+        body: List[FormItem] = None  # The form item collection of the current step, please refer to FormItem.
 
-    type: str = "wizard"  # 指定为 Wizard 组件
-    mode: str = None  # "horizontal"  # 展示模式，选择：horizontal 或者 vertical
-    api: API = None  # 最后一步保存的接口。
-    initApi: API = None  # 初始化数据接口
-    initFetch: API = None  # 初始是否拉取数据。
-    initFetchOn: Expression = None  # 初始是否拉取数据，通过表达式来配置
-    actionPrevLabel: str = None  # "上一步"  # 上一步按钮文本
-    actionNextLabel: str = None  # "下一步"  # 下一步按钮文本
-    actionNextSaveLabel: str = None  # "保存并下一步"  # 保存并下一步按钮文本
-    actionFinishLabel: str = None  # "完成"  # 完成按钮文本
-    className: str = None  # 外层 CSS 类名
-    actionClassName: str = None  # "btn-sm btn-default"  # 按钮 CSS 类名
-    reload: str = None  # 操作完后刷新目标对象。请填写目标组件设置的 name 值，如果填写为 window 则让当前页面整体刷新。
-    redirect: Template = None  # "3000"  # 操作完后跳转。
-    target: str = None  # "False"  # 可以把数据提交给别的组件而不是自己保存。请填写目标组件设置的 name 值，
-    # 如果填写为 window 则把数据同步到地址栏上，同时依赖这些数据的组件会自动重新刷新。
-    steps: List[Step] = None  # 数组，配置步骤信息
-    startStep: int = None  # "1"  # 起始默认值，从第几步开始。可支持模版，但是只有在组件创建时渲染模版并设置当前步数，在之后组件被刷新时，
-    # 当前 step 不会根据 startStep 改变
+    type: str = "wizard"  # Specify as Wizard component
+    mode: str = None  # "horizontal" # Display mode, choose: horizontal or vertical
+    api: API = None  # The interface saved in the last step.
+    initApi: API = None  # Initialize data interface
+    initFetch: API = None  # Whether to fetch data initially.
+    initFetchOn: Expression = None  # Whether to pull data initially, configure by expression
+    actionPrevLabel: str = None  # "Previous" # Previous button text
+    actionNextLabel: str = None  # "Next" # Next button text
+    actionNextSaveLabel: str = None  # "Save and Next" # Save and Next button text
+    actionFinishLabel: str = None  # "Finish" # Finish button text
+    className: str = None  # Outer CSS class name
+    actionClassName: str = None  # "btn-sm btn-default" # Button CSS class name
+    reload: str = None  # Refresh the target object after the operation. Please fill in the name value set by the
+    # target component. If it is filled in window, the current page will be refreshed as a whole.
+    redirect: Template = None  # "3000" # Jump after the operation.
+    target: str = None  # "False" # You can submit data to other components instead of saving it yourself. Please
+    # fill in the name value set by the target component,
+    # If it is filled in as window, the data will be synchronized to the address bar, and the components that depend
+    # on these data will be automatically refreshed.
+    steps: List[Step] = None  # Array, configure step information
+    startStep: int = None  # "1" # Start default value, starting from the first step. Templates can be supported,
+    # but only when the component is created, the template is rendered and the current number of steps is set. When
+    # the component is refreshed later,
+    # The current step will not change according to startStep
 
 
 PageSchema.update_forward_refs()
