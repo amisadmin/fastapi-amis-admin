@@ -26,7 +26,10 @@ from sqlalchemy.sql import Select
 from sqlalchemy.sql.elements import BinaryExpression, Label, UnaryExpression
 from starlette.requests import Request
 
-from fastapi_amis_admin.utils.functools import cached_property
+try:
+    from functools import cached_property
+except ImportError:
+    from sqlalchemy.util.langhelpers import memoized_property as cached_property
 
 from .base import (
     BaseCrud,
