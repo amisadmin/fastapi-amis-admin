@@ -76,12 +76,12 @@ sql_operator_map: Dict[str, str] = {
 
 
 class SQLModelSelector(Generic[SchemaModelT]):
-    model: Type[SchemaModelT] = None  # SQLModel模型
-    fields: List[SQLModelListField] = []  # 需要查询的字段
-    list_filter: List[SQLModelListField] = []  # 查询可过滤的字段
-    exclude: List[SQLModelField] = []  # 不需要查询的字段
-    ordering: List[Union[SQLModelListField, UnaryExpression]] = []  # 默认排序字段
-    link_models: Dict[str, Tuple[Type[Table], Column, Column]] = None  # 关联模型
+    model: Type[SchemaModelT] = None  # SQLModel model
+    fields: List[SQLModelListField] = []  # Need to query the field from the database
+    list_filter: List[SQLModelListField] = []  # Query filterable fields
+    exclude: List[SQLModelField] = []  # Model fields that do not need to be queried. It is not recommended to use.
+    ordering: List[Union[SQLModelListField, UnaryExpression]] = []  # Default sort field
+    link_models: Dict[str, Tuple[Type[Table], Column, Column]] = None  # Link table information
     """Relate information of the target model with the current model.
     - The Data structure is: {Target table name: (link model table,
         Column in the link model table associated with the current model,
@@ -92,7 +92,7 @@ class SQLModelSelector(Generic[SchemaModelT]):
     - You can add the query parameters to the route url to access the role list of the user:
         `?link_model=auth_user&link_item_id={user_id}`.
     """
-    pk_name: str = "id"  # 主键名称
+    pk_name: str = "id"  # Primary key name
 
     def __init__(self, model: Type[SchemaModelT] = None, fields: List[SQLModelListField] = None) -> None:
         self.model = model or self.model
@@ -228,8 +228,8 @@ class SQLModelSelector(Generic[SchemaModelT]):
 
 
 class SQLModelCrud(BaseCrud, SQLModelSelector):
-    engine: SqlalchemyDatabase = None
-    create_fields: List[SQLModelField] = []  # 新增数据字段
+    engine: SqlalchemyDatabase = None  # sqlalchemy engine
+    create_fields: List[SQLModelField] = []  # Create item data field
     readonly_fields: List[SQLModelListField] = []
     """readonly fields, priority is higher than update_fields.
     readonly fields, deprecated, not recommended, will be removed in version 0.4.0"""

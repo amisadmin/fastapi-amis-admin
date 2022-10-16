@@ -108,7 +108,7 @@ class SQLModelFieldParser:
         return data
 
     def get_sqlmodel_insfield(self, model: Type[SQLModel]) -> List[InstrumentedAttribute]:
-        # 不包括 relationship 字段
+        """Get all database fields in the sqlmodel model, excluding relationship fields."""
         return [model.__dict__[field_name] for field_name in model.__fields__]
 
     def get_insfield(self, field: SQLModelField) -> Optional[InstrumentedAttribute]:
