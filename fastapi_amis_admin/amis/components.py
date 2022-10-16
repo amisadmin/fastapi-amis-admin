@@ -39,7 +39,7 @@ class Icon(AmisNode):
     className: str = None  # Outer CSS class name
     icon: str = None  # icon name, support fontawesome v4 or use url
     vendor: str = None  # icon vendor, icon supports fontawesome v4 by default, if you want to support fontawesome v5
-    # and v6, please set vendor to an empty string. 
+    # and v6, please set vendor to an empty string.
 
 
 class Remark(AmisNode):
@@ -59,12 +59,12 @@ class Badge(AmisNode):
     mode: str = "dot"  # Corner type, can be dot/text/ribbon
     text: Union[str, int] = None  # Corner text, supports strings and numbers, invalid when mode='dot'
     size: int = None  # Angular size
-    level: str = None  # The level of the corner label, which can be info/success/warning/danger, after setting the 
-    # background color of the corner label is different 
+    level: str = None  # The level of the corner label, which can be info/success/warning/danger, after setting the
+    # background color of the corner label is different
     overflowCount: int = None  # 99 # Set the capped number value
     position: str = None  # "top-right" # Corner position, can be top-right/top-left/bottom-right/bottom-left
-    offset: int = None  # The position of the corner label, the priority is greater than the position, when the 
-    # offset is set, the position is positioned as the top-right reference number[top, left] 
+    offset: int = None  # The position of the corner label, the priority is greater than the position, when the
+    # offset is set, the position is positioned as the top-right reference number[top, left]
     className: str = None  # The class name of the outer dom
     animation: bool = None  # Whether the corner icon displays animation
     style: dict = None  # Custom style for corner labels
@@ -79,14 +79,14 @@ class Page(AmisNode):
     type: str = "page"  # Specify as Page component
     title: SchemaNode = None  # page title
     subTitle: SchemaNode = None  # Page subtitle
-    remark: "Remark" = None  # A prompt icon will appear near the title, and the content will be prompted when the 
-    # mouse is placed on it. 
+    remark: "Remark" = None  # A prompt icon will appear near the title, and the content will be prompted when the
+    # mouse is placed on it.
     aside: SchemaNode = None  # Add content to the sidebar area of the page
     asideResizor: bool = None  # Whether the width of the sidebar area of the page can be adjusted
     asideMinWidth: int = None  # The minimum width of the sidebar area of the page
     asideMaxWidth: int = None  # The maximum width of the sidebar area of the page
-    toolbar: SchemaNode = None  # Add content to the upper right corner of the page. It should be noted that when 
-    # there is a title, the area is in the upper right corner, and when there is no title, the area is at the top 
+    toolbar: SchemaNode = None  # Add content to the upper right corner of the page. It should be noted that when
+    # there is a title, the area is in the upper right corner, and when there is no title, the area is at the top
     body: SchemaNode = None  # Add content to the content area of the page
     className: str = None  # Outer dom class name
     cssVars: dict = None  # Custom CSS variables, please refer to styles
@@ -94,8 +94,8 @@ class Page(AmisNode):
     bodyClassName: str = None  # "wrapper" # Body dom class name
     asideClassName: str = None  # "w page-aside-region bg-auto" # Aside dom class name
     headerClassName: str = None  # "bg-light bb wrapper" # Header area dom class name
-    initApi: API = None  # The api that Page uses to get initial data. The returned data can be used at the entire 
-    # page level. 
+    initApi: API = None  # The api that Page uses to get initial data. The returned data can be used at the entire
+    # page level.
     initFetch: bool = None  # True # Whether to start pulling initApi
     initFetchOn: Expression = None  # Whether to start pulling initApi, configure by expression
     interval: int = None  # refresh time (minimum 1000)
@@ -104,14 +104,14 @@ class Page(AmisNode):
     regions: List[str] = None
 
     def amis_html(
-            self,
-            template_path: str = "",
-            locale: str = "zh_CN",
-            cdn: str = "https://unpkg.com",
-            pkg: str = "amis@1.10.2",
-            site_title: str = "Amis",
-            site_icon: str = "",
-            theme: str = "cxd",
+        self,
+        template_path: str = "",
+        locale: str = "zh_CN",
+        cdn: str = "https://unpkg.com",
+        pkg: str = "amis@1.10.2",
+        site_title: str = "Amis",
+        site_icon: str = "",
+        theme: str = "cxd",
     ):
         """Render html template"""
         template_path = template_path or self.__default_template_path__
@@ -217,8 +217,8 @@ class Tabs(AmisNode):
     toolbarClassName: str = None  # The class name of the toolbar in the tabs
     mountOnEnter: bool = None  # False # Render only when the tab is clicked
     unmountOnExit: bool = None  # False # Destroyed when switching tabs
-    scrollable: bool = None  # False # Whether the navigation supports content overflow scrolling, this property is 
-    # not supported in vertical and chrome modes; chrome mode defaults to compress tags (property discarded) 
+    scrollable: bool = None  # False # Whether the navigation supports content overflow scrolling, this property is
+    # not supported in vertical and chrome modes; chrome mode defaults to compress tags (property discarded)
     tabsMode: TabsModeEnum = None  # Display mode, the value can be line, card, radio, vertical, chrome, simple,
     # strong, tiled, sidebar
     addable: bool = None  # False # Whether to support adding
@@ -272,24 +272,24 @@ class Action(AmisNode):
     block: bool = None  # Use display:"block" to display the button.
     confirmText: Template = None  # When set, the action will ask the user before starting. Available ${xxx} values.
     reload: str = None  # Specify the name of the target component that needs to be refreshed after this operation (
-    # the name value of the component, configured by yourself), please separate multiple ones with , signs. 
-    tooltip: str = None  # This text pops up when the mouse stays, and the object type can also be configured: the 
-    # fields are title and content. Available ${xxx} values. 
+    # the name value of the component, configured by yourself), please separate multiple ones with , signs.
+    tooltip: str = None  # This text pops up when the mouse stays, and the object type can also be configured: the
+    # fields are title and content. Available ${xxx} values.
     disabledTip: str = None  # The text will pop up when the mouse stays after it is disabled. You can also configure
-    # the object type: the fields are title and content. Available ${xxx} values. 
-    tooltipPlacement: str = None  # If tooltip or disabledTip is configured, specify the location of the prompt 
-    # information, and you can configure top, bottom, left, and right. 
+    # the object type: the fields are title and content. Available ${xxx} values.
+    tooltipPlacement: str = None  # If tooltip or disabledTip is configured, specify the location of the prompt
+    # information, and you can configure top, bottom, left, and right.
     close: Union[bool, str] = None  # When the action is configured in the actions of the dialog or drawer, configure
     # it to true to close the current dialog or drawer after the operation. When the value is a string and is the
     # name of the ancestor layer popup, the ancestor popup will be closed.
     required: List[str] = None  # Configure an array of strings, specifying that the form items with the specified
     # field name must pass validation before performing operations in the form primary:bool=None
-    onClick: str = None  # The custom click event defines the click event through onClick in the form of a string, 
-    # which will be converted into a JavaScript function 
+    onClick: str = None  # The custom click event defines the click event through onClick in the form of a string,
+    # which will be converted into a JavaScript function
     componentId: str = None  # target component ID
     args: Union[dict, str] = None  # event parameters
-    script: str = None  # Customize JS script code, any action can be performed by calling doAction in the code, 
-    # and event action intervention can be realized through the event object event 
+    script: str = None  # Customize JS script code, any action can be performed by calling doAction in the code,
+    # and event action intervention can be realized through the event object event
 
 
 class ActionType:
@@ -300,22 +300,20 @@ class ActionType:
         api: API = None  # Request address, refer to api format description.
         redirect: Template = None  # Specify the path to redirect to after the current request ends, which can be
         # valued by ${xxx}.
-        feedback: "Dialog" = None  # If it is of ajax type, when ajax returns to normal, a dialog can be popped up 
-        # for other interactions. The returned data can be used in this dialog. For the format, please refer to Dialog 
-        messages: dict = None  # success: a message will be displayed after the ajax operation is successful. It can 
-        # be left unspecified. If it is not specified, the api return shall prevail. failed: Ajax operation failure 
-        # message. 
+        feedback: "Dialog" = None  # If it is of ajax type, when ajax returns to normal, a dialog can be popped up
+        # for other interactions. The returned data can be used in this dialog. For the format, please refer to Dialog
+        messages: dict = None  # success: a message will be displayed after the ajax operation is successful. It can
+        # be left unspecified. If it is not specified, the api return shall prevail. failed: Ajax operation failure
+        # message.
 
     class Dialog(Action):
         actionType: str = "dialog"  # Show a popup when clicked
-        dialog: Union[
-            "Dialog", "Service", SchemaNode]  # Specify the content of the pop-up box, the format can refer to Dialog
+        dialog: Union["Dialog", "Service", SchemaNode]  # Specify the content of the pop-up box, the format can refer to Dialog
         nextCondition: bool = None  # Can be used to set the condition of the next data, the default is true.
 
     class Drawer(Action):
         actionType: str = "drawer"  # Show a sidebar when clicked
-        drawer: Union[
-            "Drawer", "Service", SchemaNode]  # Specify the content of the popup box, the format can refer to Drawer
+        drawer: Union["Drawer", "Service", SchemaNode]  # Specify the content of the popup box, the format can refer to Drawer
 
     class Copy(Action):
         actionType: str = "copy"  # Copy a piece of content to the clipboard
@@ -333,32 +331,32 @@ class ActionType:
         """Single page jump"""
 
         actionType: str = "link"  # Single page jump
-        link: str  # is used to specify the jump address. Unlike url, this is a single-page jump method, which will 
-        # not render the browser. Please specify the page in the amis platform. Available ${xxx} values. 
+        link: str  # is used to specify the jump address. Unlike url, this is a single-page jump method, which will
+        # not render the browser. Please specify the page in the amis platform. Available ${xxx} values.
 
 
 class PageSchema(AmisNode):
     """Page configuration"""
 
     label: str = None  # Menu name.
-    icon: str = "fa fa-flash"  # Menu icon, for example: 'fa fa-file'. For detailed icon reference: 
-    # http://www.fontawesome.com.cn/faicons/ 
-    url: str = None  # The page routing path, when the route hits the path, the current page is enabled. When the 
-    # path does not start with /, the parent path is concatenated. For example: the path of the parent is folder, 
-    # and pageA is configured at this time, then this page will be hit only when the page address is /folder/pageA. 
-    # When the path starts with / such as: /crud/list, the parent path will not be spliced. In addition, routes with 
-    # parameters such as /crud/view/:id are supported. This value can be obtained from the page through ${params.id}. 
-    schema_: Union[Page, "Iframe"] = Field(None, alias="schema")  # The configuration of the page, please go to the 
-    # page page for specific configuration 
-    schemaApi: API = None  # If you want to pull through the interface, please configure. The return path is 
-    # json>data. Only one of schema and schemaApi can be selected. 
+    icon: str = "fa fa-flash"  # Menu icon, for example: 'fa fa-file'. For detailed icon reference:
+    # http://www.fontawesome.com.cn/faicons/
+    url: str = None  # The page routing path, when the route hits the path, the current page is enabled. When the
+    # path does not start with /, the parent path is concatenated. For example: the path of the parent is folder,
+    # and pageA is configured at this time, then this page will be hit only when the page address is /folder/pageA.
+    # When the path starts with / such as: /crud/list, the parent path will not be spliced. In addition, routes with
+    # parameters such as /crud/view/:id are supported. This value can be obtained from the page through ${params.id}.
+    schema_: Union[Page, "Iframe"] = Field(None, alias="schema")  # The configuration of the page, please go to the
+    # page page for specific configuration
+    schemaApi: API = None  # If you want to pull through the interface, please configure. The return path is
+    # json>data. Only one of schema and schemaApi can be selected.
     link: str = None  # If you want to configure an external link menu, you only need to configure link.
     redirect: str = None  # Jump, when hitting the current page, jump to the target page.
     rewrite: str = None  # Change to rendering pages of other paths, the page address will not be modified in this way.
     isDefaultPage: Union[str, bool] = None  # Useful when you need a custom 404 page, don't have multiple such pages,
-    # because only the first one will be useful. 
-    visible: str = None  # Some pages may not want to appear in the menu, you can configure it to false, and the 
-    # route with parameters does not need to be configured, it is directly invisible. 
+    # because only the first one will be useful.
+    visible: str = None  # Some pages may not want to appear in the menu, you can configure it to false, and the
+    # route with parameters does not need to be configured, it is directly invisible.
     className: str = None  # Menu class name.
     children: List["PageSchema"] = None  # Submenu
     sort: int = None  # sort
@@ -390,9 +388,9 @@ class App(Page):
 
     __default_template_path__: str = f"{BASE_DIR}/templates/app.html"
     type: str = "app"
-    api: API = None  # The page configuration interface, if you want to pull the page configuration remotely, 
-    # please configure it. Return to the configuration path json>data>pages, please refer to the pages property for 
-    # the specific format. 
+    api: API = None  # The page configuration interface, if you want to pull the page configuration remotely,
+    # please configure it. Return to the configuration path json>data>pages, please refer to the pages property for
+    # the specific format.
     brandName: str = None  # app name
     logo: str = None  # Support image address, or svg.
     className: str = None  # css class name
@@ -401,9 +399,9 @@ class App(Page):
     asideAfter: str = None  # The front area under the page menu.
     footer: str = None  # The page.
     pages: List[PageSchema] = None  # Array<page configuration> specific page configuration.
-    # Usually in an array, the first layer of the array is a group, generally you only need to configure the label set, 
-    # if you don't want to group, don't configure it directly, the real page should be configured in the second 
-    # layer, that is, in the children of the first layer. 
+    # Usually in an array, the first layer of the array is a group, generally you only need to configure the label set,
+    # if you don't want to group, don't configure it directly, the real page should be configured in the second
+    # layer, that is, in the children of the first layer.
 
 
 class ButtonGroup(AmisNode):
@@ -444,7 +442,7 @@ class Service(AmisNode):
     schemaApi: API = None  # Used to get the remote schema interface address
     initFetchSchema: bool = None  # Whether to pull Schema by default
     messages: dict = None  # Message prompt override, the default message reads the toast prompt text returned by the
-    # interface, but it can be overridden here. 
+    # interface, but it can be overridden here.
     # messages.fetchSuccess: str = None # Toast prompt text when the interface request is successful
     # messages.fetchFailed: str = "Initialization failed" # Toast prompt text when interface request fails
     interval: int = None  # Polling interval (minimum 3000)
@@ -463,8 +461,8 @@ class Nav(AmisNode):
         children: List["Link"] = None  # child links
         unfolded: bool = None  # Whether to unfold initially
         active: bool = None  # Whether to highlight
-        activeOn: Expression = None  # Whether to highlight the condition, leaving it blank will automatically 
-        # analyze the link address 
+        activeOn: Expression = None  # Whether to highlight the condition, leaving it blank will automatically
+        # analyze the link address
         defer: bool = None  # mark whether it is a lazy add-in
         deferApi: API = None  # Can not be configured, if the configuration priority is higher
 
@@ -472,8 +470,8 @@ class Nav(AmisNode):
     className: str = None  # The class name of the outer Dom
     stacked: bool = True  # Set to false to display in the form of tabs
     source: API = None  # Navigation can be created dynamically via variable or API interface
-    deferApi: API = None  # The interface used to delay loading option details. It can be left unconfigured, 
-    # and the public source interface cannot be configured. 
+    deferApi: API = None  # The interface used to delay loading option details. It can be left unconfigured,
+    # and the public source interface cannot be configured.
     itemActions: SchemaNode = None  # More operations related configuration
     draggable: bool = None  # Whether to support drag and drop sorting
     dragOnSameLevel: bool = None  # Only allow dragging within the same level
@@ -497,8 +495,8 @@ class AnchorNav(AmisNode):
     linkClassName: str = None  # Class name of the navigation Dom
     sectionClassName: str = None  # The class name of the anchor area Dom
     links: list = None  # links content
-    direction: str = None  # "vertical" # You can configure whether the navigation is displayed horizontally or 
-    # vertically. The corresponding configuration items are: vertical, horizontal 
+    direction: str = None  # "vertical" # You can configure whether the navigation is displayed horizontally or
+    # vertically. The corresponding configuration items are: vertical, horizontal
     active: str = None  # The area that needs to be located
 
 
@@ -582,7 +580,7 @@ class Form(AmisNode):
     actions: List["Action"] = None  # Form submit button, the member is Action
     actionsClassName: str = None  # class name of actions
     messages: Messages = None  # The message prompts to be overridden. The default message reads the message returned
-    # by the API, but it can be overridden here. 
+    # by the API, but it can be overridden here.
     wrapWithPanel: bool = None  # Whether to wrap the Form with panel, if set to false, actions will be invalid.
     panelClassName: str = None  # The class name of the outer panel
     api: API = None  # The api that Form uses to save data.
@@ -591,46 +589,46 @@ class Form(AmisNode):
     interval: int = None  # refresh time (minimum 3000)
     silentPolling: bool = None  # False # Whether to show the loading animation when the configuration is refreshed
     stopAutoRefreshWhen: str = None  # Configure the condition for stopping refresh by expression
-    initAsyncApi: API = None  # The api that Form uses to obtain initial data, which is different from initApi, 
-    # will keep polling and request this interface until the returned finished attribute is true. 
+    initAsyncApi: API = None  # The api that Form uses to obtain initial data, which is different from initApi,
+    # will keep polling and request this interface until the returned finished attribute is true.
     initFetch: bool = None  # After initApi or initAsyncApi is set, the request will be sent by default, and if it is
-    # set to false, the interface will not be requested at the beginning 
+    # set to false, the interface will not be requested at the beginning
     initFetchOn: str = None  # Use expression to configure
-    initFinishedField: Optional[str] = None  # After setting initAsyncApi, by default, the data.finished of the 
-    # returned data will be used to judge whether it is completed. 
+    initFinishedField: Optional[str] = None  # After setting initAsyncApi, by default, the data.finished of the
+    # returned data will be used to judge whether it is completed.
     # Can also be set to other xxx, it will be obtained from data.xxx
     initCheckInterval: int = None  # After setting initAsyncApi, the default pull interval
-    asyncApi: API = None  # After setting this property, after the form is submitted and sent to save the interface, 
+    asyncApi: API = None  # After setting this property, after the form is submitted and sent to save the interface,
     # it will continue to poll and request the interface, and it will not end until the returned finished property is
-    # true. 
-    checkInterval: int = None  # The time interval for polling requests, the default is 3 seconds. Setting asyncApi 
-    # is valid 
-    finishedField: Optional[str] = None  # Set this property if the field name that decides to end is not finished, 
-    # such as is_success 
+    # true.
+    checkInterval: int = None  # The time interval for polling requests, the default is 3 seconds. Setting asyncApi
+    # is valid
+    finishedField: Optional[str] = None  # Set this property if the field name that decides to end is not finished,
+    # such as is_success
     submitOnChange: bool = None  # Form modification is submitted
     submitOnInit: bool = None  # Submit once initially
     resetAfterSubmit: bool = None  # Whether to reset the form after submitting
-    primaryField: str = None  # Set the primary key id. When set, it will only carry this data when checking whether 
-    # the form is completed (asyncApi). 
+    primaryField: str = None  # Set the primary key id. When set, it will only carry this data when checking whether
+    # the form is completed (asyncApi).
     target: str = None  # The default form submission itself will save the data by sending the api, but you can also
     # set the name value of another form, or another CRUD model name value. If the target target is a Form,
     # the target Form will trigger initApi again, and the api can get the current form data. If the target is a CRUD
     # model, the target model will re-trigger the search with the current Form data as the parameter. When the target
     # is window, the data of the current form will be attached to the page address.
     redirect: str = None  # After setting this attribute, after the Form is saved successfully, it will automatically
-    # jump to the specified page. Support relative addresses, and absolute addresses (relative to the group). 
-    reload: str = None  # Refresh the target object after the operation. Please fill in the name value set by the 
-    # target component. If it is filled in window, the current page will be refreshed as a whole. 
+    # jump to the specified page. Support relative addresses, and absolute addresses (relative to the group).
+    reload: str = None  # Refresh the target object after the operation. Please fill in the name value set by the
+    # target component. If it is filled in window, the current page will be refreshed as a whole.
     autoFocus: bool = None  # Whether to auto focus.
-    canAccessSuperData: bool = None  # Specify whether the upper layer data can be automatically obtained and mapped 
-    # to the form item 
+    canAccessSuperData: bool = None  # Specify whether the upper layer data can be automatically obtained and mapped
+    # to the form item
     persistData: str = None  # Specify a unique key to configure whether to enable local caching for the current form
-    clearPersistDataAfterSubmit: bool = None  # Specify whether to clear the local cache after the form is submitted 
-    # successfully 
+    clearPersistDataAfterSubmit: bool = None  # Specify whether to clear the local cache after the form is submitted
+    # successfully
     preventEnterSubmit: bool = None  # Disable EnterSubmit form submission
     trimValues: bool = None  # trim each value of the current form item
-    promptPageLeave: bool = None  # The form has not been saved, whether to confirm with a pop-up box before leaving 
-    # the page. 
+    promptPageLeave: bool = None  # The form has not been saved, whether to confirm with a pop-up box before leaving
+    # the page.
     columnCount: int = None  # The form item is displayed as several columns
     debug: bool = None
 
@@ -640,8 +638,8 @@ class InputSubForm(FormItem):
 
     type: str = "input-sub-form"
     multiple: bool = None  # False # Whether it is multiple selection mode
-    labelField: str = None  # When this field exists in the value, the button name will be displayed using the value 
-    # of this field. 
+    labelField: str = None  # When this field exists in the value, the button name will be displayed using the value
+    # of this field.
     btnLabel: str = None  # "Settings" # Default button name
     minLength: int = None  # 0 # Limit the minimum number.
     maxLength: int = None  # 0 # Limit the maximum number.
@@ -660,12 +658,12 @@ class Button(FormItem):
     """Button"""
 
     className: str = None  # Specify the add button class name
-    href: str = None  # Click the jump address, specify the behavior of this attribute button is consistent with the 
-    # a link 
+    href: str = None  # Click the jump address, specify the behavior of this attribute button is consistent with the
+    # a link
     size: str = None  # Set button size 'xs'|'sm'|'md'|'lg'
     actionType: str = None  # Set the button type 'button'|'reset'|'submit'| 'clear'| 'url'
     level: LevelEnum = None  # Set button style 'link'|'primary'|'enhance'|'secondary'|'info'|'success'|'warning
-    # '|'danger'|'light'| 'dark'|'default' 
+    # '|'danger'|'light'| 'dark'|'default'
     tooltip: Union[str, dict] = None  # Bubble tip content TooltipObject
     tooltipPlacement: str = None  # Balloon positioner 'top'|'right'|'bottom'|'left'
     tooltipTrigger: str = None  # trigger tootip 'hover'|'focus'
@@ -682,10 +680,10 @@ class InputArray(FormItem):
     items: FormItem = None  # Configure single item form type
     addable: bool = None  # Whether it can be added.
     removable: bool = None  # Whether it can be removed
-    draggable: bool = None  # False # Whether drag sorting is possible, it should be noted that when drag sorting is 
-    # enabled, there will be an additional $id field 
-    draggableTip: str = None  # Draggable prompt text, the default is: "Order can be adjusted by dragging the [Swap] 
-    # button in each row" 
+    draggable: bool = None  # False # Whether drag sorting is possible, it should be noted that when drag sorting is
+    # enabled, there will be an additional $id field
+    draggableTip: str = None  # Draggable prompt text, the default is: "Order can be adjusted by dragging the [Swap]
+    # button in each row"
     addButtonText: str = None  # "Add" # Add button text
     minLength: int = None  # Limit the minimum length
     maxLength: int = None  # limit max length
@@ -763,7 +761,7 @@ class InputCity(FormItem):
     allowDistrict: bool = None  # True # Allow region selection
     searchable: bool = None  # False # Whether to display the search box
     extractValue: bool = None  # True# Whether to extract the value, if set to false, the value format will become an
-    # object, including code, province, city and district text information. 
+    # object, including code, province, city and district text information.
 
 
 class InputColor(FormItem):
@@ -771,11 +769,10 @@ class InputColor(FormItem):
 
     type: str = "input-color"
     format: str = None  # "hex" # Please choose hex, hls, rgb or rgba.
-    presetColors: List[
-        str] = None  # "Selector preset color value" # The default color at the bottom of the selector, if the array 
-    # is empty, the default color will not be displayed 
-    allowCustomColor: bool = None  # True # When false, only colors can be selected, use presetColors to set the 
-    # color selection range 
+    presetColors: List[str] = None  # "Selector preset color value" # The default color at the bottom of the selector,
+    # if the array is empty, the default color will not be displayed
+    allowCustomColor: bool = None  # True # When false, only colors can be selected, use presetColors to set the
+    # color selection range
     clearable: bool = None  # "label" # Whether to display the clear button
     resetValue: str = None  # "" # After clearing, the form item value is adjusted to this value
 
@@ -787,20 +784,20 @@ class Combo(FormItem):
     formClassName: str = None  # The class name of a single group of form items
     addButtonClassName: str = None  # Add button CSS class name
     items: List[FormItem] = None  # Form items displayed in combination
-    # items[x].columnClassName: str = None # The class name of the column, which can be used to configure the column 
-    # width. The default is evenly distributed. items[x].unique: bool = None # Set whether the current column value 
-    # is unique, that is, repeated selection is not allowed. 
+    # items[x].columnClassName: str = None # The class name of the column, which can be used to configure the column
+    # width. The default is evenly distributed. items[x].unique: bool = None # Set whether the current column value
+    # is unique, that is, repeated selection is not allowed.
     noBorder: bool = False  # Whether to display a border for a single group of form items
     scaffold: dict = {}  # initial value for a single set of form items
     multiple: bool = False  # Whether to select multiple
-    multiLine: bool = False  # The default is to display a row horizontally, after setting it will be displayed 
-    # vertically 
+    multiLine: bool = False  # The default is to display a row horizontally, after setting it will be displayed
+    # vertically
     minLength: int = None  # Minimum number of added bars
     maxLength: int = None  # The maximum number of bars to add
-    flat: bool = False  # Whether to flatten the result (remove the name), only valid when the length of items is 1 
-    # and multiple is true. 
-    joinValues: bool = True  # The default is true When flattening is enabled, whether to send it to the backend in 
-    # the form of a delimiter, otherwise it is in the form of an array. 
+    flat: bool = False  # Whether to flatten the result (remove the name), only valid when the length of items is 1
+    # and multiple is true.
+    joinValues: bool = True  # The default is true When flattening is enabled, whether to send it to the backend in
+    # the form of a delimiter, otherwise it is in the form of an array.
     delimiter: str = None  # "False" # What delimiter to use when flattening is on and joinValues is true.
     addable: bool = False  # Whether it can be added
     addButtonText: str = None  # "Add" # Add button text
