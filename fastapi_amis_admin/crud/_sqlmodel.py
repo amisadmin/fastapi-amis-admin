@@ -322,7 +322,7 @@ class SQLModelCrud(BaseCrud, SQLModelSelector):
         modelfields = [self.parser.get_modelfield(ins, deepcopy=True) for ins in self.update_fields]
         if self.update_exclude is None:  # deprecated in version 0.4.0
             exclude = {self.pk_name} | {
-                self.parser.get_modelfield(ins, deepcopy=False).name
+                self.parser.get_modelfield(ins).name
                 for ins in self.parser.filter_insfield(self.readonly_fields)  # readonly fields, deprecated
             }
         else:

@@ -17,6 +17,31 @@ SQLModelField = Union[str, InstrumentedAttribute]
 SqlField = Union[InstrumentedAttribute, Label]
 SQLModelListField = Union[Type[SQLModel], SQLModelField, SqlField]
 SQLModelPropertyField = Union[Type[SQLModel], SQLModelField, "PropertyField"]
+ModelFieldType = Union[ModelField, "ModelFieldProxy"]
+
+
+class ModelFieldProxy:
+    """Proxy for pydantic ModelField to modify some attributes without affecting the original ModelField.
+    Reduce the deep copy of the original ModelField to improve performance.
+    """
+
+    def __init__(self, modelfield: ModelField, update: Dict[str, Any] = None):
+        self.__dict__["_modelfield"] = modelfield
+        self.__dict__["_update"] = update or {}
+
+    def __getattr__(self, item):
+        if item == "new_model_field":
+            return self.__dict__[item]
+        return self.__dict__["_update"].get(item, getattr(self.__dict__["_modelfield"], item))
+
+    def __setattr__(self, key, value):
+        self.__dict__["_update"][key] = value
+
+    def new_model_field(self):
+        modelfield = smart_deepcopy(self.__dict__["_modelfield"])
+        for k, v in self.__dict__["_update"].items():
+            setattr(modelfield, k, v)
+        return modelfield
 
 
 class SQLModelFieldParser:
@@ -26,29 +51,33 @@ class SQLModelFieldParser:
     def __init__(self, default_model: Type[SQLModel]):
         self.default_model = default_model
 
-    def get_modelfield(self, field: Union[ModelField, SQLModelField, Label], deepcopy: bool = False) -> Optional[ModelField]:
-        """pydantic ModelField"""
+    def get_modelfield(self, field: Union[ModelField, SQLModelField, Label], deepcopy: bool = False) -> Optional[ModelFieldType]:
+        """Get pydantic ModelField from sqlmodel field.
+        Args:
+            field:  ModelField, SQLModelField or Label
+            deepcopy:  Whether to return a copy of the original ModelField.
+
+        Returns:  pydantic ModelField or ModelFieldProxy.
+        """
         modelfield = None
+        update = {}
         if isinstance(field, InstrumentedAttribute):
             modelfield = field.class_.__fields__[field.key]
-            if deepcopy:
-                modelfield = smart_deepcopy(modelfield)
-                if field.class_ is not self.default_model:
-                    modelfield.name = self.get_name(field)
-                    modelfield.alias = self.get_alias(field)
-            return modelfield
-        elif isinstance(field, str):
-            if field in self.default_model.__fields__:
-                modelfield = self.default_model.__fields__[field]
+            if field.class_ is not self.default_model:
+                update = {
+                    "name": self.get_name(field),
+                    "alias": self.get_alias(field),
+                }
+        elif isinstance(field, str) and field in self.default_model.__fields__:
+            modelfield = self.default_model.__fields__[field]
         elif isinstance(field, ModelField):
             modelfield = field
         elif isinstance(field, Label):
-            return _get_label_modelfield(field)
-        else:  # other
+            modelfield = _get_label_modelfield(field)
+        if not modelfield:
             return None
-        if deepcopy:
-            modelfield = smart_deepcopy(modelfield)
-        return modelfield
+        field_proxy = ModelFieldProxy(modelfield, update=update)
+        return field_proxy.new_model_field() if deepcopy else field_proxy
 
     def get_column(self, field: SQLModelField) -> Optional[Column]:
         """sqlalchemy Column"""
