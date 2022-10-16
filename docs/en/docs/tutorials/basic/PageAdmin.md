@@ -17,7 +17,7 @@ class HelloWorldPageAdmin(admin.PageAdmin):
     page_schema = 'Hello World Page'
     # Configure page information directly through the page class property;
     page = Page(title='Title', body='Hello World!')
-````
+```
 
 Very simple, right, then implement a page to get the current time.
 

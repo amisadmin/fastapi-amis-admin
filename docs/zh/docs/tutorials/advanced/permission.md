@@ -65,8 +65,13 @@ async def has_page_permission(self, request: Request) -> bool:
 - 检查是否具有批量查询权限.默认返回:`True`
 
 ```python
-async def has_list_permission(self, request: Request, paginator: Optional[Paginator], filter: Optional[BaseModel],
-                              **kwargs) -> bool
+async def has_list_permission(
+    self, 
+    request: Request, 
+    paginator: Optional[Paginator], 
+    filter: Optional[SchemaFilterT],
+    **kwargs
+) -> bool
 ```
 
 #### has_read_permission
@@ -74,7 +79,12 @@ async def has_list_permission(self, request: Request, paginator: Optional[Pagina
 - 检查是否具有单项查询权限.默认返回:`True`
 
 ```python
-async def has_read_permission(self, request: Request, item_id: Optional[List[str]], **kwargs) -> bool
+async def has_read_permission(
+    self, 
+    request: Request, 
+    item_id: Optional[List[str]],
+    **kwargs
+) -> bool
 ```
 
 #### has_create_permission
@@ -82,7 +92,12 @@ async def has_read_permission(self, request: Request, item_id: Optional[List[str
 - 检查是否具有创建数据权限.默认返回:`True`
 
 ```python
-async def has_create_permission(self, request: Request, obj: Optional[BaseModel], **kwargs) -> bool
+async def has_create_permission(
+    self, 
+    request: Request, 
+    obj: Optional[SchemaCreateT], 
+    **kwargs
+) -> bool
 ```
 
 #### has_update_permission
@@ -90,7 +105,13 @@ async def has_create_permission(self, request: Request, obj: Optional[BaseModel]
 - 检查是否具有更新数据权限.默认返回:`True`
 
 ```python
-async def has_update_permission(self, request: Request, item_id: Optional[List[str]], obj: Optional[BaseModel], **kwargs) -> bool
+async def has_update_permission(
+    self, 
+    request: Request, 
+    item_id: Optional[List[str]], 
+    obj: Optional[SchemaUpdateT], 
+    **kwargs
+) -> bool
 ```
 
 #### has_delete_permission
@@ -98,7 +119,13 @@ async def has_update_permission(self, request: Request, item_id: Optional[List[s
 - 检查是否具有删除数据权限.默认返回:`True`
 
 ```python
-async def has_delete_permission(self, request: Request, item_id: Optional[List[str]], **kwargs) -> bool
+async def has_delete_permission(
+    self, 
+    request: Request, 
+    item_id: Optional[List[str]], 
+    **kwargs
+) -> bool:
+    return True
 ```
 
 !!! note "如果`has_crud_permission`验证结果为`False`"
