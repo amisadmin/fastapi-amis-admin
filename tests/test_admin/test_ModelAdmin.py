@@ -91,3 +91,40 @@ async def test_list_display_join(site: AdminSite, async_client: AsyncClient):
     assert "description" in schemas["ArticleAdminList"]["properties"]
     assert "nickname" in schemas["ArticleAdminList"]["properties"]
     assert "pwd" in schemas["ArticleAdminList"]["properties"]
+
+
+async def test_list_filter(site: AdminSite, async_client: AsyncClient):
+    @site.register_admin
+    class UserAdmin(admin.ModelAdmin):
+        model = User
+        list_filter = [User.id, User.username.label("name")]
+        search_fields = [User.username]
+
+    site.register_router()
+    ins = site.get_admin_or_create(UserAdmin)
+    assert "username" in ins.schema_filter.__fields__
+
+    # test schemas
+    openapi = site.fastapi.openapi()
+    schemas = openapi["components"]["schemas"]
+    assert "id" in schemas["UserAdminFilter"]["properties"]
+    assert "username" in schemas["UserAdminFilter"]["properties"]
+    assert "name" in schemas["UserAdminFilter"]["properties"]
+    assert "password" not in schemas["UserAdminFilter"]["properties"]
+
+
+async def test_list_filter_default(site: AdminSite, async_client: AsyncClient):
+    @site.register_admin
+    class UserAdmin(admin.ModelAdmin):
+        model = User
+
+    site.register_router()
+    ins = site.get_admin_or_create(UserAdmin)
+    assert "username" in ins.schema_filter.__fields__
+
+    # test schemas
+    openapi = site.fastapi.openapi()
+    schemas = openapi["components"]["schemas"]
+    assert "username" in schemas["UserAdminFilter"]["properties"]
+    assert "id" in schemas["UserAdminFilter"]["properties"]
+    assert "password" in schemas["UserAdminFilter"]["properties"]
