@@ -67,7 +67,7 @@ from fastapi_amis_admin.amis.types import (
     BaseAmisModel,
     SchemaNode,
 )
-from fastapi_amis_admin.crud import RouterMixin, SQLModelCrud, SQLModelSelector
+from fastapi_amis_admin.crud import RouterMixin, SQLModelCrud
 from fastapi_amis_admin.crud.base import (
     SchemaCreateT,
     SchemaFilterT,
@@ -1022,14 +1022,6 @@ class FormAdmin(BaseFormAdmin):
             return await self.get_init_data(request)
 
         return route
-
-
-class ModelFormAdmin(FormAdmin, SQLModelSelector):
-    """todo Read and update a model resource"""
-
-    def __init__(self, app: "AdminApp"):
-        FormAdmin.__init__(self, app)
-        SQLModelSelector.__init__(self)
 
 
 class ModelAdmin(BaseModelAdmin, PageAdmin):
