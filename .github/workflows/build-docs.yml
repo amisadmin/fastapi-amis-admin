@@ -27,6 +27,6 @@ jobs:
       - name: Build Docs
         run: |
           cd ./docs
-          mkdocs build -f ./en/mkdocs.yml -d ../site/en --clean
-          mkdocs gh-deploy -f ./zh/mkdocs.yml -d ../site --dirty --force
+          mkdocs build -f ./zh/mkdocs.yml -d ../site/zh --clean
+          mkdocs gh-deploy -f ./en/mkdocs.yml -d ../site --dirty --force
 

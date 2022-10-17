@@ -61,10 +61,10 @@ extra_javascript:
 extra:
   alternate:
     - name: English
-      link: /en/
+      link: /
       lang: en
     - name: 简体中文
-      link: /
+      link: /zh/
       lang: zh
 
 nav:

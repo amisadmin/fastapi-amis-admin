@@ -26,7 +26,10 @@ from sqlalchemy.sql import Select
 from sqlalchemy.sql.elements import BinaryExpression, Label, UnaryExpression
 from starlette.requests import Request
 
-from fastapi_amis_admin.utils.functools import cached_property
+try:
+    from functools import cached_property
+except ImportError:
+    from sqlalchemy.util.langhelpers import memoized_property as cached_property
 
 from .base import (
     BaseCrud,
@@ -73,12 +76,12 @@ sql_operator_map: Dict[str, str] = {
 
 
 class SQLModelSelector(Generic[SchemaModelT]):
-    model: Type[SchemaModelT] = None  # SQLModel模型
-    fields: List[SQLModelListField] = []  # 需要查询的字段
-    list_filter: List[SQLModelListField] = []  # 查询可过滤的字段
-    exclude: List[SQLModelField] = []  # 不需要查询的字段
-    ordering: List[Union[SQLModelListField, UnaryExpression]] = []  # 默认排序字段
-    link_models: Dict[str, Tuple[Type[Table], Column, Column]] = None  # 关联模型
+    model: Type[SchemaModelT] = None  # SQLModel model
+    fields: List[SQLModelListField] = []  # Need to query the field from the database
+    list_filter: List[SQLModelListField] = []  # Query filterable fields
+    exclude: List[SQLModelField] = []  # Model fields that do not need to be queried. It is not recommended to use.
+    ordering: List[Union[SQLModelListField, UnaryExpression]] = []  # Default sort field
+    link_models: Dict[str, Tuple[Type[Table], Column, Column]] = None  # Link table information
     """Relate information of the target model with the current model.
     - The Data structure is: {Target table name: (link model table,
         Column in the link model table associated with the current model,
@@ -89,7 +92,7 @@ class SQLModelSelector(Generic[SchemaModelT]):
     - You can add the query parameters to the route url to access the role list of the user:
         `?link_model=auth_user&link_item_id={user_id}`.
     """
-    pk_name: str = "id"  # 主键名称
+    pk_name: str = "id"  # Primary key name
 
     def __init__(self, model: Type[SchemaModelT] = None, fields: List[SQLModelListField] = None) -> None:
         self.model = model or self.model
@@ -225,8 +228,8 @@ class SQLModelSelector(Generic[SchemaModelT]):
 
 
 class SQLModelCrud(BaseCrud, SQLModelSelector):
-    engine: SqlalchemyDatabase = None
-    create_fields: List[SQLModelField] = []  # 新增数据字段
+    engine: SqlalchemyDatabase = None  # sqlalchemy engine
+    create_fields: List[SQLModelField] = []  # Create item data field
     readonly_fields: List[SQLModelListField] = []
     """readonly fields, priority is higher than update_fields.
     readonly fields, deprecated, not recommended, will be removed in version 0.4.0"""
@@ -275,16 +278,8 @@ class SQLModelCrud(BaseCrud, SQLModelSelector):
     def _create_schema_filter(self) -> Type[SchemaFilterT]:
         if self.schema_filter:
             return self.schema_filter
-        self.list_filter = self.list_filter or self._select_entities.values()
-        modelfields = list(
-            filter(
-                None,
-                [
-                    self.parser.get_modelfield(sqlfield, deepcopy=True)
-                    for sqlfield in self.parser.filter_insfield(self.list_filter, save_class=(Label,))
-                ],
-            )
-        )
+        self.list_filter = self.parser.filter_insfield(self.list_filter, save_class=(Label,)) or self._select_entities.values()
+        modelfields = list(filter(None, [self.parser.get_modelfield(sqlfield, deepcopy=True) for sqlfield in self.list_filter]))
         # todo perfect
         for modelfield in modelfields:
             if not issubclass(modelfield.type_, (Enum, bool)) and issubclass(
@@ -319,7 +314,7 @@ class SQLModelCrud(BaseCrud, SQLModelSelector):
         modelfields = [self.parser.get_modelfield(ins, deepcopy=True) for ins in self.update_fields]
         if self.update_exclude is None:  # deprecated in version 0.4.0
             exclude = {self.pk_name} | {
-                self.parser.get_modelfield(ins, deepcopy=False).name
+                self.parser.get_modelfield(ins).name
                 for ins in self.parser.filter_insfield(self.readonly_fields)  # readonly fields, deprecated
             }
         else:

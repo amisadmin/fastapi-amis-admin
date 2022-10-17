@@ -25,7 +25,7 @@ class ArticleAdmin(admin.ModelAdmin):
                                        link='https://github.com/amisadmin/fastapi_amis_admin'))
 
         return actions
-````
+```
 
 In this example, two simple model actions are added to the model list form toolbar by overriding the `get_actions_on_header_toolbar` method:
 

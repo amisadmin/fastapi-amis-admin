@@ -11,7 +11,6 @@ from .admin import (
     LinkModelForm,
     ModelAction,
     ModelAdmin,
-    ModelFormAdmin,
     PageAdmin,
     PageSchemaAdmin,
     RouterAdmin,

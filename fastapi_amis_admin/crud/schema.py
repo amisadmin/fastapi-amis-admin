@@ -31,24 +31,24 @@ class BaseApiOut(GenericModel, Generic[_T], BaseApiSchema):
 
 
 class ItemListSchema(GenericModel, Generic[_T], BaseApiSchema):
-    """数据查询返回格式"""
+    """Data list query return format."""
 
-    items: List[_T] = []  # 数据列表
-    total: int = None  # 数据总量
+    items: List[_T] = []  # Data list
+    total: int = None  # Data total
     query: Dict[str, Any] = None
     filter: Dict[str, Any] = None
 
 
 class CrudEnum(str, Enum):
-    list = "list"  # 批量查询数据
-    create = "create"  # 新增数据
-    read = "read"  # 查询数据
-    update = "update"  # 更新数据
-    delete = "delete"  # 删除数据
+    list = "list"
+    create = "create"
+    read = "read"
+    update = "update"
+    delete = "delete"
 
 
 class Paginator:
-    """分页器"""
+    """Used for data paging when querying a data list."""
 
     def __init__(self, perPage_max: Optional[int] = None):
         self.perPageMax = perPage_max

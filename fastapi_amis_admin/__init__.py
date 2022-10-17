@@ -19,6 +19,6 @@ i18n.load_translations(
             domain="messages",
             localedir=os.path.join(BASE_DIR, "locale"),
             languages=["de_DE"],
-        )
+        ),
     }
 )

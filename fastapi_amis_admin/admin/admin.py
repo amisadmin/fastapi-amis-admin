@@ -67,7 +67,7 @@ from fastapi_amis_admin.amis.types import (
     BaseAmisModel,
     SchemaNode,
 )
-from fastapi_amis_admin.crud import RouterMixin, SQLModelCrud, SQLModelSelector
+from fastapi_amis_admin.crud import RouterMixin, SQLModelCrud
 from fastapi_amis_admin.crud.base import (
     SchemaCreateT,
     SchemaFilterT,
@@ -388,10 +388,10 @@ class BaseModelAdmin(SQLModelCrud):
                 columns.append(field)
             elif isinstance(field, type) and issubclass(field, SQLModel):
                 ins_list = self.parser.get_sqlmodel_insfield(field)
-                modelfields = [self.parser.get_modelfield(ins, deepcopy=True) for ins in ins_list]
+                modelfields = [self.parser.get_modelfield(ins) for ins in ins_list]
                 columns.extend([await self.get_list_column(request, modelfield) for modelfield in modelfields])
             else:
-                modelfield = self.parser.get_modelfield(field, deepcopy=True)
+                modelfield = self.parser.get_modelfield(field)
                 if modelfield:
                     columns.append(await self.get_list_column(request, modelfield))
         for link_form in self.link_model_forms:
@@ -414,7 +414,7 @@ class BaseModelAdmin(SQLModelCrud):
             if alias:
                 data[alias] = f"[~]${alias}"
         for field in await self.get_list_filter(request):
-            modelfield = self.parser.get_modelfield(field, deepcopy=True)
+            modelfield = self.parser.get_modelfield(field)
             if modelfield and issubclass(modelfield.type_, (datetime.datetime, datetime.date, datetime.time)):
                 data[modelfield.alias] = f"[-]${modelfield.alias}"
         return AmisAPI(
@@ -549,7 +549,7 @@ class BaseModelAdmin(SQLModelCrud):
             )
         columns, keys = [], {}
         for field in fields:
-            column = await self.get_list_column(request, self.parser.get_modelfield(field, deepcopy=True))
+            column = await self.get_list_column(request, self.parser.get_modelfield(field))
             keys[column.name] = "${" + column.label + "}"
             column.name = column.label
             columns.append(column)
@@ -720,7 +720,7 @@ class BaseModelAdmin(SQLModelCrud):
             if isinstance(field, FormItem):
                 items.append(field)
             else:
-                field = self.parser.get_modelfield(field, deepcopy=True)
+                field = self.parser.get_modelfield(field)
                 if field:
                     item = await self.get_form_item(request, field, action)
                     if item:
@@ -1022,14 +1022,6 @@ class FormAdmin(BaseFormAdmin):
             return await self.get_init_data(request)
 
         return route
-
-
-class ModelFormAdmin(FormAdmin, SQLModelSelector):
-    """todo Read and update a model resource"""
-
-    def __init__(self, app: "AdminApp"):
-        FormAdmin.__init__(self, app)
-        SQLModelSelector.__init__(self)
 
 
 class ModelAdmin(BaseModelAdmin, PageAdmin):

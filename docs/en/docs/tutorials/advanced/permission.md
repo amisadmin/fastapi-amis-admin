@@ -1,6 +1,7 @@
 # Permission Control
 
-FastAPI-Amis-Admin' provides very rich permission control methods, you can use different granularity of site/application/page/route permission control for different scenarios.
+FastAPI-Amis-Admin' provides very rich permission control methods, you can use different granularity of
+site/application/page/route permission control for different scenarios.
 
 ## Execution flowchart
 
@@ -46,13 +47,15 @@ graph LR
 #### has_page_permission
 
 - Check if you have permission to access the current page, default return: `True`
-- Subordinate objects: `PageSchemaAdmin` and its subclasses, for example: `PageAdmin` , `FormAdmin` , `ModelAdmin` , `AdminApp` , `AdminSite`.
-- The permissions of the current administrative object depend on the permissions owned by the administrative application or administrative site to which it is bound.
+- Subordinate objects: `PageSchemaAdmin` and its subclasses, 
+  for example: `PageAdmin` , `FormAdmin` , `ModelAdmin` , `AdminApp` , `AdminSite`.
+- The permissions of the current administrative object depend on the permissions owned by the administrative application or
+  administrative site to which it is bound.
 
 ```python
 async def has_page_permission(self, request: Request) -> bool:
     return self.app is self or await self.app.has_page_permission(request)
-```!
+```
 
 !!! note "If `has_page_permission` validates to `False`"
 
@@ -65,8 +68,13 @@ async def has_page_permission(self, request: Request) -> bool:
 - Check if you have bulk query permission. The default is:`True`.
 
 ```python
-async def has_list_permission(self, request: Request, paginator: Optional[Paginator], filter: Optional[BaseModel],
-                              **kwargs) -> bool
+async def has_list_permission(
+    self, 
+    request: Request, 
+    paginator: Optional[Paginator], 
+    filter: Optional[SchemaFilterT],
+    **kwargs
+) -> bool
 ```
 
 #### has_read_permission
@@ -74,7 +82,12 @@ async def has_list_permission(self, request: Request, paginator: Optional[Pagina
 - Checks if a single query permission is available. Default return:``True`''
 
 ```python
-async def has_read_permission(self, request: Request, item_id: Optional[List[str]], **kwargs) -> bool
+async def has_read_permission(
+    self, 
+    request: Request, 
+    item_id: Optional[List[str]],
+    **kwargs
+) -> bool
 ```
 
 #### has_create_permission
@@ -82,7 +95,12 @@ async def has_read_permission(self, request: Request, item_id: Optional[List[str
 - Checks if the data creation permission is available. Default return:``True`''
 
 ```python
-async def has_create_permission(self, request: Request, obj: Optional[BaseModel], **kwargs) -> bool
+async def has_create_permission(
+    self, 
+    request: Request, 
+    obj: Optional[SchemaCreateT], 
+    **kwargs
+) -> bool
 ```
 
 #### has_update_permission
@@ -90,7 +108,13 @@ async def has_create_permission(self, request: Request, obj: Optional[BaseModel]
 - Checks if the user has permission to update data. Default return:``True`''
 
 ```python
-async def has_update_permission(self, request: Request, item_id: Optional[List[str]], obj: Optional[BaseModel], **kwargs) -> bool
+async def has_update_permission(
+    self, 
+    request: Request, 
+    item_id: Optional[List[str]], 
+    obj: Optional[SchemaUpdateT], 
+    **kwargs
+) -> bool
 ```
 
 #### has_delete_permission
@@ -98,8 +122,14 @@ async def has_update_permission(self, request: Request, item_id: Optional[List[s
 - Checks if the data deletion permission is available. Default return:``True`''
 
 ```python
-async def has_delete_permission(self, request: Request, item_id: Optional[List[str]], **kwargs) -> bool
-```!
+async def has_delete_permission(
+    self, 
+    request: Request, 
+    item_id: Optional[List[str]], 
+    **kwargs
+) -> bool:
+    return True
+```
 
 !!! note "If `has_crud_permission` validates to `False`"
 
@@ -117,19 +147,22 @@ async def has_delete_permission(self, request: Request, item_id: Optional[List[s
 
 ### Registering global permission validation dependencies
 
-By registering a global permission validation dependency, all routes under the `AdminSite` object will be required to pass the specified permission validation.
+By registering a global permission validation dependency, all routes under the `AdminSite` object will be required to pass the
+specified permission validation.
 
 ```python
 from fastapi import Depends, FastAPI, Header, HTTPException
 
 
-async def verify_token(x_token: str = Header(...)) :
-    if x_token ! = "fake-super-secret-token":
+async def verify_token(x_token: str = Header(...)):
+    if x_token != "fake-super-secret-token":
         raise HTTPException(status_code=400, detail="X-Token header invalid")
 
 
-site = AdminSite(settings=Settings(debug=True, database_url_async='sqlite+aiosqlite:///amisadmin.db'),
-                 fastapi=FastAPI(dependencies=[Depends(verify_token)]))
+site = AdminSite(
+    settings=Settings(debug=True, database_url_async='sqlite+aiosqlite:///amisadmin.db'),
+    fastapi=FastAPI(dependencies=[Depends(verify_token)])
+)
 
 ```
 
