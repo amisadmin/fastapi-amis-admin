@@ -90,6 +90,8 @@ class Page(AmisNode):
     body: SchemaNode = None  # Add content to the content area of the page
     className: str = None  # Outer dom class name
     cssVars: dict = None  # Custom CSS variables, please refer to styles
+    css: str = None  # Custom CSS styles, please refer to used theme styles
+    mobileCSS: str = None  # Custom mobile CSS styles, please refer to used theme styles
     toolbarClassName: str = None  # "v-middle wrapper text-right bg-light bb" # Toolbar dom class name
     bodyClassName: str = None  # "wrapper" # Body dom class name
     asideClassName: str = None  # "w page-aside-region bg-auto" # Aside dom class name
