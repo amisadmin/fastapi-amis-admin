@@ -91,7 +91,7 @@ from fastapi_amis_admin.admin.site import AdminSite
 app = FastAPI()
 
 # 创建AdminSite实例
-site = AdminSite(settings = Settings(database_url_async = 'sqlite+aiosqlite:///amisadmin.db'))
+site = AdminSite(settings=Settings(database_url_async='sqlite+aiosqlite:///amisadmin.db'))
 
 # 挂载后台管理系统
 site.mount_app(app)
@@ -99,7 +99,7 @@ site.mount_app(app)
 if __name__ == '__main__':
     import uvicorn
 
-    uvicorn.run(app, debug = True)
+    uvicorn.run(app, debug=True)
 ```
 
 ## 模型管理示例
@@ -116,13 +116,15 @@ from fastapi_amis_admin.models.fields import Field
 app = FastAPI()
 
 # 创建AdminSite实例
-site = AdminSite(settings = Settings(database_url_async = 'sqlite+aiosqlite:///amisadmin.db'))
+site = AdminSite(settings=Settings(database_url_async='sqlite+aiosqlite:///amisadmin.db'))
+
 
 # 先创建一个SQLModel模型,详细请参考: https://sqlmodel.tiangolo.com/
-class Category(SQLModel, table = True):
-    id: int = Field(default = None, primary_key = True, nullable = False)
-    name: str = Field(title = 'CategoryName')
-    description: str = Field(default = '', title = 'Description')
+class Category(SQLModel, table=True):
+    id: int = Field(default=None, primary_key=True, nullable=False)
+    name: str = Field(title='CategoryName')
+    description: str = Field(default='', title='Description')
+
 
 # 注册ModelAdmin
 @site.register_admin
@@ -131,18 +133,21 @@ class CategoryAdmin(admin.ModelAdmin):
     # 配置管理模型
     model = Category
 
+
 # 挂载后台管理系统
 site.mount_app(app)
+
 
 # 创建初始化数据库表
 @app.on_event("startup")
 async def startup():
-    await site.db.async_run_sync(SQLModel.metadata.create_all, is_session = False)
+    await site.db.async_run_sync(SQLModel.metadata.create_all, is_session=False)
+
 
 if __name__ == '__main__':
     import uvicorn
 
-    uvicorn.run(app, debug = True)
+    uvicorn.run(app, debug=True)
 ```
 
 ## 表单管理示例
@@ -163,25 +168,27 @@ from fastapi_amis_admin.models.fields import Field
 app = FastAPI()
 
 # 创建AdminSite实例
-site = AdminSite(settings = Settings(database_url_async = 'sqlite+aiosqlite:///amisadmin.db'))
+site = AdminSite(settings=Settings(database_url_async='sqlite+aiosqlite:///amisadmin.db'))
+
 
 # 注册FormAdmin
 @site.register_admin
 class UserLoginFormAdmin(admin.FormAdmin):
     page_schema = 'UserLoginForm'
     # 配置表单信息, 可省略
-    form = Form(title = '这是一个测试登录表单', submitText = '登录')
+    form = Form(title='这是一个测试登录表单', submitText='登录')
 
     # 创建表单数据模型
     class schema(BaseModel):
-        username: str = Field(..., title = '用户名', min_length = 3, max_length = 30)
-        password: str = Field(..., title = '密码')
+        username: str = Field(..., title='用户名', min_length=3, max_length=30)
+        password: str = Field(..., title='密码')
 
     # 处理表单提交数据
     async def handle(self, request: Request, data: BaseModel, **kwargs) -> BaseApiOut[Any]:
         if data.username == 'amisadmin' and data.password == 'amisadmin':
-            return BaseApiOut(msg = '登录成功!', data = {'token': 'xxxxxx'})
-        return BaseApiOut(status = -1, msg = '用户名或密码错误!')
+            return BaseApiOut(msg='登录成功!', data={'token': 'xxxxxx'})
+        return BaseApiOut(status=-1, msg='用户名或密码错误!')
+
 
 # 挂载后台管理系统
 site.mount_app(app)
@@ -189,7 +196,7 @@ site.mount_app(app)
 if __name__ == '__main__':
     import uvicorn
 
-    uvicorn.run(app, debug = True)
+    uvicorn.run(app, debug=True)
 ```
 
 ## 使用命令行
@@ -223,6 +230,8 @@ faa run
 
 ## 相关项目
 
+- [`Amis-Admin-Theme-Editor`](https://github.com/swelcker/amis-admin-theme-editor):`FastAPI-Amis-Admin`的主题编辑器。
+  允许添加自定义css样式和应用主题,变量改变及时生效.
 - [`FastAPI-User-Auth`](https://github.com/amisadmin/fastapi_user_auth): 一个简单而强大的`FastAPI`用户`RBAC`认证与授权库.
 - [`FastAPI-Scheduler`](https://github.com/amisadmin/fastapi_scheduler): 一个基于`APScheduler`的简单定时任务管理`FastAPI`拓展库.
 - [`FastAPI-Amis-Admin-Demo`](https://github.com/amisadmin/fastapi_amis_admin_demo):  一个`FastAPI-Amis-Admin` 应用程序示例.

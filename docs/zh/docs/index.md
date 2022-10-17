@@ -227,6 +227,8 @@ faa run
 
 ## 相关项目
 
+- [`Amis-Admin-Theme-Editor`](https://github.com/swelcker/amis-admin-theme-editor):`FastAPI-Amis-Admin`的主题编辑器。
+  允许添加自定义css样式和应用主题,变量改变及时生效.
 - [`FastAPI-User-Auth`](https://github.com/amisadmin/fastapi_user_auth): 一个简单而强大的`FastAPI`用户`RBAC`认证与授权库.
 - [`FastAPI-Scheduler`](https://github.com/amisadmin/fastapi_scheduler): 一个基于`FastAPI`+`APScheduler`的简单定时任务管理项目.
 - [`FastAPI-Amis-Admin-Demo`](https://github.com/amisadmin/fastapi_amis_admin_demo):  一个`FastAPI-Amis-Admin` 应用程序示例.

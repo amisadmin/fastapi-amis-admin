@@ -227,6 +227,8 @@ It's true
 
 ## Related Items
 
+- [`Amis-Admin-Theme-Editor`](https://github.com/swelcker/amis-admin-theme-editor):Theme-Editor for the fastapi-amis-admin. 
+  Allows to add custom css styles and to apply theme --vars change on the fly.
 - [`FastAPI-User-Auth`](https://github.com/amisadmin/fastapi_user_auth): A simple and powerful `FastAPI` user `RBAC` authentication and authorization library.
 - [`FastAPI-Scheduler`](https://github.com/amisadmin/fastapi_scheduler): A simple scheduled task management project based on `FastAPI`+`APScheduler`.
 - [`FastAPI-Amis-Admin-Demo`](https://github.com/amisadmin/fastapi_amis_admin_demo): A sample `FastAPI-Amis-Admin` application.
