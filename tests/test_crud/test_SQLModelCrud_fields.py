@@ -272,7 +272,6 @@ async def test_read_fields(app: FastAPI, async_client: AsyncClient, fake_article
     # test api
     res = await async_client.get("/article/item/1")
     items = res.json()["data"]
-    print(items)
     assert "id" not in items
     assert items["title"] == "Article_1"
     assert items["description"] == "Description_1"

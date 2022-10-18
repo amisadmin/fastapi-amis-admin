@@ -3,6 +3,7 @@ from typing import List
 from pydantic import BaseModel
 from typing_extensions import get_origin
 
+from fastapi_amis_admin import amis
 from fastapi_amis_admin.admin.parser import AmisParser
 from fastapi_amis_admin.models import Field, IntegerChoices
 
@@ -140,8 +141,9 @@ def test_field_datetime():
 def test_field_list():
     class User(BaseModel):
         tags: List[str] = Field([], title="标签")
-        groups: List[int] = Field([], title="群组")
+        email: List[str] = Field([], title="邮箱列表", amis_form_item=amis.InputArray(items=amis.InputText(type="input-email")))
 
+    # test tags
     modelfield = User.__fields__["tags"]
     assert modelfield.type_ == str
     assert get_origin(modelfield.outer_type_) is list
@@ -152,6 +154,16 @@ def test_field_list():
     assert formitem.label == "标签"
     assert formitem.value == []
     assert formitem.items.type == "input-text"  # type: ignore
+
+    # test email
+    modelfield = User.__fields__["email"]
+    assert modelfield.type_ == str
+    assert get_origin(modelfield.outer_type_) is list
+    # formitem
+    formitem = amis_parser.as_form_item(modelfield)
+    assert formitem.type == "input-array"
+    assert formitem.name == "email"
+    assert formitem.items.type == "input-email"  # type: ignore
 
 
 def test_field_model():
