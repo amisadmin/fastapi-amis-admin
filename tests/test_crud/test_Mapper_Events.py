@@ -63,6 +63,13 @@ async def test_update_event(async_client: AsyncClient, fake_users, event_counter
         assert isinstance(target, User)
         event_counter.after += 1
 
+    @event.listens_for(User.username, "set")
+    def receive_set(target, value, old, initiator):
+        "listen for the 'set' event"
+        assert isinstance(target, User)
+        assert value == "new_name"
+        assert old == "User_1"
+
     # update one
     assert event_counter.before == 0
     assert event_counter.after == 0
