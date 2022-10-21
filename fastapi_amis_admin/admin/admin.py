@@ -30,6 +30,7 @@ from starlette import status
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import HTMLResponse, JSONResponse, Response
 from starlette.templating import Jinja2Templates
+from typing_extensions import Literal
 
 import fastapi_amis_admin
 from fastapi_amis_admin.admin.handlers import register_exception_handlers
@@ -89,11 +90,6 @@ from fastapi_amis_admin.crud.utils import (
 )
 from fastapi_amis_admin.utils.functools import cached_property
 from fastapi_amis_admin.utils.translation import i18n as _
-
-try:
-    from typing import Literal
-except ImportError:
-    from typing_extensions import Literal
 
 _BaseAdminT = TypeVar("_BaseAdminT", bound="BaseAdmin")
 _PageSchemaAdminT = TypeVar("_PageSchemaAdminT", bound="PageSchemaAdmin")

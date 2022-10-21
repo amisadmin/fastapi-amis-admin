@@ -3,6 +3,7 @@ import os
 from typing import Any, Dict, List, Optional, Union
 
 from pydantic import Field
+from typing_extensions import Literal
 
 from .constants import DisplayModeEnum, LevelEnum, SizeEnum, TabsModeEnum
 from .types import (
@@ -16,11 +17,6 @@ from .types import (
     Tpl,
 )
 from .utils import amis_templates
-
-try:
-    from typing import Literal
-except ImportError:
-    from typing_extensions import Literal
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
