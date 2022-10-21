@@ -19,9 +19,9 @@ from fastapi.encoders import DictIntStrAny, SetIntStr
 from pydantic import Extra, Json
 from pydantic.fields import ModelField
 from pydantic.utils import ValueItems
-from sqlalchemy import Column, Table, delete, func, insert
+from sqlalchemy import Column, Table, func
 from sqlalchemy.future import select
-from sqlalchemy.orm import InstrumentedAttribute, Session
+from sqlalchemy.orm import InstrumentedAttribute, Session, object_session
 from sqlalchemy.sql import Select
 from sqlalchemy.sql.elements import BinaryExpression, Label, UnaryExpression
 from starlette.requests import Request
@@ -335,6 +335,10 @@ class SQLModelCrud(BaseCrud, SQLModelSelector):
         )
         return schema_create_by_modelfield(f"{self.schema_name_prefix}Create", modelfields)
 
+    def create_item(self, item: Dict[str, Any]) -> SchemaModelT:
+        """Create a database orm object through a dictionary."""
+        return self.model(**item)
+
     def read_item(self, obj: SchemaModelT) -> SchemaReadT:
         """read database data and parse to schema_read"""
         parse = self.schema_read.from_orm if getattr(self.schema_read.Config, "orm_mode", False) else self.schema_read.parse_obj
@@ -351,9 +355,25 @@ class SQLModelCrud(BaseCrud, SQLModelSelector):
             else:
                 setattr(obj, k, v)
 
+    def delete_item(self, obj: SchemaModelT) -> None:
+        """delete database data"""
+        object_session(obj).delete(obj)
+
     def _fetch_item_scalars(self, session: Session, item_id: List[str]) -> List[SchemaModelT]:
         stmt = select(self.model).where(self.pk.in_(list(map(get_python_type_parse(self.pk), item_id))))
         return session.scalars(stmt).all()
+
+    def _create_items(self, session: Session, items: List[Dict[str, Any]]) -> Union[int, SchemaModelT]:
+        count = len(items)
+        obj = None
+        for item in items:
+            obj = self.create_item(item)
+            session.add(obj)
+        if count == 1:
+            session.flush()
+            session.refresh(obj)
+            return self.schema_model.parse_obj(obj)
+        return count
 
     def _read_items(self, session: Session, item_id: List[str]) -> List[SchemaReadT]:
         items = self._fetch_item_scalars(session, item_id)
@@ -363,6 +383,12 @@ class SQLModelCrud(BaseCrud, SQLModelSelector):
         items = self._fetch_item_scalars(session, item_id)
         for item in items:
             self.update_item(item, values)
+        return len(items)
+
+    def _delete_items(self, session: Session, item_id: List[str]) -> int:
+        items = self._fetch_item_scalars(session, item_id)
+        for item in items:
+            self.delete_item(item)
         return len(items)
 
     @property
@@ -432,29 +458,16 @@ class SQLModelCrud(BaseCrud, SQLModelSelector):
         ) -> BaseApiOut[Union[int, self.schema_model]]:  # type: ignore
             if not await self.has_create_permission(request, data):
                 return self.error_no_router_permission(request)
-            is_bulk = True
             if not isinstance(data, list):
-                is_bulk = False
                 data = [data]
-            values = [await self.on_create_pre(request, value) for value in data]
-            if not values:
+            items = [await self.on_create_pre(request, obj) for obj in data]
+            if not items:
                 return self.error_data_handle(request)
-            stmt = insert(self.model).values(values)
-            if not is_bulk and self.db.engine.dialect.name == "postgresql":
-                stmt = stmt.returning(self.pk)
             try:
-                result = await self.db.async_execute(stmt)
+                result = await self.db.async_run_sync(self._create_items, items=items)
             except Exception as error:
                 return self.error_execute_sql(request=request, error=error)
-            if is_bulk:
-                return BaseApiOut(data=getattr(result, "rowcount", None))
-            data = values[0]
-            if self.db.engine.dialect.name == "postgresql":
-                data[self.pk_name] = result.scalar()
-            else:
-                data[self.pk_name] = getattr(result, "lastrowid", None)
-            data = self.schema_model.parse_obj(data)
-            return BaseApiOut(data=data)
+            return BaseApiOut(data=result)
 
         return route
 
@@ -499,8 +512,7 @@ class SQLModelCrud(BaseCrud, SQLModelSelector):
         ):
             if not await self.has_delete_permission(request, item_id):
                 return self.error_no_router_permission(request)
-            stmt = delete(self.model).where(self.pk.in_(list(map(get_python_type_parse(self.pk), item_id))))
-            result = await self.db.async_execute(stmt)
-            return BaseApiOut(data=getattr(result, "rowcount", None))
+            result = await self.db.async_run_sync(self._delete_items, item_id)
+            return BaseApiOut(data=result)
 
         return route
