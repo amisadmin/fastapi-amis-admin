@@ -1,12 +1,21 @@
 """Detailed document reading address: https://baidu.gitee.io/amis/zh-CN/components"""
 import os
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 from pydantic import Field
 from typing_extensions import Literal
 
-from .constants import DisplayModeEnum, LevelEnum, SizeEnum, TabsModeEnum, BarcodeEnum, ProgressEnum, TriggerEnum, \
-    PlacementEnum, StepStatusEnum
+from .constants import (
+    BarcodeEnum,
+    DisplayModeEnum,
+    LevelEnum,
+    PlacementEnum,
+    ProgressEnum,
+    SizeEnum,
+    StepStatusEnum,
+    TabsModeEnum,
+    TriggerEnum,
+)
 from .types import (
     API,
     AmisNode,
@@ -335,7 +344,8 @@ class ActionType:
 
     class Toast(Action):
         """Toast light"""
-        class ToastItem:
+
+        class ToastItem(AmisNode):
             title: Union[str, SchemaNode] = None  # Toast Item Title
             body: Union[str, SchemaNode] = None  # Toast Item Content
             level: str = None  # default 'info', Display icon, optional 'info', 'success', 'error', 'warning'
@@ -730,6 +740,7 @@ class Button(FormItem):
 
 class InputFormula(FormItem):
     """Input Formula Editor"""
+
     type: str = "input-formula"
     title: str = None  # title
     header: str = None  # Editor header title, if not set, the form item labelfield is used by default
@@ -743,7 +754,7 @@ class InputFormula(FormItem):
     btnLabel: str = None  # The button text, which inputModetakesbutton
     level: LevelEnum = LevelEnum.default  # button stlye
     allowInput: bool = None  # default -, Whether the input box can be entered
-    btnSize: Literal["xs", "sm", "md", "lg"] = None # button size
+    btnSize: Literal["xs", "sm", "md", "lg"] = None  # button size
     borderMode: Literal["full", "half", "none"] = None  # Input box border mode
     placeholder: str = None  # input box placeholder
     className: str = None  # Control outer CSS style class name
@@ -1044,7 +1055,7 @@ class GridNav(AmisNode):
     to obtain the data in the data chain to complete the menu display.
     """
 
-    class OptionsItem:
+    class OptionsItem(AmisNode):
         icon: str = None  # default '', list item icon
         text: str = None  # default '', list item text
         badge: Badge = None  # Bade Schema, list item badge
@@ -1076,7 +1087,7 @@ class CollapseGroup(AmisNode):
     to obtain the data in the data chain to complete the menu display.
     """
 
-    class CollapseItem:
+    class CollapseItem(AmisNode):
         type: str = "collapse"
         disabled: bool = None  # default False
         collapsed: bool = None  # default True
@@ -1085,12 +1096,13 @@ class CollapseGroup(AmisNode):
         body: Union[str, SchemaNode] = None  # default -, content
 
     type: str = "collapse-group"
-    activeKey: Union[str, int, List[int, str]] = None  # Initialize the key to activate the panel
+    activeKey: Union[str, int, List[Union[int, str]]] = None  # Initialize the key to activate the panel
     disabled: bool = None  # default False
     accordion: bool = None  # default False, accordion mode
     expandIcon: SchemaNode = None  # Custom toggle icon
     expandIconPosition: Literal["left", "right"] = "left"  # icon position
     body: List[Union[CollapseItem, SchemaNode]] = None  # group content
+
 
 class Markdown(AmisNode):
     """Markdown rendering"""
@@ -1421,10 +1433,11 @@ class InputRange(FormItem):
 
 class Timeline(AmisNode):
     """Timeline"""
-    class TimelineItem:
+
+    class TimelineItem(AmisNode):
         time: str  # Node Time
         title: Union[str, SchemaNode] = None  # Node Title
-        detail: str = None # Node detailed description (collapsed)
+        detail: str = None  # Node detailed description (collapsed)
         detailCollapsedText: str = None  # default 'Expand'
         detailExpandedText: str = None  # default 'Collapse'
         color: Union[str, LevelEnum] = None  # default #DADBDD, Timeline node color
@@ -1441,7 +1454,8 @@ class Timeline(AmisNode):
 
 class Steps(AmisNode):
     """Steps Bar"""
-    class StepItem:
+
+    class StepItem(AmisNode):
         title: Union[str, SchemaNode] = None  # Title
         subTitle: Union[str, SchemaNode] = None  # Sub Heading
         description: Union[str, SchemaNode] = None  # Detail Description
@@ -1479,12 +1493,12 @@ class TooltipWrapper(AmisNode):
     disabled: bool = None  # default False, whether to disable overlay prompts
     enterable: bool = None  # default True, whether the mouse can move into the floating layer
     showArrow: bool = None  # default True, whether to display the overlay pointing arrow
-    offset: [int, int] = None  # default [0, 0], relative offset of the position of the text prompt, in px
+    offset: Tuple[int, int] = None  # default [0, 0], relative offset of the position of the text prompt, in px
     tooltipTheme: Literal["light", "dark"] = "light"  # default light, Theme style
     placement: PlacementEnum = PlacementEnum.top  # text prompts position of the floating layer
     content: str = None  # default '',  Text prompt content
     title: str = None  # default '', tooltip title
-    
+
 
 class InputTag(FormItem):
     """Input Tag"""
@@ -1492,7 +1506,7 @@ class InputTag(FormItem):
     type: str = "input-tag"
     options: List[Union[str, dict]] = None  # default option group
     optionsTip: List[Union[str, dict]] = None  # default "Your most recent tags", option hint
-    source:	Union[str, API] = None  # default 	Dynamic option group
+    source: Union[str, API] = None  # default 	Dynamic option group
     delimiter: str = None  # default False, delimiter option
     labelField: str = None  # default "label", option label field
     valueField: str = None  # default "value", option value field
@@ -1593,7 +1607,8 @@ class NestedSelect(Select):
 
 class Breadcrumb(AmisNode):
     """Breadcrumb line"""
-    class BreadcrumbItem:
+
+    class BreadcrumbItem(AmisNode):
         label: str = None  # label text
         href: str = None  # link
         icon: str = None  # fa icon
@@ -1615,7 +1630,7 @@ class Breadcrumb(AmisNode):
 class Card(AmisNode):
     """Card"""
 
-    class Media:
+    class Media(AmisNode):
         type: Literal["image", "video"] = "image"  # multimedia type
         url: str = None  # image or video link
         position: PlacementEnum = PlacementEnum.left  # media location
@@ -1624,7 +1639,7 @@ class Card(AmisNode):
         autoPlay: bool = None  # default False, autoplay video
         poster: Union[str, bool] = None  # default false
 
-    class Header:
+    class Header(AmisNode):
         className: str = None  # The header class name
         title: str = None  # title
         titleClassName: str = None  # title class name
@@ -1637,7 +1652,7 @@ class Card(AmisNode):
         avatar: Template = None  # picture
         avatarClassName: str = None  # default "pull-left thumb avatar b-3x m-r", Image includes layer class name
         imageClassName: str = None  # Image class name
-        avatarText: Template = None # If no picture is configured, the text will be displayed at the picture
+        avatarText: Template = None  # If no picture is configured, the text will be displayed at the picture
         avatarTextBackground: str = None  # avatar text background color
         avatarTextClassName: str = None  # Image text class name
         highlight: bool = None  # default False, whether to show the active style
@@ -1683,7 +1698,8 @@ class Cards(AmisNode):
 
 class ListDisplay(AmisNode):
     """Cards deck, allows to use data source to display data items as cards, or manual"""
-    class ListItem:
+
+    class ListItem(AmisNode):
         title: str = None  # title
         titleClassName: str = None  # title class name
         subTitle: Template = None  # subtitle
@@ -1812,7 +1828,7 @@ class InputQuarterRange(FormItem):
 class Calendar(FormItem):
     """Calendar"""
 
-    class CalendarItem:
+    class CalendarItem(AmisNode):
         startTime: str  # ISO 8601 string
         endTime: str  # ISO 8601 string
         content: Union[str, int, dict] = None  # Any, static data or get data from the context
@@ -1846,7 +1862,7 @@ class InputKVS(FormItem):
     addButtonText: str = None  # default 'new field', butto text of the add button
     draggable: bool = None  # Default True, Whether to drag and drop to sort is allowed
     keyItem: Union[str, SchemaNode] = None  # key field
-    valueItems: List[str, SchemaNode] = None  # items for the key
+    valueItems: List[Union[str, SchemaNode]] = None  # items for the key
 
 
 class InputTimeRange(FormItem):
@@ -2337,7 +2353,8 @@ class QRCode(AmisNode):
 
 class Barcode(AmisNode):
     """Barcode"""
-    class Options:
+
+    class Options(AmisNode):
         format: BarcodeEnum = BarcodeEnum.auto  # The format of the barcode
         width: int = None  # default 2 width of the barcode image
         height: int = None  # default 100 height of the barcode image
@@ -2380,9 +2397,9 @@ class Progress(AmisNode):
     showLabel: bool = None  # default True, whether to show progress text
     stripe: bool = None  # default False
     animate: bool = None  # default False
-    map: Union[str, List[str], List[Dict]]= None  # progress colormap, as dict = {value:number, color:string}
+    map: Union[str, List[str], List[Dict]] = None  # progress colormap, as dict = {value:number, color:string}
     # default ['bg-danger', 'bg-warning', 'bg-info', 'bg-success', 'bg-success']
-    threshold: Union[Dict, List]= None  # default -,
+    threshold: Union[Dict, List] = None  # default -,
     # {value: template , color?: template } | List[{value: template , color?: template }]
     showThresholdText: bool = None  # default False, whether to display the threshold (scale) value
     valueTpl: str = None  # default ${value}%, custom formatted content
@@ -2422,10 +2439,11 @@ class Pagination(AmisNode):
 
 class MatrixCheckboxes(AmisNode):
     """Matrix type input box."""
-    class RowItem:
+
+    class RowItem(AmisNode):
         label: str
 
-    class ColumnItem:
+    class ColumnItem(AmisNode):
         label: str
 
     type: str = "matrix-checkboxes"
@@ -2456,6 +2474,7 @@ class WebComponent(AmisNode):
 
 class UUIDField(AmisNode):
     """Randomly generates an id that can be used to prevent repeated form submissions."""
+
     type: str = "uuid"
     name: str = None  # The field name
     length: int = None  # if set, generates short random numbers, if not set it generates a UUID
@@ -2576,16 +2595,19 @@ class Spinner(AmisNode):
 
 class TableCRUD(CRUD, Table):
     """Form Table CRUD"""
+
     mode = "table"
 
 
 class CardCRUD(CRUD, Cards):
     """Form Card CRUD"""
+
     mode = "cards"
 
 
 class ListCRUD(CRUD, ListDisplay):
     """Form Card CRUD"""
+
     mode = "list"
 
 
