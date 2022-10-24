@@ -51,7 +51,7 @@ class AmisNode(BaseAmisModel):
     visibleOn: Expression = None  # conditional display
     hiddenOn: Expression = None  # conditional display
     id: str = None
-    name: str = None
+    name: str = None  # In other components, when used as a variable map
     onEvent: dict = None
     events: Dict[str, Any] = None  # Specifies the amis behavior triggered by the component
 
