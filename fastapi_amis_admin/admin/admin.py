@@ -1098,7 +1098,7 @@ class BaseModelAction:
 
     async def fetch_item_scalars(self, item_id: List[str]) -> List[SchemaModelT]:
         # noinspection PyProtectedMember
-        return await self.admin.db.async_run_sync(self.admin._fetch_item_scalars, item_id, commit=False)
+        return await self.admin.db.async_run_sync(self.admin._fetch_item_scalars, item_id)
 
     def register_router(self):
         raise NotImplementedError

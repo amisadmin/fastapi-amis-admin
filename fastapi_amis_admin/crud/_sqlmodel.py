@@ -350,9 +350,7 @@ class SQLModelCrud(BaseCrud, SQLModelSelector):
             if isinstance(v, dict) and hasattr(obj, k):
                 # Relational attributes, nested;such as: setattr(article.content, "body", "new body")
                 self.update_item(getattr(obj, k), v)
-            elif isinstance(v, list):  # todo
-                pass
-            else:
+            elif not isinstance(v, list):
                 setattr(obj, k, v)
 
     def delete_item(self, obj: SchemaModelT) -> None:
@@ -433,16 +431,13 @@ class SQLModelCrud(BaseCrud, SQLModelSelector):
             if filters_data:
                 stmt = stmt.filter(*self.calc_filter_clause(filters_data))
             if paginator.show_total:
-                data.total = await self.db.async_execute(
-                    select(func.count("*")).select_from(stmt.subquery()),
-                    on_close_pre=lambda r: r.scalar(),
-                )
+                data.total = await self.db.async_scalar(select(func.count("*")).select_from(stmt.subquery()))
             orderBy = self._calc_ordering(paginator.orderBy, paginator.orderDir)
             if orderBy:
                 stmt = stmt.order_by(*orderBy)
             stmt = stmt.limit(perPage).offset((page - 1) * perPage)
-            data.items = await self.db.async_execute(stmt, on_close_pre=lambda r: r.all())
-            data.items = self.parser.conv_row_to_dict(data.items)
+            result = await self.db.async_execute(stmt)
+            data.items = self.parser.conv_row_to_dict(result.all())
             data.items = [self.schema_list.parse_obj(item) for item in data.items] if data.items else []
             data.query = request.query_params
             data.filters = filters_data

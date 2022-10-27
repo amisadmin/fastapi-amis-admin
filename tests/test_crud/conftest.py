@@ -5,6 +5,7 @@ import pytest
 from fastapi import FastAPI
 from httpx import AsyncClient
 from sqlmodel import SQLModel
+from starlette.middleware.base import BaseHTTPMiddleware
 
 from tests.conftest import async_db as db
 from tests.models import Article, ArticleContent, ArticleTagLink, Category, Tag, User
@@ -14,15 +15,18 @@ pytestmark = pytest.mark.asyncio
 
 @pytest.fixture
 def app() -> FastAPI:
-    return FastAPI()
+    app = FastAPI()
+    app.add_middleware(BaseHTTPMiddleware, dispatch=db.asgi_dispatch)
+    return app
 
 
 @pytest.fixture
 async def prepare_database() -> AsyncGenerator[None, None]:
-    await db.async_run_sync(SQLModel.metadata.create_all, is_session=False)
-    yield
-    await db.async_run_sync(SQLModel.metadata.drop_all, is_session=False)
-    await db.engine.dispose()
+    async with db.engine.begin() as conn:
+        await conn.run_sync(SQLModel.metadata.drop_all)
+        await conn.run_sync(SQLModel.metadata.create_all)
+        yield
+        await conn.run_sync(SQLModel.metadata.drop_all)
 
 
 @pytest.fixture

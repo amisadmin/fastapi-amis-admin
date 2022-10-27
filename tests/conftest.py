@@ -31,3 +31,16 @@ def session():
 async def async_session():
     async with async_db.session_maker() as session:
         yield session
+
+
+@pytest.fixture(autouse=True)
+def _setup_sync_db() -> Database:
+    yield sync_db
+    # Free connection pool resources
+    sync_db.close()  # type: ignore
+
+
+@pytest.fixture(autouse=True)
+async def _setup_async_db() -> AsyncDatabase:
+    yield async_db
+    await async_db.async_close()  # Free connection pool resources

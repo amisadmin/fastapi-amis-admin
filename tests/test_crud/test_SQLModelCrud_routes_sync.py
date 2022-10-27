@@ -5,6 +5,7 @@ import pytest
 from fastapi import FastAPI
 from sqlalchemy import func, insert, select
 from sqlmodel import SQLModel
+from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.testclient import TestClient
 
 from fastapi_amis_admin.crud import SQLModelCrud
@@ -17,6 +18,13 @@ def prepare_database() -> Generator[None, None, None]:
     SQLModel.metadata.create_all(db.engine)
     yield
     SQLModel.metadata.drop_all(db.engine)
+
+
+@pytest.fixture
+def app() -> FastAPI:
+    app = FastAPI()
+    app.add_middleware(BaseHTTPMiddleware, dispatch=db.asgi_dispatch)
+    return app
 
 
 @pytest.fixture
@@ -36,7 +44,8 @@ def fake_users() -> List[User]:
         }
         for i in range(1, 6)
     ]
-    db.execute(insert(User).values(data), commit=True)
+    db.session.execute(insert(User).values(data))
+    db.session.commit()
     return [User.parse_obj(item) for item in data]
 
 
@@ -81,10 +90,10 @@ def test_route_create(client: TestClient):
     data = res.json().get("data")
     assert data["id"] > 0
     assert data["username"] == "create"
-    result = db.get(User, data["id"])
-    assert result.id == data["id"], result
-    db.delete(result)
-
+    user = db.session.get(User, data["id"])
+    assert user.id == data["id"], user
+    db.session.delete(user)
+    db.session.commit()
     # create bulk
     count = 3
     users = [
@@ -99,8 +108,8 @@ def test_route_create(client: TestClient):
     res = client.post("/user/item", json=users)
     assert res.json()["data"] == count
     stmt = select(func.count(User.id))
-    result = db.scalar(stmt)
-    assert result == count
+    user = db.session.scalar(stmt)
+    assert user == count
 
 
 def test_route_read(client: TestClient, fake_users):
@@ -122,14 +131,15 @@ def test_route_update(client: TestClient, fake_users):
     res = client.put("/user/item/1", json={"username": "new_name"})
     count = res.json()["data"]
     assert count == 1
-    user = db.get(User, 1)
+    user = db.session.get(User, 1)
     assert user.username == "new_name"
     # update bulk
     res = client.put("/user/item/1,2,4", json={"password": "new_password"})
     count = res.json()["data"]
     assert count == 3
-
-    for user in db.scalars_all(select(User).where(User.id.in_([1, 2, 4]))):
+    db.session.expire_all()  # Make the instance expire, because when creating the user,
+    # the user object attributes have been cached, so you need to expire.
+    for user in db.session.scalars(select(User).where(User.id.in_([1, 2, 4]))):
         assert user.password == "new_password"
 
 

@@ -49,9 +49,12 @@ async def test_route_create(async_client: AsyncClient):
     data = res.json().get("data")
     assert data["id"] > 0
     assert data["username"] == "User"
-    result = await db.get(User, data["id"])
-    assert result.id == data["id"], result
-    await db.delete(result)
+    user = await db.session.get(User, data["id"])
+    assert user.id == data["id"], user
+    await db.session.delete(user)
+    # await db.session.flush()  # If flush is used here, the sqlite database is locked, causing subsequent tests to fail
+    await db.session.commit()  # Commit transaction, delete data
+
     # create bulk
     count = 3
     users = [
@@ -89,13 +92,14 @@ async def test_route_update(async_client: AsyncClient, fake_users):
     res = await async_client.put("/user/item/1", json={"username": "new_name"})
     count = res.json()["data"]
     assert count == 1
-    user = await db.get(User, 1)
+    user = await db.session.get(User, 1)
     assert user.username == "new_name"
     # update bulk
     res = await async_client.put("/user/item/1,2,4", json={"password": "new_password"})
     count = res.json()["data"]
     assert count == 3
-    for user in await db.scalars_all(select(User).where(User.id.in_([1, 2, 4]))):
+    db.session.expire_all()
+    for user in await db.session.scalars(select(User).where(User.id.in_([1, 2, 4]))):
         assert user.password == "new_password"
 
 

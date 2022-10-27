@@ -1,5 +1,5 @@
 import datetime
-from typing import Any, Iterable, Type, Union
+from typing import Any, Generator, Iterable, Type, TypeVar, Union
 
 from pydantic import BaseModel, Json
 from pydantic.fields import ModelField
@@ -19,6 +19,8 @@ from fastapi_amis_admin.amis.components import (
 from fastapi_amis_admin.amis.constants import LabelEnum
 from fastapi_amis_admin.models.enums import Choices
 from fastapi_amis_admin.utils.translation import i18n as _
+
+_T = TypeVar("_T")
 
 
 class AmisParser:
@@ -189,7 +191,8 @@ class AmisParser:
             kwargs["type"] = "mapping"
             kwargs["filterable"] = {"options": [{"label": v, "value": k} for k, v in type_.choices]}
             kwargs["map"] = {
-                k: f"<span class='label label-{l}'>{v}</span>" for (k, v), l in zip(type_.choices, cyclic_generator(LabelEnum))
+                k: f"<span class='label label-{l.value}'>{v}</span>"
+                for (k, v), l in zip(type_.choices, cyclic_generator(LabelEnum))
             }
         return kwargs
 
@@ -274,7 +277,7 @@ class AmisParser:
         return extra
 
 
-def cyclic_generator(iterable: Iterable):
+def cyclic_generator(iterable: Iterable[_T]) -> Generator[_T, None, None]:
     while True:
         yield from iterable
 
