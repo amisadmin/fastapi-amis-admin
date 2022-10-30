@@ -2,10 +2,10 @@ import datetime
 from functools import lru_cache
 from typing import Any, Callable, Dict, Iterable, List, Optional, Tuple, Type, Union
 
+from fastapi.utils import create_cloned_field
 from pydantic import BaseConfig
 from pydantic.datetime_parse import parse_date, parse_datetime
 from pydantic.fields import FieldInfo, ModelField
-from pydantic.utils import smart_deepcopy
 from sqlalchemy import Column
 from sqlalchemy.engine import Row
 from sqlalchemy.orm import InstrumentedAttribute
@@ -37,8 +37,8 @@ class ModelFieldProxy:
     def __setattr__(self, key, value):
         self.__dict__["_update"][key] = value
 
-    def new_model_field(self):
-        modelfield = smart_deepcopy(self.__dict__["_modelfield"])
+    def cloned_field(self):
+        modelfield = create_cloned_field(self.__dict__["_modelfield"])
         for k, v in self.__dict__["_update"].items():
             setattr(modelfield, k, v)
         return modelfield
@@ -51,11 +51,11 @@ class SQLModelFieldParser:
     def __init__(self, default_model: Type[SQLModel]):
         self.default_model = default_model
 
-    def get_modelfield(self, field: Union[ModelField, SQLModelField, Label], deepcopy: bool = False) -> Optional[ModelFieldType]:
+    def get_modelfield(self, field: Union[ModelField, SQLModelField, Label], clone: bool = False) -> Optional[ModelFieldType]:
         """Get pydantic ModelField from sqlmodel field.
         Args:
             field:  ModelField, SQLModelField or Label
-            deepcopy:  Whether to return a copy of the original ModelField.
+            clone:  Whether to return a cloned of the original ModelField.
 
         Returns:  pydantic ModelField or ModelFieldProxy.
         """
@@ -77,7 +77,7 @@ class SQLModelFieldParser:
         if not modelfield:
             return None
         field_proxy = ModelFieldProxy(modelfield, update=update)
-        return field_proxy.new_model_field() if deepcopy else field_proxy
+        return field_proxy.cloned_field() if clone else field_proxy
 
     def get_column(self, field: SQLModelField) -> Optional[Column]:
         """sqlalchemy Column"""

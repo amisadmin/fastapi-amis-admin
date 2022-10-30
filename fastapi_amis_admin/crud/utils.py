@@ -2,10 +2,10 @@ from enum import Enum
 from typing import Any, Dict, Iterable, List, Set, Type, Union
 
 from fastapi.params import Path
+from fastapi.utils import create_cloned_field
 from pydantic import BaseConfig, BaseModel, Extra
 from pydantic.fields import ModelField
 from pydantic.main import ModelMetaclass
-from pydantic.utils import smart_deepcopy
 from sqlalchemy.engine import Engine
 from sqlalchemy.ext.asyncio import AsyncEngine
 from sqlalchemy_database import AsyncDatabase, Database
@@ -32,12 +32,12 @@ def schema_create_by_schema(
     set_none: bool = False,
     **kwargs,
 ) -> Type[BaseModel]:
-    schema_fields = smart_deepcopy(schema_cls.__dict__["__fields__"])
-    exclude = exclude or {}
-    include = include or {}
-    fields = {name: schema_fields[name] for name in include if name in schema_fields} or {
-        name: schema_fields[name] for name in schema_fields if name not in exclude
-    }
+    keys = set(schema_cls.__fields__.keys())
+    if include:
+        keys &= include
+    if exclude:
+        keys -= exclude
+    fields = {name: create_cloned_field(field) for name, field in schema_cls.__fields__.items() if name in keys}
     return schema_create_by_modelfield(schema_name, fields.values(), set_none=set_none, **kwargs)
 
 

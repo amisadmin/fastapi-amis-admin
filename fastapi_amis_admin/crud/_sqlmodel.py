@@ -265,7 +265,7 @@ class SQLModelCrud(BaseCrud, SQLModelSelector):
         modelfields = list(
             filter(
                 None,
-                [self.parser.get_modelfield(sqlfield, deepcopy=True) for sqlfield in self._select_entities.values()],
+                [self.parser.get_modelfield(sqlfield, clone=True) for sqlfield in self._select_entities.values()],
             )
         )
         return schema_create_by_modelfield(
@@ -279,7 +279,7 @@ class SQLModelCrud(BaseCrud, SQLModelSelector):
         if self.schema_filter:
             return self.schema_filter
         self.list_filter = self.parser.filter_insfield(self.list_filter, save_class=(Label,)) or self._select_entities.values()
-        modelfields = list(filter(None, [self.parser.get_modelfield(sqlfield, deepcopy=True) for sqlfield in self.list_filter]))
+        modelfields = list(filter(None, [self.parser.get_modelfield(sqlfield, clone=True) for sqlfield in self.list_filter]))
         # todo perfect
         for modelfield in modelfields:
             if not issubclass(modelfield.type_, (Enum, bool)) and issubclass(
@@ -302,7 +302,7 @@ class SQLModelCrud(BaseCrud, SQLModelSelector):
             return None
         self.read_fields = self.read_fields or self.schema_model.__fields__.values()
         self.read_fields = self.parser.filter_insfield(self.read_fields, save_class=(ModelField,))
-        modelfields = [self.parser.get_modelfield(ins, deepcopy=True) for ins in self.read_fields]
+        modelfields = [self.parser.get_modelfield(ins, clone=True) for ins in self.read_fields]
         return schema_create_by_modelfield(f"{self.schema_name_prefix}Read", modelfields, orm_mode=True)
 
     def _create_schema_update(self) -> Type[SchemaUpdateT]:
@@ -311,7 +311,7 @@ class SQLModelCrud(BaseCrud, SQLModelSelector):
         self.update_fields = (
             self.parser.filter_insfield(self.update_fields, save_class=(ModelField,)) or self.schema_model.__fields__.values()
         )
-        modelfields = [self.parser.get_modelfield(ins, deepcopy=True) for ins in self.update_fields]
+        modelfields = [self.parser.get_modelfield(ins, clone=True) for ins in self.update_fields]
         if self.update_exclude is None:  # deprecated in version 0.4.0
             exclude = {self.pk_name} | {
                 self.parser.get_modelfield(ins).name
@@ -330,7 +330,7 @@ class SQLModelCrud(BaseCrud, SQLModelSelector):
         modelfields = list(
             filter(
                 None,
-                [self.parser.get_modelfield(field, deepcopy=True) for field in self.create_fields],
+                [self.parser.get_modelfield(field, clone=True) for field in self.create_fields],
             )
         )
         return schema_create_by_modelfield(f"{self.schema_name_prefix}Create", modelfields)
