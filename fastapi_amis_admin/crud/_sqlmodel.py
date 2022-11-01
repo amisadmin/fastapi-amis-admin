@@ -357,6 +357,10 @@ class SQLModelCrud(BaseCrud, SQLModelSelector):
         """delete database data"""
         object_session(obj).delete(obj)
 
+    def list_item(self, values: Dict[str, Any]) -> SchemaListT:
+        """Parse the database data query result dictionary into schema_list."""
+        return self.schema_list.parse_obj(values)
+
     def _fetch_item_scalars(self, session: Session, item_id: List[str]) -> List[SchemaModelT]:
         stmt = select(self.model).where(self.pk.in_(list(map(get_python_type_parse(self.pk), item_id))))
         return session.scalars(stmt).all()
@@ -438,7 +442,7 @@ class SQLModelCrud(BaseCrud, SQLModelSelector):
             stmt = stmt.limit(perPage).offset((page - 1) * perPage)
             result = await self.db.async_execute(stmt)
             data.items = self.parser.conv_row_to_dict(result.all())
-            data.items = [self.schema_list.parse_obj(item) for item in data.items] if data.items else []
+            data.items = [self.list_item(item) for item in data.items] if data.items else []
             data.query = request.query_params
             data.filters = filters_data
             return BaseApiOut(data=data)
