@@ -64,12 +64,12 @@ def test_register_crud(client: TestClient):
     response = client.get("/openapi.json")
     # test paths
     paths = response.json()["paths"]
-    assert "/user/list" in paths
-    assert "/user/item" in paths
-    assert "/user/item/{item_id}" in paths
-    assert "/tag/list" in paths
-    assert "/tag/item" in paths
-    assert "/tag/item/{item_id}" in paths
+    assert "/User/list" in paths
+    assert "/User/item" in paths
+    assert "/User/item/{item_id}" in paths
+    assert "/Tag/list" in paths
+    assert "/Tag/item" in paths
+    assert "/Tag/item/{item_id}" in paths
 
     # test schemas
     schemas = response.json()["components"]["schemas"]
@@ -86,7 +86,7 @@ def test_register_crud(client: TestClient):
 def test_route_create(client: TestClient):
     # create one
     body = {"username": "create", "password": "password"}
-    res = client.post("/user/item", json=body)
+    res = client.post("/User/item", json=body)
     data = res.json().get("data")
     assert data["id"] > 0
     assert data["username"] == "create"
@@ -105,7 +105,7 @@ def test_route_create(client: TestClient):
         }
         for i in range(1, count + 1)
     ]
-    res = client.post("/user/item", json=users)
+    res = client.post("/User/item", json=users)
     assert res.json()["data"] == count
     stmt = select(func.count(User.id))
     user = db.session.scalar(stmt)
@@ -114,12 +114,12 @@ def test_route_create(client: TestClient):
 
 def test_route_read(client: TestClient, fake_users):
     # read one
-    res = client.get("/user/item/1")
+    res = client.get("/User/item/1")
     user = res.json()["data"]
     assert user["id"] == 1
     assert user["username"] == "User_1"
     # read bulk
-    res = client.get("/user/item/1,2,4")
+    res = client.get("/User/item/1,2,4")
     users = res.json()["data"]
     assert len(users) == 3
     assert users[0]["username"] == "User_1"
@@ -128,13 +128,13 @@ def test_route_read(client: TestClient, fake_users):
 
 def test_route_update(client: TestClient, fake_users):
     # update one
-    res = client.put("/user/item/1", json={"username": "new_name"})
+    res = client.put("/User/item/1", json={"username": "new_name"})
     count = res.json()["data"]
     assert count == 1
     user = db.session.get(User, 1)
     assert user.username == "new_name"
     # update bulk
-    res = client.put("/user/item/1,2,4", json={"password": "new_password"})
+    res = client.put("/User/item/1,2,4", json={"password": "new_password"})
     count = res.json()["data"]
     assert count == 3
     db.session.expire_all()  # Make the instance expire, because when creating the user,
@@ -145,13 +145,13 @@ def test_route_update(client: TestClient, fake_users):
 
 def test_route_delete(client: TestClient, fake_users):
     # delete one
-    res = client.delete("/user/item/1")
+    res = client.delete("/User/item/1")
     count = res.json()["data"]
     assert count == 1
     user = db.get(User, 1)
     assert user is None
     # delete bulk
-    res = client.delete("/user/item/2,4")
+    res = client.delete("/User/item/2,4")
     count = res.json()["data"]
     assert count == 2
     assert db.get(User, 2) is None
@@ -160,29 +160,29 @@ def test_route_delete(client: TestClient, fake_users):
 
 def test_route_list(client: TestClient, fake_users):
     # list
-    res = client.post("/user/list")
+    res = client.post("/User/list")
     items = res.json()["data"]["items"]
     assert len(items) == 5
 
-    res = client.post("/user/list", json={"id": 1})
+    res = client.post("/User/list", json={"id": 1})
     items = res.json()["data"]["items"]
     assert items[0]["id"] == 1
 
-    res = client.post("/user/list", json={"username": "User_1"})
+    res = client.post("/User/list", json={"username": "User_1"})
     items = res.json()["data"]["items"]
     assert items[0]["username"] == "User_1"
 
-    res = client.post("/user/list", json={"id": "[>]1"})
+    res = client.post("/User/list", json={"id": "[>]1"})
     assert len(res.json()["data"]["items"]) == 4
 
-    res = client.post("/user/list", json={"id": "[*]1,3"})
+    res = client.post("/User/list", json={"id": "[*]1,3"})
     assert len(res.json()["data"]["items"]) == 2
 
-    res = client.post("/user/list", json={"id": "[-]2,3"})
+    res = client.post("/User/list", json={"id": "[-]2,3"})
     assert len(res.json()["data"]["items"]) == 2
 
-    res = client.post("/user/list", json={"username": "[~]User_%"})
+    res = client.post("/User/list", json={"username": "[~]User_%"})
     assert len(res.json()["data"]["items"]) == 5
 
-    res = client.post("/user/list", json={"create_time": "[-]2022-01-02 00:00:00,2022-01-04 01:00:00"})
+    res = client.post("/User/list", json={"create_time": "[-]2022-01-02 00:00:00,2022-01-04 01:00:00"})
     assert len(res.json()["data"]["items"]) == 3

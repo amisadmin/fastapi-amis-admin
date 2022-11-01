@@ -23,12 +23,12 @@ async def test_register_crud(async_client: AsyncClient):
     response = await async_client.get("/openapi.json")
     # test paths
     paths = response.json()["paths"]
-    assert "/user/list" in paths
-    assert "/user/item" in paths
-    assert "/user/item/{item_id}" in paths
-    assert "/tag/list" in paths
-    assert "/tag/item" in paths
-    assert "/tag/item/{item_id}" in paths
+    assert "/User/list" in paths
+    assert "/User/item" in paths
+    assert "/User/item/{item_id}" in paths
+    assert "/Tag/list" in paths
+    assert "/Tag/item" in paths
+    assert "/Tag/item/{item_id}" in paths
 
     # test schemas
     schemas = response.json()["components"]["schemas"]
@@ -45,7 +45,7 @@ async def test_register_crud(async_client: AsyncClient):
 async def test_route_create(async_client: AsyncClient):
     # create one
     body = {"username": "User", "password": "password"}
-    res = await async_client.post("/user/item", json=body)
+    res = await async_client.post("/User/item", json=body)
     data = res.json().get("data")
     assert data["id"] > 0
     assert data["username"] == "User"
@@ -66,7 +66,7 @@ async def test_route_create(async_client: AsyncClient):
         }
         for i in range(1, count + 1)
     ]
-    res = await async_client.post("/user/item", json=users)
+    res = await async_client.post("/User/item", json=users)
     assert res.json()["data"] == count
     stmt = select(func.count(User.id))
     result = await db.scalar(stmt)
@@ -75,12 +75,12 @@ async def test_route_create(async_client: AsyncClient):
 
 async def test_route_read(async_client: AsyncClient, fake_users):
     # read one
-    res = await async_client.get("/user/item/1")
+    res = await async_client.get("/User/item/1")
     user = res.json()["data"]
     assert user["id"] == 1
     assert user["username"] == "User_1"
     # read bulk
-    res = await async_client.get("/user/item/1,2,4")
+    res = await async_client.get("/User/item/1,2,4")
     users = res.json()["data"]
     assert len(users) == 3
     assert users[0]["username"] == "User_1"
@@ -89,13 +89,13 @@ async def test_route_read(async_client: AsyncClient, fake_users):
 
 async def test_route_update(async_client: AsyncClient, fake_users):
     # update one
-    res = await async_client.put("/user/item/1", json={"username": "new_name"})
+    res = await async_client.put("/User/item/1", json={"username": "new_name"})
     count = res.json()["data"]
     assert count == 1
     user = await db.session.get(User, 1)
     assert user.username == "new_name"
     # update bulk
-    res = await async_client.put("/user/item/1,2,4", json={"password": "new_password"})
+    res = await async_client.put("/User/item/1,2,4", json={"password": "new_password"})
     count = res.json()["data"]
     assert count == 3
     db.session.expire_all()
@@ -105,13 +105,13 @@ async def test_route_update(async_client: AsyncClient, fake_users):
 
 async def test_route_delete(async_client: AsyncClient, fake_users):
     # delete one
-    res = await async_client.delete("/user/item/1")
+    res = await async_client.delete("/User/item/1")
     count = res.json()["data"]
     assert count == 1
     user = await db.get(User, 1)
     assert user is None
     # delete bulk
-    res = await async_client.delete("/user/item/2,4")
+    res = await async_client.delete("/User/item/2,4")
     count = res.json()["data"]
     assert count == 2
     assert await db.get(User, 2) is None
@@ -120,29 +120,29 @@ async def test_route_delete(async_client: AsyncClient, fake_users):
 
 async def test_route_list(async_client: AsyncClient, fake_users):
     # list
-    res = await async_client.post("/user/list")
+    res = await async_client.post("/User/list")
     items = res.json()["data"]["items"]
     assert len(items) == 5
 
-    res = await async_client.post("/user/list", json={"id": 1})
+    res = await async_client.post("/User/list", json={"id": 1})
     items = res.json()["data"]["items"]
     assert items[0]["id"] == 1
 
-    res = await async_client.post("/user/list", json={"username": "User_1"})
+    res = await async_client.post("/User/list", json={"username": "User_1"})
     items = res.json()["data"]["items"]
     assert items[0]["username"] == "User_1"
 
-    res = await async_client.post("/user/list", json={"id": "[>]1"})
+    res = await async_client.post("/User/list", json={"id": "[>]1"})
     assert len(res.json()["data"]["items"]) == 4
 
-    res = await async_client.post("/user/list", json={"id": "[*]1,3"})
+    res = await async_client.post("/User/list", json={"id": "[*]1,3"})
     assert len(res.json()["data"]["items"]) == 2
 
-    res = await async_client.post("/user/list", json={"id": "[-]2,3"})
+    res = await async_client.post("/User/list", json={"id": "[-]2,3"})
     assert len(res.json()["data"]["items"]) == 2
 
-    res = await async_client.post("/user/list", json={"username": "[~]User_%"})
+    res = await async_client.post("/User/list", json={"username": "[~]User_%"})
     assert len(res.json()["data"]["items"]) == 5
 
-    res = await async_client.post("/user/list", json={"create_time": "[-]2022-01-02 00:00:00,2022-01-04 01:00:00"})
+    res = await async_client.post("/User/list", json={"create_time": "[-]2022-01-02 00:00:00,2022-01-04 01:00:00"})
     assert len(res.json()["data"]["items"]) == 3

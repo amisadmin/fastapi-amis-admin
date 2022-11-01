@@ -115,7 +115,7 @@ class LinkModelForm:
         self.item_col = item_col
         assert self.item_col is not None, "item_col is None"
         assert self.link_col is not None, "link_col is None"
-        self.path = f"/{self.display_admin.model.__name__.lower()}"
+        self.path = f"/{self.display_admin.model.__name__}"
 
     @classmethod
     def bind_model_admin(cls, pk_admin: "BaseModelAdmin", insfield: InstrumentedAttribute) -> Optional["LinkModelForm"]:
@@ -833,7 +833,7 @@ class PageAdmin(PageSchemaAdmin, RouterAdmin):
     def __init__(self, app: "AdminApp"):
         RouterAdmin.__init__(self, app)
         if self.page_path is None:
-            self.page_path = f"/{self.__class__.__module__}/{self.__class__.__name__.lower()}"
+            self.page_path = f"/{self.__class__.__module__}/{self.__class__.__name__}"
         PageSchemaAdmin.__init__(self, app)
 
     async def page_permission_depend(self, request: Request) -> bool:
@@ -1033,8 +1033,8 @@ class ModelAdmin(BaseModelAdmin, PageAdmin):
     @property
     def router_prefix(self):
         if issubclass(self.__class__.__base__, ModelAdmin):
-            return f"/{self.__class__.__name__.lower()}"
-        return f"/{self.model.__name__.lower()}"
+            return f"/{self.__class__.__name__}"
+        return f"/{self.model.__name__}"
 
     def register_router(self):
         for form in self.link_model_forms:
@@ -1248,7 +1248,7 @@ class AdminApp(PageAdmin, AdminGroup):
 
     @property
     def router_prefix(self):
-        return f"/{self.__class__.__name__.lower()}"
+        return f"/{self.__class__.__name__}"
 
     def get_admin_or_create(self, admin_cls: Type[_BaseAdminT], register: bool = True) -> Optional[_BaseAdminT]:
         if admin_cls not in self._registered and (not register or self.__register_lock):
