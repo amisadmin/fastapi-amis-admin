@@ -22,7 +22,7 @@ class Settings(BaseSettings):
     database_url: str = Field("", env="DATABASE_URL")
     language: Union[Literal["zh_CN", "en_US", "de_DE"], str] = ""
     amis_cdn: str = "https://unpkg.com"
-    amis_pkg: str = "amis@2.3.1"
+    amis_pkg: str = "amis@2.4.0"
     amis_theme: Literal["cxd", "antd", "dark", "ang"] = "cxd"
     amis_image_receiver: API = None  # Image upload interface
     amis_file_receiver: API = None  # File upload interface
@@ -43,4 +43,4 @@ class Settings(BaseSettings):
 
     @validator("amis_image_receiver", "amis_file_receiver", pre=True)
     def valid_receiver(cls, v, values):
-        return v if v else f"post:{values.get('root_path', '')}/file/upload"
+        return v or f"post:{values.get('root_path', '')}/file/upload"
