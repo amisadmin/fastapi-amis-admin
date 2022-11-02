@@ -62,7 +62,9 @@ class SQLModelFieldParser:
         modelfield = None
         update = {}
         if isinstance(field, InstrumentedAttribute):
-            modelfield = field.class_.__fields__[field.key]
+            modelfield = field.class_.__fields__.get(field.key, None)
+            if not modelfield:  # Maybe it's a declared_attr or column_property.
+                return None
             if field.class_ is not self.default_model:
                 update = {
                     "name": self.get_name(field),
