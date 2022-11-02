@@ -142,6 +142,7 @@ def test_field_list():
     class User(BaseModel):
         tags: List[str] = Field([], title="标签")
         email: List[str] = Field([], title="邮箱列表", amis_form_item=amis.InputArray(items=amis.InputText(type="input-email")))
+        names: list = Field([], title="姓名列表")
 
     # test tags
     modelfield = User.__fields__["tags"]
@@ -164,6 +165,31 @@ def test_field_list():
     assert formitem.type == "input-array"
     assert formitem.name == "email"
     assert formitem.items.type == "input-email"  # type: ignore
+
+    # test names
+    modelfield = User.__fields__["names"]
+    assert modelfield.type_ == list
+    assert modelfield.outer_type_ is list
+    # formitem
+    formitem = amis_parser.as_form_item(modelfield)
+    assert formitem.type == "input-array"
+    assert formitem.name == "names"
+
+
+def test_field_dict():
+    class User(BaseModel):
+        data: dict = Field({}, title="数据")
+
+    modelfield = User.__fields__["data"]
+    assert modelfield.type_ == dict
+    assert modelfield.outer_type_ is dict
+    # formitem
+    formitem = amis_parser.as_form_item(modelfield)
+    assert formitem.type == "json-editor"
+    assert formitem.name == "data"
+    column = amis_parser.as_table_column(modelfield)
+    assert column.type == "json"
+    assert column.label == "数据"
 
 
 def test_field_model():

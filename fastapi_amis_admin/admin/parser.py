@@ -142,7 +142,9 @@ class AmisParser:
     def _get_form_item_from_kwargs(self, modelfield: ModelField, is_filter: bool = False) -> FormItem:
         formitem = self.get_field_amis_extra(modelfield, ["amis_form_item", "amis_filter_item"][is_filter])
         # List type parse to InputArray
-        if modelfield.outer_type_ and get_origin(modelfield.outer_type_) is list:
+        if issubclass(modelfield.type_, (list, set)) or (
+            modelfield.outer_type_ and get_origin(modelfield.outer_type_) in {list, set}
+        ):
             if not isinstance(formitem, FormItem):
                 formitem = InputArray(**formitem)
             # Parse the internal type of the list.
@@ -194,6 +196,11 @@ class AmisParser:
                 k: f"<span class='label label-{l.value}'>{v}</span>"
                 for (k, v), l in zip(type_.choices, cyclic_generator(LabelEnum))
             }
+        elif issubclass(type_, (dict, Json)):
+            kwargs["type"] = "json"
+        elif issubclass(type_, (list, set)):
+            kwargs["type"] = "each"
+            kwargs["items"] = {"type": "tpl", "tpl": "<span class='label label-info m-l-sm'><%= this.item %></span>"}
         return kwargs
 
     def get_field_amis_form_item_type(self, type_: Any, is_filter: bool, required: bool = False) -> dict:
@@ -244,7 +251,7 @@ class AmisParser:
         elif issubclass(type_, datetime.time):
             kwargs["type"] = "input-time"
             kwargs["format"] = "HH:mm:ss"
-        elif issubclass(type_, Json):
+        elif issubclass(type_, (dict, Json)):
             kwargs["type"] = "json-editor"
         elif issubclass(type_, BaseModel):
             # pydantic model parse to InputSubForm

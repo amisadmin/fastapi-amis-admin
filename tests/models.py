@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import List, Optional
 
-from sqlalchemy import Column, String, Text
+from sqlalchemy import JSON, Column, String, Text
 from sqlmodel import Field, Relationship, SQLModel
 
 
@@ -19,6 +19,8 @@ class User(PkModelMixin, CreateTimeModelMixin, table=True):
         sa_column=Column(String(100), unique=True, index=True, nullable=False),
     )
     password: str = Field(default="", title="Password")
+    address: List[str] = Field(None, title="Address", sa_column=Column(JSON))
+    attach: dict = Field(None, title="Attach", sa_column=Column(JSON))
 
     articles: List["Article"] = Relationship(back_populates="user")
 

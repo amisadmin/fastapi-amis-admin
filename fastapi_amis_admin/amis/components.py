@@ -2162,7 +2162,7 @@ class TableColumn(AmisNode):
     """Column configuration"""
 
     type: str = None  # Literal['text','audio','image','link','tpl','mapping','carousel','date',
-    # 'progress','status','switch','list','json','operation']
+    # 'progress','status','switch','list','json','operation','tag']
     label: Template = None  # header text content
     name: str = None  # Associate data by name
     tpl: Template = None  # Template
