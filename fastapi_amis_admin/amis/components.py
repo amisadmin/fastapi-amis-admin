@@ -566,12 +566,28 @@ class Validation(BaseAmisModel):
 class FormItem(AmisNode):
     """Form item common"""
 
+    class AutoFill(BaseAmisModel):
+        showSuggestion: bool = None  # true refers to input, false automatically fills
+        api: API = None  # Automatically populate the interface/filter the CRUD request configuration with reference to entry
+        silent: bool = None  # Whether to display a data format error message. The default value is true
+        fillMappinng: SchemaNode = None  # Auto-fill/reference input data mapping configuration, key-value pair form,
+        # value support variable acquisition and expression
+        trigger: str = None  # ShowSuggestion to true, the reference input support way of trigger,
+        # currently supports change "value change" | focus "form focus"
+        mode: str = None  # When showSuggestion is true, refer to the popOver mode: dialog, drawer, popOver
+        labelField: str = None  # When showSuggestion is true, set the popup dialog,drawer,popOver picker's labelField
+        position: str = None  # If showSuggestion is true, set the popOver location as shown in the input mode Popover
+        size: str = None  # If showSuggestion is true, set the value as shown in dialog mode
+        columns: List["TableColumn"] = None  # When showSuggestion is true, the data display column configuration
+        filter: SchemaNode = None  # When showSuggestion is true, data query filter condition
+
     type: str = "input-text"  # Specify the form item type
     className: str = None  # The outermost class name of the form
     inputClassName: str = None  # Form controller class name
     labelClassName: str = None  # class name of label
     name: str = None  # Field name, specifying the key when the form item is submitted
     label: Template = None  # form item label template or false
+    labelAlign: str = None  # "right" # Form item label alignment, default right alignment, only effective when mode is
     value: Union[int, str] = None  # field value
     labelRemark: "Remark" = None  # Form item label description
     description: Template = None  # Form item description
@@ -586,8 +602,15 @@ class FormItem(AmisNode):
     requiredOn: Expression = None  # Use an expression to configure whether the current form item is required.
     validations: Union[Validation, Expression] = None  # Validation of the form item value format, multiple settings
     # are supported, and multiple rules are separated by commas.
-    validateApi: Expression = None  # Form validation interface
+    validateApi: API = None  # Form validation interface
     copyable: Union[bool, dict] = None  # whether to copy boolean or {icon: string, content:string}
+    autoFill: AutoFill = None  # Data entry configuration, automatic filling or reference entry
+    static: bool = None  # 2.4.0 Whether the current form item is static display,
+    # the current support static display of the form item
+    staticClassName: str = None  # 2.4.0 The class name for static display
+    staticLabelClassName: str = None  # 2.4.0 The class name of the Label for static display
+    staticInputClassName: str = None  # 2.4.0 The class name of value when static display
+    staticSchema: Union[str, list] = None  # SchemaNode
 
 
 class ButtonGroupSelect(FormItem):
@@ -696,6 +719,13 @@ class Form(AmisNode):
     # the page.
     columnCount: int = None  # The form item is displayed as several columns
     debug: bool = None
+    inheritData: bool = None  # true # The default form is to create its own data field in the form of a data link,
+    # and only the data in this data field will be sent when the form is submitted. If you want to share the
+    # upper layer data field, you can set this attribute to false, so that the data in the upper layer data field
+    # does not need to be sent in the form with hidden fields or explicit mapping.
+    static: bool = None  # false # 2.4.0. The entire form is displayed statically.
+    # For details, please refer to the:https://aisuda.bce.baidu.com/amis/examples/form/switchDisplay.
+    staticClassName: str = None  # 2.4.0. The name of the class used when the form is statically displayed
 
 
 class InputSubForm(FormItem):
@@ -1330,6 +1360,7 @@ class Static(FormItem):
     """Static display/label"""
 
     type: str = "static"  # Support to display other non-form item components static-json|static-datetime by
+
     # configuring type as static-xxx
 
     class Json(FormItem):
@@ -2498,7 +2529,7 @@ class Sparkline(AmisNode):
 class Tag(AmisNode):
     type: str = "tag"
     className: str = None  # Custom CSS style class name
-    displayMode: Literal["normal", "rounded", "status"] = "normal"  # Presentation mode
+    displayMode: Literal["normal", "rounded", "status"] = "normal"  # Display mode
     closable: bool = None  # default False, show close icon
     color: str = None  # color theme or custom color value,
     # 'active' | 'inactive' | 'error' | 'success' | 'processing' | 'warning'
