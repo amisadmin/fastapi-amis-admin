@@ -595,6 +595,7 @@ class BaseModelAdmin(SQLModelCrud):
             name=CrudEnum.read,
             body=await self._conv_modelfields_to_formitems(request, self.schema_read.__fields__.values(), CrudEnum.read),
             submitText=None,
+            static=True,
         )
 
     async def get_read_action(self, request: Request) -> Optional[Action]:
