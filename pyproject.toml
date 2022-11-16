@@ -50,31 +50,28 @@ Source = "https://github.com/amisadmin/fastapi_amis_admin"
 
 [project.optional-dependencies]
 standard = [
-    "uvicorn[standard] >=0.12.0,<0.16.0",
+    "uvicorn[standard] >=0.19.0,<1.0",
     "fastapi-amis-admin-cli>=0.1.0,<0.2.0",
 ]
 test = [
+    "fastapi-amis-admin[standard]",
     "pytest >=6.2.4,<7.0.0",
-    "aiosqlite",
+    "aiosqlite>=0.15.0",
     "pytest-asyncio>=0.17",
-    "httpx",
+    "httpx>=0.23.0,<1.0",
     "jinja2 >=2.11.2,<4.0.0",
+    "ujson>=4.0.1",
+    "requests>=2.28.1",
 ]
 dev = [
-    "jinja2 >=2.11.2,<4.0.0",
-    "aiosqlite",
-    "uvicorn[standard] >=0.12.0,<0.16.0",
-    "fastapi-amis-admin-cli>=0.1.0,<0.2.0",
+    "fastapi-amis-admin[test]",
     "pre-commit>=2.20.0",
 ]
 cli = [
     "fastapi-amis-admin-cli>=0.1.0,<0.2.0",
 ]
 all = [
-    "jinja2 >=2.11.2,<4.0.0",
-    "uvicorn[standard] >=0.12.0,<0.16.0",
-    "ujson>=4.0.1",
-    "fastapi-amis-admin-cli>=0.1.0,<0.2.0",
+    "fastapi-amis-admin[dev]",
 ]
 
 # pytest
