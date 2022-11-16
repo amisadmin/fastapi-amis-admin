@@ -457,7 +457,7 @@ class BaseModelAdmin(SQLModelCrud):
             ],
             columns=await self.get_list_columns(request),
             primaryField=self.pk_name,
-            quickSaveItemApi=f"put:{self.router_path}/item/" + "${id}",
+            quickSaveItemApi=f"put:{self.router_path}/item/${self.pk_name}",
         )
         if self.link_model_forms:
             table.footable = True
