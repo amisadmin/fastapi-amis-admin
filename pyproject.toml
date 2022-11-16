@@ -58,6 +58,7 @@ test = [
     "aiosqlite",
     "pytest-asyncio>=0.17",
     "httpx",
+    "jinja2 >=2.11.2,<4.0.0",
 ]
 dev = [
     "jinja2 >=2.11.2,<4.0.0",
