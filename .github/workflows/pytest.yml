@@ -37,7 +37,7 @@ jobs:
         if: steps.cache.outputs.cache-hit != 'true'
         run: pip install --user pdm
 
-      - name: Install Dev Dependencies
+      - name: Install Test Dependencies
         if: steps.cache.outputs.cache-hit != 'true'
         run: |
           python -m pip install -U setuptools
