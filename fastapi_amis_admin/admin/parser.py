@@ -173,7 +173,7 @@ class AmisParser:
     def get_field_amis_table_column_type(self, type_: Type) -> dict:
         """Get amis table column type from pydantic model field type."""
         kwargs = {}
-        if type_ in [str, Any]:
+        if type_ in {str, Any}:
             pass
         elif issubclass(type_, bool):
             kwargs["type"] = "switch"
@@ -206,7 +206,7 @@ class AmisParser:
     def get_field_amis_form_item_type(self, type_: Any, is_filter: bool, required: bool = False) -> dict:
         """Get amis form item type from pydantic model field type."""
         kwargs = {}
-        if type_ in [str, Any]:
+        if type_ in {str, Any}:
             kwargs["type"] = "input-text"
         elif issubclass(type_, Choices):
             kwargs.update(
@@ -241,6 +241,7 @@ class AmisParser:
             kwargs["validations"] = Validation(isInt=True)
         elif issubclass(type_, float):
             kwargs["type"] = "input-number"
+            kwargs["precision"] = 3
             kwargs["validations"] = Validation(isFloat=True)
         elif issubclass(type_, datetime.datetime):
             kwargs["type"] = "input-datetime"
