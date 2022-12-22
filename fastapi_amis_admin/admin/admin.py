@@ -845,7 +845,7 @@ class PageAdmin(PageSchemaAdmin, RouterAdmin):
             status_code=status.HTTP_307_TEMPORARY_REDIRECT,
             detail="No page permissions",
             headers={
-                "location": f"{self.app.site.router_path}/auth/form/login?redirect={request.url}",
+                "location": f"{self.app.site.router_path}/auth/form/login?redirect={request.url.path}",
             },
         )
 
