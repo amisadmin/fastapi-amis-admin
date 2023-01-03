@@ -20,6 +20,7 @@ from pydantic import Extra, Json
 from pydantic.fields import ModelField
 from pydantic.utils import ValueItems
 from sqlalchemy import Column, Table, func
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.future import select
 from sqlalchemy.orm import InstrumentedAttribute, Session, object_session
 from sqlalchemy.sql import Select
@@ -467,6 +468,8 @@ class SQLModelCrud(BaseCrud, SQLModelSelector):
             try:
                 result = await self.db.async_run_sync(self._create_items, items=items)
             except Exception as error:
+                if isinstance(error, IntegrityError):
+                    await self.db.rollback()
                 return self.error_execute_sql(request=request, error=error)
             return BaseApiOut(data=result)
 
