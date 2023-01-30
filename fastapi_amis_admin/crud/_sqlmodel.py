@@ -127,7 +127,7 @@ class SQLModelSelector(Generic[SchemaModelT]):
         return select(*self._select_entities.values())
 
     def _calc_ordering(self, orderBy, orderDir):
-        sqlfield = self._select_entities.get(orderBy) or self._filter_entities.get(orderBy)
+        sqlfield = self._select_entities.get(orderBy, self._filter_entities.get(orderBy))
         order = None
         if sqlfield is not None:
             order = sqlfield.desc() if orderDir == "desc" else sqlfield.asc()
