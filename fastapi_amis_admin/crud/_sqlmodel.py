@@ -278,8 +278,8 @@ class SQLModelCrud(BaseCrud, SQLModelSelector):
     def _create_schema_filter(self) -> Type[SchemaFilterT]:
         if self.schema_filter:
             return self.schema_filter
-        self.list_filter = self.parser.filter_insfield(self.list_filter, save_class=(Label,)) or self._select_entities.values()
-        modelfields = list(filter(None, [self.parser.get_modelfield(sqlfield, clone=True) for sqlfield in self.list_filter]))
+        list_filter = self.parser.filter_insfield(self.list_filter, save_class=(Label,)) or self._select_entities.values()
+        modelfields = list(filter(None, [self.parser.get_modelfield(sqlfield, clone=True) for sqlfield in list_filter]))
         # todo perfect
         for modelfield in modelfields:
             if not issubclass(modelfield.type_, (Enum, bool)) and issubclass(

@@ -410,9 +410,12 @@ class BaseModelAdmin(SQLModelCrud):
             if alias:
                 data[alias] = f"[~]${alias}"
         for field in await self.get_list_filter(request):
-            modelfield = self.parser.get_modelfield(field)
-            if modelfield and issubclass(modelfield.type_, (datetime.datetime, datetime.date, datetime.time)):
-                data[modelfield.alias] = f"[-]${modelfield.alias}"
+            if isinstance(field, FormItem):
+                data[field.name] = f"${field.name}"
+            else:
+                modelfield = self.parser.get_modelfield(field)
+                if modelfield and issubclass(modelfield.type_, (datetime.datetime, datetime.date, datetime.time)):
+                    data[modelfield.alias] = f"[-]${modelfield.alias}"
         return AmisAPI(
             method="POST",
             url=f"{self.router_path}/list?" + "page=${page}&perPage=${perPage}&orderBy=${orderBy}&orderDir=${orderDir}",
