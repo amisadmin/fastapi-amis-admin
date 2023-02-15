@@ -13,7 +13,7 @@
     ${theme_css}
     <script src="${cdn}/${pkg}/sdk/sdk.js"></script>
     <script src="${cdn}/vue@2.6.14/dist/vue.js"></script>
-    <script src="${cdn}/history@4.10.1/umd/history.js"></script>
+    <script src="${cdn}/history/umd/history.production.min.js"></script>
     <style>
         html, body,
         .app-wrapper {
@@ -39,8 +39,8 @@
         const match = amisRequire('path-to-regexp').match;
 
         // 如果想用 browserHistory 请切换下这处代码, 其他不用变
-        // const history = History.createBrowserHistory();
-        const history = History.createHashHistory();
+        // const history = HistoryLibrary.createBrowserHistory();
+        const history = HistoryLibrary.createHashHistory();
         const app = ${AmisSchemaJson};
 
         function normalizeLink(to, location = history.location) {
@@ -152,6 +152,10 @@
                         to === history.location.href
                     ) {
                         // do nothing
+                    } else if (location.hash && to.indexOf("?") > -1) {
+                        //如果当前页面有hash，且跳转的页面有参数，将hash拼接到参数后面
+                        const [hash, search] = to.split("?");
+                        window.location.href = location.pathname + "?" + search + "#" + hash;
                     } else {
                         history.push(to);
                     }
