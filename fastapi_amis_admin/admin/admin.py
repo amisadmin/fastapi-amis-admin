@@ -11,6 +11,7 @@ from typing import (
     List,
     NewType,
     Optional,
+    Tuple,
     Type,
     TypeVar,
     Union,
@@ -1202,6 +1203,12 @@ class AdminGroup(PageSchemaAdmin):
             group.append_child(child, group_schema=None)
             self._children.append(group)
 
+    def remove_child(self, unique_id: str) -> None:
+        self._children = [admin for admin in self._children if admin.unique_id != unique_id]
+        for admin in self._children:
+            if isinstance(admin, AdminGroup):
+                admin.remove_child(unique_id)
+
     async def get_page_schema_children(self, request: Request) -> List[PageSchema]:
         page_schema_list = []
         for child in self._children:
@@ -1221,15 +1228,15 @@ class AdminGroup(PageSchemaAdmin):
             page_schema_list.sort(key=lambda p: p.sort or 0, reverse=True)
         return page_schema_list
 
-    def get_page_schema_child(self, unique_id: str) -> Optional[_PageSchemaAdminT]:
+    def get_page_schema_child(self, unique_id: str) -> Union[Tuple[_PageSchemaAdminT, "AdminGroup"], Tuple[None, None]]:
         for child in self._children:
             if child.unique_id == unique_id:
-                return child
+                return child, self
             if isinstance(child, AdminGroup):
-                child = child.get_page_schema_child(unique_id)
+                child, parent = child.get_page_schema_child(unique_id)
                 if child:
-                    return child
-        return None
+                    return child, parent
+        return None, None
 
     def __iter__(self) -> Iterator[_PageSchemaAdminT]:
         return self._children.__iter__()
