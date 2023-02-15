@@ -1361,6 +1361,7 @@ class BaseAdminSite(AdminApp):
         fastapi: FastAPI = None,
         engine: SqlalchemyDatabase = None,
     ):
+        self.application = None
         try:
             from fastapi_user_auth.auth import Auth
 
@@ -1391,6 +1392,7 @@ class BaseAdminSite(AdminApp):
         """mount app to fastapi, the path is: site.settings.root_path.
         once mount, the site will create all registered admin instance and register router.
         """
+        self.application = fastapi
         self.register_router()
         fastapi.mount(self.settings.root_path, self.fastapi, name=name)
         fastapi.add_middleware(BaseHTTPMiddleware, dispatch=self.db.asgi_dispatch)
