@@ -1,4 +1,4 @@
-__version__ = "0.1.0"
+__version__ = "0.3.0"
 
 from ._sqlmodel import SQLModelCrud, SQLModelSelector
 from .base import BaseCrud, RouterMixin

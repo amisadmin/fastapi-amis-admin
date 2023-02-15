@@ -3,13 +3,13 @@ from typing import List
 import pytest
 from fastapi import FastAPI
 from httpx import AsyncClient
+from sqlmodel import Field
 from sqlmodel.sql.expression import Select
 from starlette.requests import Request
 from starlette.routing import NoMatchFound
 
 from fastapi_amis_admin.crud import SQLModelCrud
 from fastapi_amis_admin.crud.parser import LabelField, PropertyField
-from fastapi_amis_admin.models import Field
 from tests.conftest import async_db as db
 from tests.models import Article, ArticleContent, Category, Tag, User
 
