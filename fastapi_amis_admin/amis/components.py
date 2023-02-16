@@ -388,13 +388,17 @@ class PageSchema(AmisNode):
     # route with parameters does not need to be configured, it is directly invisible.
     className: str = None  # Menu class name.
     children: List["PageSchema"] = None  # Submenu
-    sort: int = None  # sort
+    sort: int = None  # Unofficial attribute. sort
+    tabsMode: TabsModeEnum = None  # Unofficial attribute. Display mode, the value can be line, card, radio, vertical,
+    # chrome, simple, strong, tiled, sidebar
 
     def as_tabs_item(self, tabs_extra: Dict[str, Any] = None, item_extra: Dict[str, Any] = None):
         if self.children:
-            tab = Tabs(tabs=[item.as_tabs_item(tabs_extra, item_extra) for item in self.children]).update_from_dict(
-                tabs_extra or {}
-            )
+            tab = Tabs(
+                tabsMode=self.tabsMode,
+                mountOnEnter=True,
+                tabs=[item.as_tabs_item(tabs_extra, item_extra) for item in self.children],
+            ).update_from_dict(tabs_extra or {})
         elif self.schema_:
             tab = self.schema_
             if isinstance(tab, Iframe):

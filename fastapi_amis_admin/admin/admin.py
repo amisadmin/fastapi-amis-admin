@@ -1247,7 +1247,7 @@ class AdminApp(PageAdmin, AdminGroup):
 
     engine: SqlalchemyDatabase = None
     page_path = "/"
-    tabs_mode: TabsModeEnum = None
+    tabs_mode: TabsModeEnum = None  # Deprecated. Use the tabsMode attribute in the page_schema.
 
     def __init__(self, app: "AdminApp"):
         PageAdmin.__init__(self, app)
@@ -1314,12 +1314,14 @@ class AdminApp(PageAdmin, AdminGroup):
         [self._registered.pop(cls) for cls in admin_cls if cls]
 
     def get_page_schema(self) -> Optional[PageSchema]:
-        if super().get_page_schema() and self.tabs_mode is None:
-            self.page_schema.schemaApi = None
+        if super().get_page_schema():
+            self.page_schema.tabsMode = self.tabs_mode
+            if self.page_schema.tabsMode is None:
+                self.page_schema.schemaApi = None
         return self.page_schema
 
     async def get_page(self, request: Request) -> Union[Page, App]:
-        if self.tabs_mode is None:
+        if self.page_schema.tabsMode is None:
             return await self._get_page_as_app(request)
         return await self._get_page_as_tabs(request)
 
@@ -1350,7 +1352,7 @@ class AdminApp(PageAdmin, AdminGroup):
     async def _get_page_as_tabs(self, request: Request) -> Page:
         page = await super(AdminApp, self).get_page(request)
         children = await self.get_page_schema_children(request)
-        page.body = PageSchema(children=children).as_tabs_item(tabs_extra=dict(tabsMode=self.tabs_mode, mountOnEnter=True)).tab
+        page.body = PageSchema(children=children).as_tabs_item().tab
         return page
 
 
