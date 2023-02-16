@@ -1,4 +1,5 @@
 import datetime
+from enum import Enum
 from typing import Any, Generator, Iterable, Type, TypeVar, Union
 
 from pydantic import BaseModel, Json
@@ -159,7 +160,7 @@ class AmisParser:
         kwargs = self.get_field_amis_form_item_type(
             type_=modelfield.type_,
             is_filter=is_filter,
-            required=modelfield.required,
+            required=modelfield.required and not modelfield.allow_none,
         )
         return FormItem(**kwargs).update_from_dict(formitem)
 
@@ -189,12 +190,12 @@ class AmisParser:
             kwargs["type"] = "date"
         elif issubclass(type_, datetime.time):
             kwargs["type"] = "time"
-        elif issubclass(type_, Choices):
+        elif issubclass(type_, Enum):
+            items = type_.choices if issubclass(type_, Choices) else [(m.value, m.value) for m in type_]
             kwargs["type"] = "mapping"
-            kwargs["filterable"] = {"options": [{"label": v, "value": k} for k, v in type_.choices]}
+            kwargs["filterable"] = {"options": [{"label": v, "value": k} for k, v in items]}
             kwargs["map"] = {
-                k: f"<span class='label label-{l.value}'>{v}</span>"
-                for (k, v), l in zip(type_.choices, cyclic_generator(LabelEnum))
+                k: f"<span class='label label-{l.value}'>{v}</span>" for (k, v), l in zip(items, cyclic_generator(LabelEnum))
             }
         elif issubclass(type_, (dict, Json)):
             kwargs["type"] = "json"
@@ -208,16 +209,17 @@ class AmisParser:
         kwargs = {}
         if type_ in {str, Any}:
             kwargs["type"] = "input-text"
-        elif issubclass(type_, Choices):
+        elif issubclass(type_, Enum):
+            items = type_.choices if issubclass(type_, Choices) else [(m.value, m.value) for m in type_]
             kwargs.update(
                 {
                     "type": "select",
-                    "options": [{"label": l, "value": v} for v, l in type_.choices],
+                    "options": [{"label": l, "value": v} for v, l in items],
                     "extractValue": True,
                     "joinValues": False,
                 }
             )
-            if not required:
+            if not required or is_filter:
                 kwargs["clearable"] = True
         elif issubclass(type_, bool):
             kwargs["type"] = "switch"
