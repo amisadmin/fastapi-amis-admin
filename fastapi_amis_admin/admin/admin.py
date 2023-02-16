@@ -748,7 +748,7 @@ class BaseAdmin:
 
 
 class PageSchemaAdmin(BaseAdmin):
-    group_schema: Union[PageSchema, str] = None
+    group_schema: Union[PageSchema, str] = None  # todo Deprecated
     page_schema: Union[PageSchema, str] = PageSchema()
 
     def __init__(self, app: "AdminApp"):
@@ -1215,7 +1215,7 @@ class AdminGroup(PageSchemaAdmin):
             if not child.page_schema or not await child.has_page_permission(request):
                 continue
             if (isinstance(child, AdminGroup) and not isinstance(child, AdminApp)) or (
-                isinstance(child, AdminApp) and child.tabs_mode is None
+                isinstance(child, AdminApp) and child.page_schema.tabsMode is None
             ):
                 sub_children = await child.get_page_schema_children(request)
                 if sub_children:
@@ -1352,7 +1352,7 @@ class AdminApp(PageAdmin, AdminGroup):
     async def _get_page_as_tabs(self, request: Request) -> Page:
         page = await super(AdminApp, self).get_page(request)
         children = await self.get_page_schema_children(request)
-        page.body = PageSchema(children=children).as_tabs_item().tab
+        page.body = PageSchema(children=children, tabsMode=self.page_schema.tabsMode).as_tabs_item().tab
         return page
 
 
