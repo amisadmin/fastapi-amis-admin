@@ -27,8 +27,10 @@
 <body>
 <div class="amiss" id="amisId"></div>
 <script type="text/javascript">
-    let amis = amisRequire('amis/embed')
-    let amisData = amis.embed('#amisId', ${AmisSchemaJson}, {locale: "${locale}"}, {theme: "${theme}"});
+    (function () {
+        let amis = amisRequire('amis/embed');
+        let amisInstance = amis.embed('#amisId', ${AmisSchemaJson}, {locale: "${locale}"}, {theme: "${theme}"});
+    })();
 </script>
 </body>
 </html>
