@@ -84,7 +84,7 @@ class BaseCrud(RouterMixin, Generic[SchemaModelT, SchemaListT, SchemaFilterT, Sc
         self.schema_read = schema_read or self._create_schema_read()
         self.schema_update = schema_update or self._create_schema_update()
         self.list_per_page_max = list_per_page_max or self.list_per_page_max
-        self.paginator = Paginator(perPage_max=self.list_per_page_max)
+        self.paginator = Paginator(perPageMax=self.list_per_page_max)
         self.router.add_api_route(
             "/list",
             self.route_list,

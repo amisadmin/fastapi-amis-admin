@@ -50,19 +50,20 @@ class CrudEnum(str, Enum):
 class Paginator:
     """Used for data paging when querying a data list."""
 
-    def __init__(self, perPage_max: Optional[int] = None):
-        self.perPageMax = perPage_max
+    def __init__(self, perPageMax: int = None, perPageDefault: int = 10):
+        self.perPageMax = perPageMax
+        self.perPageDefault = perPageDefault
 
     def __call__(
         self,
         page: Union[int, str] = 1,
-        perPage: Union[int, str] = 10,
+        perPage: Union[int, str] = None,
         show_total: int = 1,
         orderBy: str = None,
         orderDir: str = "asc",
     ):
-        self.page = page if page and page > 0 else 1
-        self.perPage = perPage if perPage and perPage > 0 else 10
+        self.page = page if page and page > 0 else self.perPageDefault
+        self.perPage = perPage if perPage and perPage > 0 else self.perPageDefault
         if self.perPageMax:
             self.perPage = min(self.perPage, self.perPageMax)
         self.show_total = show_total
