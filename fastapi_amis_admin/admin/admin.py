@@ -753,8 +753,8 @@ class PageSchemaAdmin(BaseAdmin):
             self.page_schema.url = self.page_schema.url.replace(self.site.settings.site_url, "")
         self.group_schema = self.get_group_schema()
 
-    async def has_page_permission(self, request: Request) -> bool:
-        return self.app is self or await self.app.has_page_permission(request)
+    async def has_page_permission(self, request: Request, obj: _PageSchemaAdminT = None, action: str = None) -> bool:
+        return self.app is self or await self.app.has_page_permission(request, obj=obj or self, action=action)
 
     def get_page_schema(self) -> Optional[PageSchema]:
         if self.page_schema:
@@ -1055,13 +1055,13 @@ class ModelAdmin(BaseModelAdmin, PageAdmin):
         filters: SchemaFilterT = None,
         **kwargs,
     ) -> bool:
-        return await self.has_page_permission(request)
+        return await self.has_page_permission(request, action=CrudEnum.list)
 
     async def has_create_permission(self, request: Request, data: SchemaCreateT, **kwargs) -> bool:  # type self.schema_create
-        return await self.has_page_permission(request)
+        return await self.has_page_permission(request, action=CrudEnum.create)
 
     async def has_read_permission(self, request: Request, item_id: List[str], **kwargs) -> bool:
-        return await self.has_page_permission(request)
+        return await self.has_page_permission(request, action=CrudEnum.read)
 
     async def has_update_permission(
         self,
@@ -1070,10 +1070,10 @@ class ModelAdmin(BaseModelAdmin, PageAdmin):
         data: SchemaUpdateT,
         **kwargs,
     ) -> bool:
-        return await self.has_page_permission(request)
+        return await self.has_page_permission(request, action=CrudEnum.update)
 
     async def has_delete_permission(self, request: Request, item_id: List[str], **kwargs) -> bool:
-        return await self.has_page_permission(request)
+        return await self.has_page_permission(request, action=CrudEnum.delete)
 
 
 class BaseFormAction:
