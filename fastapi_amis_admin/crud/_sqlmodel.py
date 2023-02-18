@@ -426,10 +426,11 @@ class SQLModelCrud(BaseCrud, SQLModelSelector):
     async def on_filter_pre(self, request: Request, obj: SchemaFilterT, **kwargs) -> Dict[str, Any]:
         return obj and {k: v for k, v in obj.dict(exclude_unset=True, by_alias=True).items() if v is not None}
 
-    async def on_list_after(self, request: Request, result: Result, data: ItemListSchema, **kwargs) -> None:
+    async def on_list_after(self, request: Request, result: Result, data: ItemListSchema, **kwargs) -> ItemListSchema:
         """Parse the database data query result dictionary into schema_list."""
         data.items = self.parser.conv_row_to_dict(result.all())
         data.items = [self.list_item(item) for item in data.items] if data.items else []
+        return data
 
     @property
     def route_list(self) -> Callable:
@@ -453,8 +454,7 @@ class SQLModelCrud(BaseCrud, SQLModelSelector):
                 stmt = stmt.order_by(*orderBy)
             stmt = stmt.limit(paginator.perPage).offset((paginator.page - 1) * paginator.perPage)
             result = await self.db.async_execute(stmt)
-            await self.on_list_after(request, result, data)
-            return BaseApiOut(data=data)
+            return BaseApiOut(data=await self.on_list_after(request, result, data))
 
         return route
 
