@@ -10,7 +10,6 @@ There are many types of model actions, here is a brief demonstration of a few of
 ```python
 @site.register_admin
 class ArticleAdmin(admin.ModelAdmin):
-    group_schema = 'Articles'
     page_schema = PageSchema(label='Article Admin', icon='fa fa-file')
     model = Article
 
@@ -59,7 +58,6 @@ class TestAction(admin.ModelAction):
 
 @site.register_admin
 class ArticleAdmin(admin.ModelAdmin):
-    group_schema = 'Articles'
     page_schema = PageSchema(label='article_admin', icon='fa fa-file')
     model = Article
 
@@ -114,7 +112,6 @@ class TestFormAction(admin.ModelAction):
     
 @site.register_admin
 class ArticleAdmin(admin.ModelAdmin):
-    group_schema = 'Articles'
     page_schema = PageSchema(label='article_admin', icon='fa fa-file')
     model = Article
 

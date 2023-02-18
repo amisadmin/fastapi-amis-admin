@@ -101,8 +101,6 @@ class GitHubLinkAdmin(admin.LinkAdmin):
 ```python
 @site.register_admin
 class ReDocsAdmin(admin.IframeAdmin):
-    # 设置页面菜单组信息
-    group_schema = PageSchema(label='APIDocs', sort=-100)
     # 设置页面菜单信息
     page_schema = PageSchema(label='Redocs', icon='fa fa-book')
 
@@ -114,8 +112,7 @@ class ReDocsAdmin(admin.IframeAdmin):
 
 上面的示例是一个配置更加细致的`IframeAdmin`页面管理类,它完成了以下工作:
 
-1. 通过 `group_schema`字段配置菜单组信息, 设置了所在菜单组的标签,以及菜单组的展示位置排序.
-2. 通过`src`动态字段,设置`Iframe`跳转的链接.
+1.  通过`src`动态字段,设置`Iframe`跳转的链接.
 
 !!! note annotate "关于 `self.app.site.settings.site_url`"
 

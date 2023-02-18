@@ -8,10 +8,6 @@
 
 ### 字段
 
-#### group_schema
-
-- 当前页面菜单导航所在组信息
-
 #### page_schema
 
 - 当前页面菜单导航信息. 如果为None,则不会在菜单导航中显示.
@@ -42,14 +38,6 @@ def error_no_page_permission(self, request: Request):
 
 ```python
 def get_page_schema(self) -> Optional[PageSchema]
-```
-
-#### get_group_schema
-
-返回当前页面导航所在组信息
-
-```python
-def get_group_schema(self) -> Optional[PageSchema]
 ```
 
 ## LinkAdmin

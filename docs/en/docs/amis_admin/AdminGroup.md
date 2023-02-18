@@ -36,7 +36,7 @@ async def get_page_schema_children(self, request: Request) -> List[PageSchema]
 - Add a navigation page.
 
 ```python
-def append_child(self, child: _PageSchemaAdminT, group_schema: PageSchema = None)->None
+def append_child(self, child: _PageSchemaAdminT)->None
 ```
 
 #### get_page_schema_child

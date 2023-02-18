@@ -743,7 +743,6 @@ class BaseAdmin:
 
 
 class PageSchemaAdmin(BaseAdmin):
-    group_schema: Union[PageSchema, str] = None  # todo Deprecated
     page_schema: Union[PageSchema, str] = PageSchema()
 
     def __init__(self, app: "AdminApp"):
@@ -751,7 +750,6 @@ class PageSchemaAdmin(BaseAdmin):
         self.page_schema = self.get_page_schema()
         if self.page_schema and self.page_schema.url:
             self.page_schema.url = self.page_schema.url.replace(self.site.settings.site_url, "")
-        self.group_schema = self.get_group_schema()
 
     async def has_page_permission(self, request: Request, obj: _PageSchemaAdminT = None, action: str = None) -> bool:
         return self.app is self or await self.app.has_page_permission(request, obj=obj or self, action=action)
@@ -766,17 +764,6 @@ class PageSchemaAdmin(BaseAdmin):
             else:
                 raise TypeError()
         return self.page_schema
-
-    def get_group_schema(self) -> Optional[PageSchema]:
-        if self.group_schema:
-            if isinstance(self.group_schema, str):
-                self.group_schema = PageSchema(label=self.group_schema)
-            elif isinstance(self.group_schema, PageSchema):
-                self.group_schema = self.group_schema.copy(deep=True)
-                self.group_schema.label = self.group_schema.label or "default"
-            else:
-                raise TypeError()
-        return self.group_schema
 
 
 class LinkAdmin(PageSchemaAdmin):
@@ -1178,21 +1165,8 @@ class AdminGroup(PageSchemaAdmin):
             unique_str += self._children[0].unique_id
         return md5_hex(unique_str)[:16]
 
-    def append_child(self, child: _PageSchemaAdminT, group_schema: PageSchema = None) -> None:
-        if not child.page_schema:
-            return
-        group_label = group_schema and group_schema.label
-        if not group_label:
-            self._children.append(child)
-        else:
-            for item in self._children:
-                if isinstance(item, AdminGroup) and item.page_schema and item.page_schema.label == group_label:
-                    item.append_child(child, group_schema=None)
-                    return
-            group = AdminGroup(self.app)
-            group.page_schema = group_schema.copy()
-            group.append_child(child, group_schema=None)
-            self._children.append(group)
+    def append_child(self, child: _PageSchemaAdminT) -> None:
+        self._children.append(child)
 
     def remove_child(self, unique_id: str) -> None:
         self._children = [admin for admin in self._children if admin.unique_id != unique_id]
@@ -1261,7 +1235,7 @@ class AdminApp(PageAdmin, AdminGroup):
         admin = admin_cls(self)
         self._registered[admin_cls] = admin
         if isinstance(admin, PageSchemaAdmin):
-            self.append_child(admin, group_schema=admin.group_schema)
+            self.append_child(admin)
         return admin
 
     def _create_admin_instance_all(self) -> None:

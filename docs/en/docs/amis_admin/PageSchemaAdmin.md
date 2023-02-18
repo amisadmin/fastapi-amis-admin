@@ -8,9 +8,6 @@
 
 ### fields
 
-#### group_schema
-
-- Information of the group where the current page menu navigation is located
 
 #### page_schema
 
@@ -44,13 +41,6 @@ Return to the current page navigation information
 def get_page_schema(self) -> Optional[PageSchema]
 ```
 
-#### get_group_schema
-
-Returns the group information of the current page navigation
-
-```python
-def get_group_schema(self) -> Optional[PageSchema]
-```
 
 ## LinkAdmin
 

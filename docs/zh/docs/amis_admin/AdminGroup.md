@@ -31,7 +31,7 @@ async def get_page_schema_children(self, request: Request) -> List[PageSchema]
 - 添加导航页面.
 
 ```python
-def append_child(self, child: _PageSchemaAdminT, group_schema: PageSchema = None)->None
+def append_child(self, child: _PageSchemaAdminT)->None
 ```
 
 #### get_page_schema_child

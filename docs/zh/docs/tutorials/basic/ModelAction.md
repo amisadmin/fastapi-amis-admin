@@ -12,7 +12,6 @@
 ```python
 @site.register_admin
 class ArticleAdmin(admin.ModelAdmin):
-    group_schema = 'Articles'
     page_schema = PageSchema(label='文章管理', icon='fa fa-file')
     model = Article
 
@@ -61,7 +60,6 @@ class TestAction(admin.ModelAction):
 
 @site.register_admin
 class ArticleAdmin(admin.ModelAdmin):
-    group_schema = 'Articles'
     page_schema = PageSchema(label='文章管理', icon='fa fa-file')
     model = Article
 
@@ -117,7 +115,6 @@ class TestFormAction(admin.ModelAction):
     
 @site.register_admin
 class ArticleAdmin(admin.ModelAdmin):
-    group_schema = 'Articles'
     page_schema = PageSchema(label='文章管理', icon='fa fa-file')
     model = Article
 

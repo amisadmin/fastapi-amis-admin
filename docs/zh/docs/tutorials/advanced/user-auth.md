@@ -82,7 +82,6 @@ class UserLoginFormAdmin(FormAdmin):
 
 ```python linenums="1" hl_lines="32 33 41 42 49 60 65"
 class ArticleAdmin(admin.ModelAdmin):
-    group_schema = None
     page_schema = PageSchema(label='文章管理', icon='fa fa-file')
     model = Article
     # 配置列表展示字段

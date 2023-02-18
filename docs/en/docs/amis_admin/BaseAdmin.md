@@ -38,7 +38,6 @@ classDiagram
     RouterAdmin --|> BaseAdmin
     PageSchemaAdmin --|> BaseAdmin
     PageSchemaAdmin: +PageSchema page_schema
-    PageSchemaAdmin: +PageSchema group_schema
     
     LinkAdmin --|> PageSchemaAdmin
     IframeAdmin --|> PageSchemaAdmin

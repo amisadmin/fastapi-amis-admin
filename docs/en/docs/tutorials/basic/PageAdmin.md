@@ -100,8 +100,6 @@ The `IframeAdmin` implementation displays a menu in the menu list. Click on the 
 ```python
 @site.register_admin
 class ReDocsAdmin(admin.IframeAdmin):
-    # Set the page menu group information
-    group_schema = PageSchema(label='APIDocs', sort=-100)
     # Set page menu information
     page_schema = PageSchema(label='Redocs', icon='fa fa-book')
 
@@ -113,8 +111,7 @@ class ReDocsAdmin(admin.IframeAdmin):
 
 The above example is a more carefully configured `IframeAdmin` page administration class that does the following:
 
-1. configure the menu group information through the `group_schema` field, set the label of the menu group, and the menu group display position sorting. 2.
-2. set the `Iframe` jump link through the `src` dynamic field.
+1.  set the `Iframe` jump link through the `src` dynamic field.
 
 !!! note annotate "about `self.app.site.settings.site_url`"
 

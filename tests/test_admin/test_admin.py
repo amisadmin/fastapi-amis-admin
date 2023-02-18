@@ -26,27 +26,22 @@ async def test_PageSchemaAdmin(site: AdminSite):
         pass
 
     ins = site.get_admin_or_create(TmpAdmin)
-    assert ins.group_schema is None
     assert ins.page_schema
 
     @site.register_admin
     class TmpAdmin1(admin.PageSchemaAdmin):
-        group_schema = "group_label"
         page_schema = "page_label"
 
     ins = site.get_admin_or_create(TmpAdmin1)
 
-    assert isinstance(ins.group_schema, amis.PageSchema) and ins.group_schema.label == "group_label"
-    assert isinstance(ins.group_schema, amis.PageSchema) and ins.page_schema.label == "page_label"
+    assert isinstance(ins.page_schema, amis.PageSchema) and ins.page_schema.label == "page_label"
 
     @site.register_admin
     class TmpAdmin2(admin.PageSchemaAdmin):
-        group_schema = amis.PageSchema(label="group_label")
         page_schema = amis.PageSchema(label="page_label", isDefaultPage=True, sort=100)
 
     ins = site.get_admin_or_create(TmpAdmin2)
 
-    assert isinstance(ins.group_schema, amis.PageSchema) and ins.group_schema.label == "group_label"
     assert isinstance(ins.page_schema, amis.PageSchema) and ins.page_schema.label == "page_label"
 
 

@@ -82,7 +82,6 @@ Requirements: There is a `ModelAdmin` article model management, the permission r
 
 ```python linenums="1" hl_lines="32 33 41 42 49 60 65"
 class ArticleAdmin(admin.ModelAdmin):
-    group_schema = None
     page_schema = PageSchema(label='article management', icon='fa fa-file')
     model = Article
     # Configure list display fields

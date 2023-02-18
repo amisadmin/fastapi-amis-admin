@@ -19,8 +19,18 @@ from fastapi_amis_admin.crud.utils import SqlalchemyDatabase
 from fastapi_amis_admin.utils.translation import i18n as _
 
 
+class APIDocsApp(admin.AdminApp):
+    page_schema = PageSchema(label="APIDocs", icon="fa fa-book", sort=-100)
+
+    def __init__(self, app: "AdminApp"):
+        super().__init__(app)
+        self.register_admin(
+            DocsAdmin,
+            ReDocsAdmin,
+        )
+
+
 class DocsAdmin(admin.IframeAdmin):
-    group_schema = PageSchema(label="APIDocs", icon="fa fa-book", sort=-100)
     page_schema = PageSchema(label="AdminDocs", icon="fa fa-book")
 
     @property
@@ -29,7 +39,6 @@ class DocsAdmin(admin.IframeAdmin):
 
 
 class ReDocsAdmin(admin.IframeAdmin):
-    group_schema = PageSchema(label="APIDocs", icon="fa fa-book", sort=-100)
     page_schema = PageSchema(label="AdminRedocs", icon="fa fa-book")
 
     @property
@@ -38,7 +47,6 @@ class ReDocsAdmin(admin.IframeAdmin):
 
 
 class HomeAdmin(admin.PageAdmin):
-    group_schema = None
     page_schema = PageSchema(label=_("Home"), icon="fa fa-home", url="/home", isDefaultPage=True, sort=100)
     page_path = "/home"
 
@@ -91,12 +99,12 @@ class FileAdmin(admin.RouterAdmin):
 
     def mount_staticfile(self) -> str:
         os.path.exists(self.file_directory) or os.makedirs(self.file_directory)
-        self.app.site.fastapi.mount(
+        self.site.fastapi.mount(
             self.file_path,
             StaticFiles(directory=self.file_directory),
             self.file_directory,
         )
-        return self.app.site.router_path + self.file_path
+        return self.site.router_path + self.file_path
 
     def register_router(self):
         @self.router.post(self.file_path, response_model=BaseApiOut[self.UploadOutSchema])
@@ -131,4 +139,4 @@ class AdminSite(admin.BaseAdminSite):
         engine: SqlalchemyDatabase = None,
     ):
         super().__init__(settings, fastapi, engine)
-        self.register_admin(HomeAdmin, DocsAdmin, ReDocsAdmin, FileAdmin)
+        self.register_admin(APIDocsApp, FileAdmin)
