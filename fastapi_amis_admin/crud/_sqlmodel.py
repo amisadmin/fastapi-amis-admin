@@ -20,6 +20,7 @@ from pydantic import Extra, Json
 from pydantic.fields import ModelField
 from pydantic.utils import ValueItems
 from sqlalchemy import Column, Table, func
+from sqlalchemy.engine import Result
 from sqlalchemy.future import select
 from sqlalchemy.orm import InstrumentedAttribute, Session, object_session
 from sqlalchemy.sql import Select
@@ -421,6 +422,11 @@ class SQLModelCrud(BaseCrud, SQLModelSelector):
     async def on_filter_pre(self, request: Request, obj: SchemaFilterT, **kwargs) -> Dict[str, Any]:
         return obj and {k: v for k, v in obj.dict(exclude_unset=True, by_alias=True).items() if v is not None}
 
+    async def on_list_after(self, request: Request, result: Result, data: ItemListSchema, **kwargs) -> None:
+        """Parse the database data query result dictionary into schema_list."""
+        data.items = self.parser.conv_row_to_dict(result.all())
+        data.items = [self.list_item(item) for item in data.items] if data.items else []
+
     @property
     def route_list(self) -> Callable:
         async def route(
@@ -432,21 +438,18 @@ class SQLModelCrud(BaseCrud, SQLModelSelector):
             if not await self.has_list_permission(request, paginator, filters):
                 return self.error_no_router_permission(request)
             data = ItemListSchema(items=[])
-            page, perPage = paginator.page, paginator.perPage
-            filters_data = await self.on_filter_pre(request, filters)
-            if filters_data:
-                stmt = stmt.filter(*self.calc_filter_clause(filters_data))
+            data.query = request.query_params
+            data.filters = await self.on_filter_pre(request, filters)
+            if data.filters:
+                stmt = stmt.filter(*self.calc_filter_clause(data.filters))
             if paginator.show_total:
                 data.total = await self.db.async_scalar(select(func.count("*")).select_from(stmt.subquery()))
             orderBy = self._calc_ordering(paginator.orderBy, paginator.orderDir)
             if orderBy:
                 stmt = stmt.order_by(*orderBy)
-            stmt = stmt.limit(perPage).offset((page - 1) * perPage)
+            stmt = stmt.limit(paginator.perPage).offset((paginator.page - 1) * paginator.perPage)
             result = await self.db.async_execute(stmt)
-            data.items = self.parser.conv_row_to_dict(result.all())
-            data.items = [self.list_item(item) for item in data.items] if data.items else []
-            data.query = request.query_params
-            data.filters = filters_data
+            await self.on_list_after(request, result, data)
             return BaseApiOut(data=data)
 
         return route
