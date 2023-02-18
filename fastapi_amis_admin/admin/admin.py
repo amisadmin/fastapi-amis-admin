@@ -70,12 +70,7 @@ from fastapi_amis_admin.amis.types import (
     SchemaNode,
 )
 from fastapi_amis_admin.crud import RouterMixin, SQLModelCrud
-from fastapi_amis_admin.crud.base import (
-    SchemaCreateT,
-    SchemaFilterT,
-    SchemaModelT,
-    SchemaUpdateT,
-)
+from fastapi_amis_admin.crud.base import SchemaCreateT, SchemaFilterT, SchemaUpdateT
 from fastapi_amis_admin.crud.parser import (
     SQLModelFieldParser,
     SQLModelListField,
@@ -1100,10 +1095,6 @@ class BaseModelAction:
     def __init__(self, admin: "ModelAdmin"):
         self.admin = admin
         assert self.admin, "admin is None"
-
-    async def fetch_item_scalars(self, item_id: List[str]) -> List[SchemaModelT]:
-        # noinspection PyProtectedMember
-        return await self.admin.db.async_run_sync(self.admin._fetch_item_scalars, item_id)
 
     def register_router(self):
         raise NotImplementedError

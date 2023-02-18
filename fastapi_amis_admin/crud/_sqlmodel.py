@@ -368,6 +368,10 @@ class SQLModelCrud(BaseCrud, SQLModelSelector):
         stmt = select(self.model).where(self.pk.in_(list(map(get_python_type_parse(self.pk), item_id))))
         return session.scalars(stmt).all()
 
+    async def fetch_items(self, *item_id: str) -> List[SchemaModelT]:
+        """Fetch the database data by id."""
+        return await self.db.async_run_sync(self._fetch_item_scalars, item_id)
+
     def _create_items(self, session: Session, items: List[Dict[str, Any]]) -> Union[int, SchemaModelT]:
         count = len(items)
         obj = None
