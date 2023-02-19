@@ -751,7 +751,7 @@ class PageSchemaAdmin(BaseAdmin):
         if self.page_schema and self.page_schema.url:
             self.page_schema.url = self.page_schema.url.replace(self.site.settings.site_url, "")
 
-    async def has_page_permission(self, request: Request, obj: _PageSchemaAdminT = None, action: str = None) -> bool:
+    async def has_page_permission(self, request: Request, obj: "PageSchemaAdmin" = None, action: str = None) -> bool:
         return self.app is self or await self.app.has_page_permission(request, obj=obj or self, action=action)
 
     def get_page_schema(self) -> Optional[PageSchema]:
@@ -824,7 +824,7 @@ class PageAdmin(PageSchemaAdmin, RouterAdmin):
         PageSchemaAdmin.__init__(self, app)
 
     async def page_permission_depend(self, request: Request) -> bool:
-        return await self.has_page_permission(request) or self.error_no_page_permission(request)
+        return await self.has_page_permission(request, action="page") or self.error_no_page_permission(request)
 
     def error_no_page_permission(self, request: Request):
         raise HTTPException(
@@ -1177,7 +1177,7 @@ class AdminGroup(PageSchemaAdmin):
     async def get_page_schema_children(self, request: Request) -> List[PageSchema]:
         page_schema_list = []
         for child in self._children:
-            if not child.page_schema or not await child.has_page_permission(request):
+            if not child.page_schema or not await child.has_page_permission(request, action="page"):
                 continue
             if (isinstance(child, AdminGroup) and not isinstance(child, AdminApp)) or (
                 isinstance(child, AdminApp) and child.page_schema.tabsMode is None
