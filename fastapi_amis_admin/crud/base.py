@@ -146,7 +146,11 @@ class BaseCrud(RouterMixin, Generic[SchemaModelT, SchemaListT, SchemaFilterT, Sc
         )
 
     def _create_schema_create(self) -> Type[SchemaCreateT]:
-        return self.schema_create or schema_create_by_schema(self.schema_model, f"{self.schema_name_prefix}Create")
+        return self.schema_create or schema_create_by_schema(
+            self.schema_model,
+            f"{self.schema_name_prefix}Create",
+            exclude={self.pk_name},
+        )
 
     @property
     def route_list(self) -> Callable[..., Any]:
