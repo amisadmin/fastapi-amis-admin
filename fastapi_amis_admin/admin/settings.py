@@ -17,7 +17,7 @@ class Settings(BaseSettings):
     site_title: str = "FastAPI Amis Admin"
     site_icon: str = "https://baidu.gitee.io/amis/static/favicon_b3b0647.png"
     site_url: str = ""
-    root_path: str = "/admin"
+    site_path: str = "/admin"
     database_url_async: str = Field("", env="DATABASE_URL_ASYNC")
     database_url: str = Field("", env="DATABASE_URL")
     language: Union[Literal["zh_CN", "en_US", "de_DE"], str] = ""
@@ -28,7 +28,7 @@ class Settings(BaseSettings):
     amis_file_receiver: API = None  # File upload interface
     logger: Union[logging.Logger, Any] = logging.getLogger("fastapi_amis_admin")
 
-    @validator("amis_cdn", "root_path", "site_url", pre=True)
+    @validator("amis_cdn", "site_path", "site_url", pre=True)
     def valid_url(cls, url: str):
         return url[:-1] if url.endswith("/") else url
 
@@ -43,4 +43,4 @@ class Settings(BaseSettings):
 
     @validator("amis_image_receiver", "amis_file_receiver", pre=True)
     def valid_receiver(cls, v, values):
-        return v or f"post:{values.get('root_path', '')}/file/upload"
+        return v or f"post:{values.get('site_path', '')}/file/upload"

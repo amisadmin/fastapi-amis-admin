@@ -1379,15 +1379,15 @@ class BaseAdminSite(AdminApp):
 
     @cached_property
     def router_path(self) -> str:
-        return self.settings.site_url + self.settings.root_path + self.router.prefix
+        return self.settings.site_url + self.settings.site_path + self.router.prefix
 
     def mount_app(self, fastapi: FastAPI, name: str = "admin") -> None:
-        """mount app to fastapi, the path is: site.settings.root_path.
+        """mount app to fastapi, the path is: site.settings.site_path.
         once mount, the site will create all registered admin instance and register router.
         """
         self.application = fastapi
         self.register_router()
-        fastapi.mount(self.settings.root_path, self.fastapi, name=name)
+        fastapi.mount(self.settings.site_path, self.fastapi, name=name)
         fastapi.add_middleware(BaseHTTPMiddleware, dispatch=self.db.asgi_dispatch)
         """Add SQLAlchemy Session middleware to the main application, and the session object will be bound to each request.
         Note:
