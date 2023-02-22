@@ -63,7 +63,7 @@ class Badge(AmisNode):
     """Subscript"""
 
     mode: str = "dot"  # Corner type, can be dot/text/ribbon
-    text: Union[str, int] = None  # Corner text, supports strings and numbers, invalid when mode='dot'
+    text: Union[int, str] = None  # Corner text, supports strings and numbers, invalid when mode='dot'
     size: int = None  # Angular size
     level: str = None  # The level of the corner label, which can be info/success/warning/danger, after setting the
     # background color of the corner label is different
@@ -1125,7 +1125,7 @@ class CollapseGroup(AmisNode):
         type: str = "collapse"
         disabled: bool = None  # default False
         collapsed: bool = None  # default True
-        key: Union[str, int] = None  # default -, logo
+        key: Union[int, str] = None  # default -, logo
         header: Union[str, SchemaNode] = None  # default -, title
         body: Union[str, SchemaNode] = None  # default -, content
 
@@ -1502,7 +1502,7 @@ class Steps(AmisNode):
     steps: List[StepItem] = None  # default [], List of Steps
     source: API = None  # Data source, you can obtain current variables through data mapping, or configure API objects
     name: str = None  # Associated context variable
-    value: Union[str, int] = None  # default -, Set the default value, expressions are not supported
+    value: Union[int, str] = None  # default -, Set the default value, expressions are not supported
     status: Union[StepStatusEnum, dict] = None  # default -, State of the steps
     className: str = None  # Custom CSS class name
     mode: Literal["vertical", "horizontal"] = "horizontal"  # Specifies the step bar direction.
@@ -2207,7 +2207,7 @@ class TableColumn(AmisNode):
     copyable: Union[bool, dict] = None  # whether to copy boolean or {icon: string, content:string}
     sortable: bool = None  # False # whether it is sortable
     searchable: Union[bool, SchemaNode] = None  # False # whether to quickly search boolean|Schema
-    width: Union[str, int] = None  # column width
+    width: Union[int, str] = None  # column width
     remark: Remark = None  # prompt message
     breakpoint: str = None  # *,ls. When there are too many columns, the content cannot be displayed completely,
     # some information can be displayed at the bottom, and users can expand to view the details

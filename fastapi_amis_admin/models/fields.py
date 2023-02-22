@@ -1,4 +1,4 @@
-from typing import AbstractSet, Any, Dict, Mapping, Optional, Sequence, Union
+from typing import AbstractSet, Any, Callable, Dict, Mapping, Optional, Sequence, Union
 
 from pydantic.fields import Undefined, UndefinedType
 from pydantic.typing import NoArgAnyCallable
@@ -39,9 +39,9 @@ def Field(
     sa_column_args: Union[Sequence[Any], UndefinedType] = Undefined,
     sa_column_kwargs: Union[Mapping[str, Any], UndefinedType] = Undefined,
     schema_extra: Optional[Dict[str, Any]] = None,
-    amis_form_item: Union[FormItem, dict, str] = None,
-    amis_filter_item: Union[FormItem, dict, str] = None,
-    amis_table_column: Union[TableColumn, dict, str] = None,
+    amis_form_item: Union[FormItem, dict, str, Callable] = None,
+    amis_filter_item: Union[FormItem, dict, str, Callable] = None,
+    amis_table_column: Union[TableColumn, dict, str, Callable] = None,
 ) -> FieldInfo:
     current_schema_extra = schema_extra or {}
     if amis_form_item:

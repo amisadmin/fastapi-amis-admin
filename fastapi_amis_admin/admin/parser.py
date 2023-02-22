@@ -277,6 +277,8 @@ class AmisParser:
         extra = modelfield.field_info.extra.get(name, {})
         if not extra:
             return {}
+        if callable(extra):
+            return extra()
         extra = smart_deepcopy(extra)
         if isinstance(extra, (AmisNode, dict)):
             pass
