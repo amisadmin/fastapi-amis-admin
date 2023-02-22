@@ -25,7 +25,7 @@
 
 - 当前管理站点url
 
-#### root_path
+#### site_path
 
 - 当前管理站点挂载在FastAPI实例下的路径.
 

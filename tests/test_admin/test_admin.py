@@ -74,7 +74,7 @@ async def test_RouterAdmin(site: AdminSite, async_client: AsyncClient):
                 return {"username": "hello"}
 
     ins = site.get_admin_or_create(TmpAdmin)
-    assert ins.router_path == f"{site.settings.root_path}/router"
+    assert ins.router_path == f"{site.settings.site_path}/router"
 
     site.register_router()
     res = await async_client.get("/router/hello")

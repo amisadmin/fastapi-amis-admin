@@ -25,7 +25,7 @@
 
 - current admin site url
 
-#### root_path
+#### site_path
 
 - The path where the current management site is mounted under the FastAPI instance.
 

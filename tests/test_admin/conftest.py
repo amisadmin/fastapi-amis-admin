@@ -10,7 +10,7 @@ from tests.conftest import async_db
 
 @pytest.fixture
 def site() -> AdminSite:
-    return AdminSite(settings=Settings(root_path=""), engine=async_db.engine)
+    return AdminSite(settings=Settings(site_path=""), engine=async_db.engine)
 
 
 @pytest.fixture
