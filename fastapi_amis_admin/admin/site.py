@@ -139,4 +139,8 @@ class AdminSite(admin.BaseAdminSite):
         engine: SqlalchemyDatabase = None,
     ):
         super().__init__(settings, fastapi, engine)
-        self.register_admin(APIDocsApp, FileAdmin)
+        self.register_admin(
+            HomeAdmin,
+            APIDocsApp,
+            FileAdmin,
+        )
