@@ -65,6 +65,7 @@ from fastapi_amis_admin.amis.constants import (
 )
 from fastapi_amis_admin.amis.types import (
     AmisAPI,
+    AmisNode,
     BaseAmisApiOut,
     BaseAmisModel,
     SchemaNode,
@@ -928,7 +929,6 @@ class BaseFormAdmin(PageAdmin, Generic[SchemaUpdateT]):
     form: Form = None
     form_init: bool = None
     form_path: str = ""
-    route_init: Callable = None
     route_submit: Callable = None
     router_prefix: str = "/form"
 
@@ -980,6 +980,16 @@ class BaseFormAdmin(PageAdmin, Generic[SchemaUpdateT]):
             )
         return self
 
+    async def get_init_data(self, request: Request, **kwargs) -> BaseApiOut[Any]:
+        return BaseApiOut()
+
+    @property
+    def route_init(self):
+        async def route(request: Request):
+            return await self.get_init_data(request)
+
+        return route
+
 
 class FormAdmin(BaseFormAdmin):
     """Form management"""
@@ -995,16 +1005,6 @@ class FormAdmin(BaseFormAdmin):
 
     async def handle(self, request: Request, data: SchemaUpdateT, **kwargs) -> BaseApiOut[Any]:
         raise NotImplementedError
-
-    async def get_init_data(self, request: Request, **kwargs) -> BaseApiOut[Any]:
-        raise NotImplementedError
-
-    @property
-    def route_init(self):
-        async def route(request: Request):
-            return await self.get_init_data(request)
-
-        return route
 
 
 class ModelAdmin(BaseModelAdmin, PageAdmin):
@@ -1108,7 +1108,7 @@ class FormAction(FormAdmin, BaseFormAction):
 
 
 class ModelAction(BaseFormAdmin, BaseModelAction):
-    action: ActionType.Dialog = None
+    action: Union[ActionType.Dialog, ActionType.Drawer] = None
 
     def __init__(self, admin: "ModelAdmin"):
         BaseModelAction.__init__(self, admin)
@@ -1117,18 +1117,21 @@ class ModelAction(BaseFormAdmin, BaseModelAction):
 
     async def get_action(self, request: Request, **kwargs) -> Action:
         action = self.action or ActionType.Dialog(label=_("Custom form actions"), dialog=Dialog())
-        action.dialog.title = action.dialog.title or action.label  # only override if not set
-        action.dialog.body = Service(
-            schemaApi=AmisAPI(
-                method="post",
-                url=self.router_path + self.page_path + "?item_id=${IF(ids, ids, id)}",
-                responseData={
-                    "&": "${body}",
-                    "api.url": "${body.api.url}?item_id=${api.query.item_id}",
-                    "submitText": "",
-                },
+        node: AmisNode = getattr(action, action.actionType, None)
+        if node:
+            node.title = node.title or action.label  # only override if not set
+            node.body = Service(
+                schemaApi=AmisAPI(
+                    method="post",
+                    url=self.router_path + self.page_path + "?item_id=${IF(ids, ids, id)}",
+                    responseData={
+                        "&": "${body}",
+                        "api.url": "${body.api.url}?item_id=${api.query.item_id}",
+                        "initApi.url": "${body.initApi.url}?item_id=${api.query.item_id}" if self.form_init else None,
+                        "submitText": "",
+                    },
+                )
             )
-        )
         return action
 
     async def handle(self, request: Request, item_id: List[str], data: Optional[SchemaUpdateT], **kwargs) -> BaseApiOut[Any]:
@@ -1157,13 +1160,6 @@ class AdminGroup(PageSchemaAdmin):
     def __init__(self, app: "AdminApp") -> None:
         super().__init__(app)
         self._children: List[_PageSchemaAdminT] = []
-
-    @cached_property
-    def unique_id(self) -> str:
-        unique_str = super().unique_id
-        if self._children:
-            unique_str += self._children[0].unique_id
-        return md5_hex(unique_str)[:16]
 
     def append_child(self, child: _PageSchemaAdminT) -> None:
         self._children.append(child)
