@@ -1,10 +1,11 @@
 from .admin import (
+    AdminAction,
     AdminApp,
     BaseAdmin,
     BaseAdminSite,
     BaseFormAdmin,
-    BaseModelAction,
     BaseModelAdmin,
+    FormAction,
     FormAdmin,
     IframeAdmin,
     LinkAdmin,

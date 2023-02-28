@@ -1,8 +1,10 @@
+import asyncio
 import datetime
 import re
 from functools import lru_cache
 from typing import (
     Any,
+    Awaitable,
     Callable,
     Dict,
     Generic,
@@ -1065,63 +1067,77 @@ class ModelAdmin(BaseModelAdmin, PageAdmin):
         return await self.has_page_permission(request, action=CrudEnum.delete)
 
 
-class BaseFormAction:
-    admin: "FormAdmin" = None
+ActionT = Union[Action, Awaitable[Action]]
+ActionAdminT = Union["FormAdmin", "ModelAdmin"]
+
+
+class AdminAction:
+    admin: ActionAdminT
     action: Action = None
 
-    def __init__(self, admin: "FormAdmin"):
+    def __init__(
+        self,
+        admin: ActionAdminT,
+        *,
+        action: Action = None,
+        flag: List[str] = None,
+        getter: Callable[[Request], ActionT] = None,
+        **kwargs,
+    ):
         self.admin = admin
         assert self.admin, "admin is None"
+        self.action = action or self.action or Action()
+        self.action = self.action.update_from_dict(kwargs)
+        assert self.action.id, "action.id is None"
+        self.flag = flag or ["item"]
+        self.getter = getter
 
-    def register_router(self):
-        raise NotImplementedError
-
-
-class BaseModelAction:
-    admin: "ModelAdmin" = None
-    action: Action = None
-
-    def __init__(self, admin: "ModelAdmin"):
-        self.admin = admin
-        assert self.admin, "admin is None"
-
-    def register_router(self):
-        raise NotImplementedError
+    async def get_action(self, request: Request, **kwargs) -> Optional[Action]:
+        if not self.getter:
+            return self.action
+        action = self.getter(request)
+        if asyncio.iscoroutine(action):
+            action = await action
+        return action
 
 
-class FormAction(FormAdmin, BaseFormAction):
-    schema: Type[BaseModel] = None
-    action: ActionType.Dialog = None
+class FormAction(FormAdmin, AdminAction):
 
-    def __init__(self, admin: "FormAdmin"):
-        BaseFormAction.__init__(self, admin)
+    action: Union[ActionType.Dialog, ActionType.Drawer]
+
+    def __init__(
+        self,
+        admin: ActionAdminT,
+        *,
+        action: Action = None,
+        flag: List[str] = None,
+        getter: Callable[[ActionAdminT, Request], ActionT] = None,
+        **kwargs,
+    ):
+        AdminAction.__init__(self, admin, action=action, flag=flag, getter=getter, **kwargs)
         self.router = self.admin.router
         FormAdmin.__init__(self, self.admin.app)
 
     async def get_action(self, request: Request, **kwargs) -> Action:
-        action = self.action or ActionType.Dialog(label=_("Custom form actions"), dialog=Dialog())
-        action.dialog.title = action.dialog.title or action.label  # only override if not set
-        action.dialog.size = action.dialog.size or SizeEnum.xl
-        action.dialog.body = action.dialog.body or ""  # keep it empty for non model related custom form
-        return action
-
-    async def handle(self, request: Request, data: BaseModel, **kwargs) -> BaseApiOut[Any]:
-        return BaseApiOut(data=data)
-
-
-class ModelAction(BaseFormAdmin, BaseModelAction):
-    action: Union[ActionType.Dialog, ActionType.Drawer] = None
-
-    def __init__(self, admin: "ModelAdmin"):
-        BaseModelAction.__init__(self, admin)
-        self.router = self.admin.router
-        BaseFormAdmin.__init__(self, self.admin.app)
-
-    async def get_action(self, request: Request, **kwargs) -> Action:
-        action = self.action or ActionType.Dialog(label=_("Custom form actions"), dialog=Dialog())
+        action = self.action and self.action.copy() or ActionType.Dialog(label=_("Custom form actions"), dialog=Dialog())
         node: AmisNode = getattr(action, action.actionType, None)
         if node:
             node.title = node.title or action.label  # only override if not set
+            node.size = node.size or SizeEnum.xl
+            node.body = node.body or ""  # keep it empty for non model related custom form
+        return action
+
+    async def handle(self, request: Request, data: SchemaUpdateT, **kwargs) -> BaseApiOut[Any]:
+        return BaseApiOut(data=data)
+
+
+class ModelAction(FormAction):
+    admin: ModelAdmin
+
+    async def get_action(self, request: Request, **kwargs) -> Action:
+        action = await super().get_action(request, **kwargs)
+        node: AmisNode = getattr(action, action.actionType, None)
+        if node:
             node.body = Service(
                 schemaApi=AmisAPI(
                     method="post",
@@ -1136,6 +1152,7 @@ class ModelAction(BaseFormAdmin, BaseModelAction):
             )
         return action
 
+    # noinspection PyMethodOverriding
     async def handle(self, request: Request, item_id: List[str], data: Optional[SchemaUpdateT], **kwargs) -> BaseApiOut[Any]:
         return BaseApiOut(data=data)
 
