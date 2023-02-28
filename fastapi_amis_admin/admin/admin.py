@@ -601,6 +601,8 @@ class BaseModelAdmin(SQLModelCrud):
     async def get_read_action(self, request: Request) -> Optional[Action]:
         if not self.schema_read:
             return None
+        if not await self.has_read_permission(request, None):
+            return None
         return ActionType.Dialog(
             icon="fa fa-eye",
             tooltip=_("View"),
