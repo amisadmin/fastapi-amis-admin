@@ -11,7 +11,6 @@ from typing import (
     Iterable,
     Iterator,
     List,
-    NewType,
     Optional,
     Tuple,
     Type,
@@ -90,9 +89,10 @@ from fastapi_amis_admin.crud.utils import (
 from fastapi_amis_admin.utils.functools import cached_property
 from fastapi_amis_admin.utils.translation import i18n as _
 
-_BaseAdminT = TypeVar("_BaseAdminT", bound="BaseAdmin")
-_PageSchemaAdminT = TypeVar("_PageSchemaAdminT", bound="PageSchemaAdmin")
-_BaseModel = NewType("_BaseModel", BaseModel)
+BaseAdminT = TypeVar("BaseAdminT", bound="BaseAdmin")
+PageSchemaAdminT = TypeVar("PageSchemaAdminT", bound="PageSchemaAdmin")
+ActionT = Union[Action, Awaitable[Action]]
+ActionAdminT = Union["FormAdmin", "ModelAdmin"]
 
 
 class LinkModelForm:
@@ -330,6 +330,7 @@ class BaseModelAdmin(SQLModelCrud):
     enable_bulk_create: bool = False  # whether to enable batch creation
     search_fields: List[SQLModelListField] = []  # fuzzy search fields
     page_schema: Union[PageSchema, str] = PageSchema()
+    registered_admin_actions: Dict[str, "AdminAction"] = {}
 
     def __init__(self, app: "AdminApp"):
         assert self.model, "model is None"
@@ -436,7 +437,7 @@ class BaseModelAdmin(SQLModelCrud):
                 "align": "right",
             },
         ]
-        headerToolbar.extend(await self.get_actions_on_header_toolbar(request))
+        headerToolbar.extend(await self.get_actions(request, flag="toolbar"))
         table = TableCRUD(
             api=await self.get_list_table_api(request),
             autoFillHeight=True,
@@ -447,8 +448,8 @@ class BaseModelAdmin(SQLModelCrud):
             syncLocation=False,
             keepItemSelectionOnPageChange=True,
             perPage=self.list_per_page,
-            itemActions=await self.get_actions_on_item(request),
-            bulkActions=await self.get_actions_on_bulk(request),
+            itemActions=await self.get_actions(request, flag="item"),
+            bulkActions=await self.get_actions(request, flag="bulk"),
             footerToolbar=[
                 "statistics",
                 "switch-per-page",
@@ -603,8 +604,6 @@ class BaseModelAdmin(SQLModelCrud):
     async def get_read_action(self, request: Request) -> Optional[Action]:
         if not self.schema_read:
             return None
-        if not await self.has_read_permission(request, None):
-            return None
         return ActionType.Dialog(
             icon="fa fa-eye",
             tooltip=_("View"),
@@ -617,8 +616,6 @@ class BaseModelAdmin(SQLModelCrud):
         )
 
     async def get_create_action(self, request: Request, bulk: bool = False) -> Optional[Action]:
-        if not await self.has_create_permission(request, None):
-            return None
         if not bulk:
             return ActionType.Dialog(
                 icon="fa fa-plus pull-left",
@@ -642,9 +639,6 @@ class BaseModelAdmin(SQLModelCrud):
         )
 
     async def get_update_action(self, request: Request, bulk: bool = False) -> Optional[Action]:
-        if not await self.has_update_permission(request, None, None):
-            return None
-        # Turn on batch editing
         if not bulk:
             return ActionType.Dialog(
                 icon="fa fa-pencil",
@@ -655,7 +649,6 @@ class BaseModelAdmin(SQLModelCrud):
                     body=await self.get_update_form(request, bulk=bulk),
                 ),
             )
-
         elif self.bulk_update_fields:
             return ActionType.Dialog(
                 label=_("Bulk Update"),
@@ -665,50 +658,24 @@ class BaseModelAdmin(SQLModelCrud):
                     body=await self.get_update_form(request, bulk=True),
                 ),
             )
-
         else:
             return None
 
-    async def get_delete_action(self, request: Request, bulk: bool = False) -> Optional[Action]:
-        if not await self.has_delete_permission(request, None):
-            return None
-        return (
-            ActionType.Ajax(
-                label=_("Bulk Delete"),
-                confirmText=_("Are you sure you want to delete the selected rows?"),
-                api=f"delete:{self.router_path}/item/" + "${ids|raw}",
-            )
-            if bulk
-            else ActionType.Ajax(
-                icon="fa fa-times text-danger",
-                tooltip=_("Delete"),
-                confirmText=_("Are you sure you want to delete row ${%s}?") % self.pk_name,
-                api=f"delete:{self.router_path}/item/${self.pk_name}",
-            )
-        )
+    async def get_action(self, request: Request, key: str) -> Action:
+        admin_action = self.registered_admin_actions.get(key)
+        return await admin_action.get_action(request)
 
-    async def get_actions_on_header_toolbar(self, request: Request) -> List[Action]:
-        actions = [
-            await self.get_create_action(request, bulk=False),
-        ]
-        if self.enable_bulk_create:
-            actions.append(await self.get_create_action(request, bulk=True))
+    async def get_actions(self, request: Request, flag: str) -> List[Action]:
+        actions = []
+        for admin_action in self.registered_admin_actions.values():
+            if flag not in admin_action.flags:
+                continue
+            if await self.has_action_permission(request, name=admin_action.action.name):
+                actions.append(await admin_action.get_action(request, name=admin_action.action.name))
         return list(filter(None, actions))
 
-    async def get_actions_on_item(self, request: Request) -> List[Action]:
-        actions = [
-            await self.get_read_action(request),
-            await self.get_update_action(request, bulk=False),
-            await self.get_delete_action(request, bulk=False),
-        ]
-        return list(filter(None, actions))
-
-    async def get_actions_on_bulk(self, request: Request) -> List[Action]:
-        bulkActions = [
-            await self.get_update_action(request, bulk=True),
-            await self.get_delete_action(request, bulk=True),
-        ]
-        return list(filter(None, bulkActions))
+    async def has_action_permission(self, request: Request, name: str) -> bool:
+        return True
 
     async def _conv_modelfields_to_formitems(
         self,
@@ -1016,6 +983,7 @@ class ModelAdmin(BaseModelAdmin, PageAdmin):
 
     page_path: str = ""
     bind_model: bool = True
+    admin_action_maker: List[Callable[["BaseModelAdmin"], "AdminAction"]] = []  # Actions
 
     def __init__(self, app: "AdminApp"):
         BaseModelAdmin.__init__(self, app)
@@ -1027,9 +995,80 @@ class ModelAdmin(BaseModelAdmin, PageAdmin):
             return f"/{self.__class__.__name__}"
         return f"/{self.model.__name__}"
 
+    @cached_property
+    def registered_admin_actions(self) -> Dict[str, "AdminAction"]:
+        admin_actions = {
+            "create": AdminAction(
+                admin=self,
+                name="create",
+                label=_("Create"),
+                flags=["toolbar"],
+                getter=lambda request: self.get_create_action(request, bulk=False),
+            ),
+            "update": AdminAction(
+                admin=self,
+                name="update",
+                tooltip=_("Update"),
+                flags=["item"],
+                getter=lambda request: self.get_update_action(request, bulk=False),
+            ),
+            "delete": AdminAction(
+                admin=self,
+                name="delete",
+                action=ActionType.Ajax(
+                    icon="fa fa-times text-danger",
+                    tooltip=_("Delete"),
+                    confirmText=_("Are you sure you want to delete row ${%s}?") % self.pk_name,
+                    api=f"delete:{self.router_path}/item/${self.pk_name}",
+                ),
+                flags=["item"],
+            ),
+            "bulk_delete": AdminAction(
+                admin=self,
+                name="bulk_delete",
+                action=ActionType.Ajax(
+                    label=_("Bulk Delete"),
+                    confirmText=_("Are you sure you want to delete the selected rows?"),
+                    api=f"delete:{self.router_path}/item/" + "${ids|raw}",
+                ),
+                flags=["bulk"],
+            ),
+        }
+        if self.enable_bulk_create:
+            admin_actions["bulk_create"] = AdminAction(
+                admin=self,
+                name="bulk_create",
+                label=_("Bulk Create"),
+                flags=["toolbar"],
+                getter=lambda request: self.get_create_action(request, bulk=True),
+            )
+        if self.schema_read:
+            admin_actions["read"] = AdminAction(
+                admin=self,
+                name="read",
+                label=_("View"),
+                flags=["item"],
+                getter=lambda request: self.get_read_action(request),
+            )
+        if self.bulk_update_fields:
+            admin_actions["bulk_update"] = AdminAction(
+                admin=self,
+                name="bulk_update",
+                label=_("Bulk Update"),
+                flags=["bulk"],
+                getter=lambda request: self.get_update_action(request, bulk=True),
+            )
+        for maker in self.admin_action_maker:
+            admin_action = maker(self)
+            admin_actions[admin_action.name] = admin_action
+        return admin_actions
+
     def register_router(self):
         for form in self.link_model_forms:
             form.register_router()
+        for admin_action in self.registered_admin_actions.values():
+            if isinstance(admin_action, RouterAdmin):
+                admin_action.register_router()
         self.register_crud()
         super(ModelAdmin, self).register_router()
         return self
@@ -1066,9 +1105,19 @@ class ModelAdmin(BaseModelAdmin, PageAdmin):
     async def has_delete_permission(self, request: Request, item_id: List[str], **kwargs) -> bool:
         return await self.has_page_permission(request, action=CrudEnum.delete)
 
-
-ActionT = Union[Action, Awaitable[Action]]
-ActionAdminT = Union["FormAdmin", "ModelAdmin"]
+    async def has_action_permission(self, request: Request, name: str) -> bool:
+        if not await self.has_page_permission(request, action=name):
+            return False
+        elif name in {"delete", "bulk_delete"}:
+            return await self.has_delete_permission(request, None)  # type: ignore
+        elif name in {"update", "bulk_update"}:
+            return await self.has_update_permission(request, None, None)  # type: ignore
+        elif name in {"create", "bulk_create"}:
+            return await self.has_create_permission(request, None)  # type: ignore
+        elif name in {"read"}:
+            return await self.has_read_permission(request, None)  # type: ignore
+        else:
+            return True
 
 
 class AdminAction:
@@ -1079,8 +1128,10 @@ class AdminAction:
         self,
         admin: ActionAdminT,
         *,
+        name: str = None,
+        label: str = None,
         action: Action = None,
-        flag: List[str] = None,
+        flags: Union[str, List[str]] = None,
         getter: Callable[[Request], ActionT] = None,
         **kwargs,
     ):
@@ -1088,11 +1139,16 @@ class AdminAction:
         assert self.admin, "admin is None"
         self.action = action or self.action or Action()
         self.action = self.action.update_from_dict(kwargs)
-        assert self.action.id, "action.id is None"
-        self.flag = flag or ["item"]
+        self.name = name or self.action.id or self.action.name
+        assert self.name, "name is None"
+        self.label = label or self.action.label or self.action.tooltip
+        assert self.label, "label is None"
+        self.flags = flags or ["item"]
+        if isinstance(self.flags, str):
+            self.flags = [self.flags]
         self.getter = getter
 
-    async def get_action(self, request: Request, **kwargs) -> Optional[Action]:
+    async def get_action(self, request: Request, **kwargs) -> Action:
         if not self.getter:
             return self.action
         action = self.getter(request)
@@ -1114,7 +1170,7 @@ class FormAction(FormAdmin, AdminAction):
         getter: Callable[[ActionAdminT, Request], ActionT] = None,
         **kwargs,
     ):
-        AdminAction.__init__(self, admin, action=action, flag=flag, getter=getter, **kwargs)
+        AdminAction.__init__(self, admin, action=action, flags=flag, getter=getter, **kwargs)
         self.router = self.admin.router
         FormAdmin.__init__(self, self.admin.app)
 
@@ -1178,9 +1234,9 @@ class ModelAction(FormAction):
 class AdminGroup(PageSchemaAdmin):
     def __init__(self, app: "AdminApp") -> None:
         super().__init__(app)
-        self._children: List[_PageSchemaAdminT] = []
+        self._children: List[PageSchemaAdminT] = []
 
-    def append_child(self, child: _PageSchemaAdminT) -> None:
+    def append_child(self, child: PageSchemaAdminT) -> None:
         self._children.append(child)
 
     def remove_child(self, unique_id: str) -> None:
@@ -1208,7 +1264,7 @@ class AdminGroup(PageSchemaAdmin):
             page_schema_list.sort(key=lambda p: p.sort or 0, reverse=True)
         return page_schema_list
 
-    def get_page_schema_child(self, unique_id: str) -> Union[Tuple[_PageSchemaAdminT, "AdminGroup"], Tuple[None, None]]:
+    def get_page_schema_child(self, unique_id: str) -> Union[Tuple[PageSchemaAdminT, "AdminGroup"], Tuple[None, None]]:
         for child in self._children:
             if child.unique_id == unique_id:
                 return child, self
@@ -1218,7 +1274,7 @@ class AdminGroup(PageSchemaAdmin):
                     return child, parent
         return None, None
 
-    def __iter__(self) -> Iterator[_PageSchemaAdminT]:
+    def __iter__(self) -> Iterator[PageSchemaAdminT]:
         return self._children.__iter__()
 
 
@@ -1234,14 +1290,14 @@ class AdminApp(PageAdmin, AdminGroup):
         AdminGroup.__init__(self, app)
         self.engine = self.engine or self.app.engine
         self.db = get_engine_db(self.engine)
-        self._registered: Dict[Type[_BaseAdminT], Optional[_BaseAdminT]] = {}
+        self._registered: Dict[Type[BaseAdminT], Optional[BaseAdminT]] = {}
         self.__register_lock = False
 
     @property
     def router_prefix(self):
         return f"/{self.__class__.__name__}"
 
-    def get_admin_or_create(self, admin_cls: Type[_BaseAdminT], register: bool = True) -> Optional[_BaseAdminT]:
+    def get_admin_or_create(self, admin_cls: Type[BaseAdminT], register: bool = True) -> Optional[BaseAdminT]:
         if admin_cls not in self._registered and (not register or self.__register_lock):
             return None
         admin = self._registered.get(admin_cls)
@@ -1286,7 +1342,7 @@ class AdminApp(PageAdmin, AdminGroup):
                     return admin
         return None
 
-    def register_admin(self, *admin_cls: Type[_BaseAdminT]) -> Type[_BaseAdminT]:
+    def register_admin(self, *admin_cls: Type[BaseAdminT]) -> Type[BaseAdminT]:
         [self._registered.update({cls: None}) for cls in admin_cls if cls]
         return admin_cls[0]
 
