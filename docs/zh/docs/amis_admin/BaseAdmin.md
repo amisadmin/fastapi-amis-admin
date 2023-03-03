@@ -55,12 +55,11 @@ classDiagram
     TemplateAdmin: +Jinja2Templates templates
     
     %% model
-    ModelFormAdmin --|> FormAdmin
-    ModelFormAdmin --|> SQLModelSelector
-    ModelAction --|> BaseFormAdmin
-    ModelAction --|> BaseModelAction
-    ModelAction: +ModelAdmin admin
-    ModelAction: +Action action
+    FormAction --|> AdminAction
+    FormAction --|> FormAdmin
+    ModelAction --|> FormAction
+    AdminAction: +ModelAdmin admin
+    AdminAction: +Action action
     
     class SQLModelSelector
     SQLModelSelector: +SQLModel model

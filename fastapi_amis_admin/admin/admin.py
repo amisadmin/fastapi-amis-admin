@@ -995,7 +995,7 @@ class ModelAdmin(BaseModelAdmin, PageAdmin):
 
     page_path: str = ""
     bind_model: bool = True
-    admin_action_maker: List[Callable[["BaseModelAdmin"], "AdminAction"]] = []  # Actions
+    admin_action_maker: List[Callable[["ModelAdmin"], "AdminAction"]] = []  # Actions
 
     def __init__(self, app: "AdminApp"):
         BaseModelAdmin.__init__(self, app)

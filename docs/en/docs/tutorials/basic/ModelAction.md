@@ -1,146 +1,146 @@
-# Model Actions
+# 模型动作
 
-A model management action is an action that is performed on one or more model data. For example, the most basic actions are add/read/update/delete; but often you may need to add some special commands. For example: change data state, perform certain tasks. In this case you can add custom model management actions. `fastapi_amis_admin`
-There are many types of model actions, here is a brief demonstration of a few of them that may be commonly used.
+模型管理动作指的是针对某一项或多项模型数据所进行的操作.例如:最基本的操作有增加/读取/更新/删除;
+但是很多时候你可能需要添加某些特殊的操作命令.例如:改变数据状态,
+执行某些任务.这时候你可以添加自定义模型管理动作.`fastapi_amis_admin`
+拥有多种类型模型动作,下面简单演示几种可能常用的动作方式.
 
-## Custom toolbar actions
+## 自定义工具条动作
 
-### Example-1
+### 示例-1
 
 ```python
 @site.register_admin
 class ArticleAdmin(admin.ModelAdmin):
-    page_schema = PageSchema(label='Article Admin', icon='fa fa-file')
+    page_schema = PageSchema(label='文章管理', icon='fa fa-file')
     model = Article
 
-    # Add custom toolbar actions
-    async def get_actions_on_header_toolbar(self, request: Request) -> List[Action]:
-        actions = await super().get_actions_on_header_toolbar(request)
+    # 添加自定义工具条动作
+    admin_action_maker = [
+        lambda admin: AdminAction(
+            admin=admin,
+            name='test_ajax_action',
+            action=ActionType.Ajax(
+                label='工具条ajax动作',
+                api='https://3xsw4ap8wah59.cfc-execute.bj.baidubce.com/api/amis-mock/mock2/form/saveForm'
+            ),
+            flags=['toolbar']
+        ),
+        lambda admin: AdminAction(
+            admin=admin,
+            name='test_link_action',
+            action=ActionType.Link(
+                label='工具条link动作',
+                link='https://github.com/amisadmin/fastapi_amis_admin'
+            ),
+            flags=['toolbar']
+        )
+    ]
 
-        actions.append(ActionType.Ajax(label='toolbar ajax action', 
-                                       api='https://3xsw4ap8wah59.cfc-execute.bj.baidubce.com/api/amis-mock/mock2/form/saveForm'))
-
-        actions.append(ActionType.Link(label='Toolbar link action', 
-                                       link='https://github.com/amisadmin/fastapi_amis_admin'))
-
-        return actions
 ```
 
-In this example, two simple model actions are added to the model list form toolbar by overriding the `get_actions_on_header_toolbar` method:
+在本示例中,通过`admin_action_maker`字段,在模型列表表格工具条添加了两个简单的模型动作:
 
-1. `ActionType.Ajax` action will send an ajax request to the specified api. 2.
-2. `ActionType.Link` action will jump to the specified link when clicked.
+1. `ActionType.Ajax`动作将发送一个ajax请求,到指定的api.
+2. `ActionType.Link`动作点击后将跳转到指定的链接.
 
-!!! note annotate "About `ActionType`"
+!!! note annotate "关于`ActionType`"
 
-    ActionType is actually a python model mapping of the [amis Action behavior button](https://baidu.gitee.io/amis/zh-CN/components/action?page=1) component, which supports many common behavior types. For example: ajax request/download request/jump link/send email/bounce window/drawer/copy text etc.
+    ActionType事实上是[amis Action 行为按钮](https://baidu.gitee.io/amis/zh-CN/components/action?page=1)组件的一个python模型映射,它支持多种常见的行为类型.例如:ajax请求/下载请求/跳转链接/发送邮件/弹窗/抽屉/复制文本等等.
     
-    fastapi_amis_admin is flexible because it is based on amis component-based development, you can freely replace or add built-in amis components in many places. Before that, I hope you can read the [amis documentation](https://baidu.gitee.io/amis/zh-CN/components/page) to have some understanding of the core components of amis.
+    fastapi_amis_admin的灵活性强体现之一,是因为它是基于amis的组件式开发,你可以在很多地方自由的替换或添加内置的amis组件.在此之前希望你能阅读[amis文档](https://baidu.gitee.io/amis/zh-CN/components/page),对amis核心组件有一定的了解.
 
-## Customizing individual actions
+## 自定义单项操作动作
 
-### Example-2
+### 示例-2
 
 ```python
-## Create a normal ajax action
+# 创建普通ajax动作
 class TestAction(admin.ModelAction):
-    ## Configure action basic information
-    action = ActionType.Dialog(label='Custom General Handling Action', dialog=Dialog())
-    
-	# Action handling
+    # 配置动作基本信息
+    action = ActionType.Dialog(label='自定义普通处理动作', dialog=Dialog())
+
+    # 动作处理
     async def handle(self, request: Request, item_id: List[str], data: Optional[BaseModel], **kwargs):
-        # Get a list of data selected by the user from the database
+        # 从数据库获取用户选择的数据列表
         items = await self.fetch_item_scalars(item_id)
-        # Perform action processing
+        # 执行动作处理
         ...
-        # Return the result of the action processing
-        return BaseApiOut(data=dict(item_id=item_id, data=data, items=list(items))))
+        # 返回动作处理结果
+        return BaseApiOut(data=dict(item_id=item_id, data=data, items=list(items)))
+
 
 @site.register_admin
 class ArticleAdmin(admin.ModelAdmin):
-    page_schema = PageSchema(label='article_admin', icon='fa fa-file')
+    page_schema = PageSchema(label='文章管理', icon='fa fa-file')
     model = Article
-
-    # Add a custom single action
-    async def get_actions_on_item(self, request: Request) -> List[Action]:
-        actions = await super().get_actions_on_item(request)
-        action = await self.test_action.get_action(request)
-        actions.append(action)
-        return actions
-    
-    # Register a custom route
-    def register_router(self):
-        super().register_router()
-        # Register action routes
-        self.test_action = TestAction(self).register_router()
+    # 添加自定义单项和批量操作动作
+    admin_action_maker = [
+        lambda admin: TestAction(admin, name='test_action',flags=['item','bulk'])
+    ]
 ```
 
-The work done in Example-2:
+示例-2中所完成的工作:
 
-- Defines a very basic model action class `TestAction`, whose core is the `handle` method. Please refer to: [ModelAction](/amis_admin/ModelAction/#baseformadmin)
+- 定义了一个最基础的模型动作类`TestAction`,它的核心是`handle`
+  方法.具体请参考: [ModelAction](/amis_admin/ModelAction/#baseformadmin)
 
-- By overriding the `register_router` method, the `TestAction` class is instantiated and the route is registered and bound to the current ModelAction class property field.
+- 通过`admin_action_maker`字段,实例化`TestAction`类,绑定到当前模型管理类的单项和批量操作动作.
 
-- Override the `get_actions_on_item` method to add the model actions corresponding to the `TestAction` instance to the list of single action actions.
 
-## Customizing Bulk Actions
+## 自定义批量操作动作
 
-### Example-3
+### 示例-3
 
 ```python
 from fastapi_amis_admin import admin
 
-## Create form ajax action
-class TestFormAction(admin.ModelAction):
-    # Configure action basic information
-    Dialog(label='Custom Form Action', dialog=Dialog())
 
-    # Create action form data model
+# 创建表单ajax动作
+class TestFormAction(admin.ModelAction):
+    # 配置动作基本信息
+    action = ActionType.Dialog(label='自定义表单动作', dialog=Dialog())
+
+    # 创建动作表单数据模型
     class schema(BaseModel):
-        username: str = Field(... , title='username')
-        password: str = Field(... , title='password', amis_form_item='input-password')
-        is_active: bool = Field(True, title='Active or not')
-            
-	# Action handling
+        username: str = Field(..., title='用户名')
+        password: str = Field(..., title='密码', amis_form_item='input-password')
+        is_active: bool = Field(True, title='是否激活')
+
+    # 动作处理
+
     async def handle(self, request: Request, item_id: List[str], data: schema, **kwargs):
-        # Get a list of data selected by the user from the database
+        # 从数据库获取用户选择的数据列表
         items = await self.fetch_item_scalars(item_id)
-        # Perform action processing
+        # 执行动作处理
         ...
-        # Return the result of the action processing
-        return BaseApiOut(data=dict(item_id=item_id, data=data, items=list(items))))
-    
+        # 返回动作处理结果
+        return BaseApiOut(data=dict(item_id=item_id, data=data, items=list(items)))
+
+
 @site.register_admin
 class ArticleAdmin(admin.ModelAdmin):
-    page_schema = PageSchema(label='article_admin', icon='fa fa-file')
+    page_schema = PageSchema(label='文章管理', icon='fa fa-file')
     model = Article
 
-    # Add custom bulk actions
-    async def get_actions_on_bulk(self, request: Request) -> List[Action]:
-        actions = await super().get_actions_on_bulk(request)
-        action = await self.test_form_action.get_action(request)
-        action.label = 'Custom Bulk Action'
-        actions.append(action.copy())
-        return actions
-    
-    # Register a custom route
-    def register_router(self):
-        super().register_router()
-        # Register action routes
-        self.test_form_action = TestFormAction(self).register_router()
+    # 添加自定义单项和批量操作动作
+    admin_action_maker = [
+        lambda admin: TestAction(admin, name='test_action',flags=['item','bulk'])
+    ]
+
 ```
 
-Example-3 is very similar to Example-2, but it allows the user to add a custom form, which is very useful in many cases.
+示例-3与示例-2非常相似, 但是它允许用户添加一个自定义表单,这个在很多情况下,非常有用.
 
-The definition and use of `schema` is very similar to `FormAdmin`.
+`schema`的定义与使用与`FormAdmin`非常相似.
 
-## For more usage
+## 更多用法
 
-Please refer to the [demo program](https://github.com/amisadmin/fastapi_amis_admin_demo), or read the following related documentation, which should help you.
+请参考[demo程序](https://github.com/amisadmin/fastapi_amis_admin_demo),或阅读以下相关文档,应该会对你有所帮助.
 
 - [ModelAdmin](/amis_admin/ModelAdmin/)
 
 - [ModelAction](/amis_admin/ModelAction/#baseformadmin)
 
-- [Action behavior button](https://baidu.gitee.io/amis/zh-CN/components/action?page=1)
+- [Action 行为按钮](https://baidu.gitee.io/amis/zh-CN/components/action?page=1)
 

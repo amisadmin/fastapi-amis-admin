@@ -54,6 +54,10 @@
 
 - 是否启用批量创建,默认为: False
 
+#### registered_admin_actions
+
+- 注册的管理动作列表,默认为: []
+
 ### 方法
 
 #### get_list_display
@@ -192,37 +196,27 @@ async def get_create_action(self, request: Request, bulk: bool = False) -> Optio
 async def get_update_action(self, request: Request, bulk: bool = False) -> Optional[Action]
 ```
 
-#### get_delete_action
+#### get_actions
 
-- 返回删除模型数据执行动作`amis Action`对象.
-- 参考: [Action 行为按钮](https://baidu.gitee.io/amis/zh-CN/components/action?page=1#弹框)
+返回列表表格指定标识的动作列表.当前支持的标识有:
+
+- item: 当前动作在列表中的每一行显示.
+- bulk: 当前动作在列表中的批量操作显示.
+- toolbar: 当前动作在列表中的工具栏显示.
+- column: 当前动作在列表中的最后一列显示.
+
 
 ```python
-async def get_delete_action(self, request: Request, bulk: bool = False) -> Optional[Action]
+async def get_actions(self, request: Request, flag:str) -> List[Action]
 ```
 
-#### get_actions_on_header_toolbar
+#### get_action
 
-- 返回列表表格顶部工具条执行动作列表.
+返回列表表格指定名称的Amis动作对象.name为`get_actions`返回的动作名称,具有唯一性.
 
-```python
-async def get_actions_on_header_toolbar(self, request: Request) -> List[Action]
-```
-
-#### get_actions_on_item
-
-- 返回列表表格数据单项操作执行动作列表.
 
 ```python
-async def get_actions_on_item(self, request: Request) -> List[Action]
-```
-
-#### get_actions_on_bulk
-
-- 返回列表表格数据批量操作执行动作列表.
-
-```python
-async def get_actions_on_bulk(self, request: Request) -> List[Action]
+async def get_action(self, request: Request, name: str) -> Action
 ```
 
 ## ModelAdmin
@@ -244,6 +238,11 @@ async def get_actions_on_bulk(self, request: Request) -> List[Action]
 - 如果设置成`True` ,则可以通过`AdminSite.get_model_admin`获取.
 
 - 在存在外键关联的模型中, 默认的`FormItem`(TablePicker),将使用绑定模型相对应的第一个管理页面.
+
+#### admin_action_maker
+
+- 模型管理页面动作生成器.生成器函数签名为`Callable[["ModelAdmin"], "AdminAction"]`.
+  
 
 ## ModelAdmin数据控制核心字段/方法关系图
 

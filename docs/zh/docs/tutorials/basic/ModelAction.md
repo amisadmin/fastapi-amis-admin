@@ -16,19 +16,30 @@ class ArticleAdmin(admin.ModelAdmin):
     model = Article
 
     # 添加自定义工具条动作
-    async def get_actions_on_header_toolbar(self, request: Request) -> List[Action]:
-        actions = await super().get_actions_on_header_toolbar(request)
+    admin_action_maker = [
+        lambda admin: AdminAction(
+            admin=admin,
+            name='test_ajax_action',
+            action=ActionType.Ajax(
+                label='工具条ajax动作',
+                api='https://3xsw4ap8wah59.cfc-execute.bj.baidubce.com/api/amis-mock/mock2/form/saveForm'
+            ),
+            flags=['toolbar']
+        ),
+        lambda admin: AdminAction(
+            admin=admin,
+            name='test_link_action',
+            action=ActionType.Link(
+                label='工具条link动作',
+                link='https://github.com/amisadmin/fastapi_amis_admin'
+            ),
+            flags=['toolbar']
+        )
+    ]
 
-        actions.append(ActionType.Ajax(label='工具条ajax动作', 
-                                       api='https://3xsw4ap8wah59.cfc-execute.bj.baidubce.com/api/amis-mock/mock2/form/saveForm'))
-
-        actions.append(ActionType.Link(label='工具条link动作', 
-                                       link='https://github.com/amisadmin/fastapi_amis_admin'))
-
-        return actions
 ```
 
-在本示例中,通过重载`get_actions_on_header_toolbar`方法,在模型列表表格工具条添加了两个简单的模型动作:
+在本示例中,通过`admin_action_maker`字段,在模型列表表格工具条添加了两个简单的模型动作:
 
 1. `ActionType.Ajax`动作将发送一个ajax请求,到指定的api.
 2. `ActionType.Link`动作点击后将跳转到指定的链接.
@@ -48,8 +59,8 @@ class ArticleAdmin(admin.ModelAdmin):
 class TestAction(admin.ModelAction):
     # 配置动作基本信息
     action = ActionType.Dialog(label='自定义普通处理动作', dialog=Dialog())
-    
-	# 动作处理
+
+    # 动作处理
     async def handle(self, request: Request, item_id: List[str], data: Optional[BaseModel], **kwargs):
         # 从数据库获取用户选择的数据列表
         items = await self.fetch_item_scalars(item_id)
@@ -58,23 +69,15 @@ class TestAction(admin.ModelAction):
         # 返回动作处理结果
         return BaseApiOut(data=dict(item_id=item_id, data=data, items=list(items)))
 
+
 @site.register_admin
 class ArticleAdmin(admin.ModelAdmin):
     page_schema = PageSchema(label='文章管理', icon='fa fa-file')
     model = Article
-
-    # 添加自定义单项操作动作
-    async def get_actions_on_item(self, request: Request) -> List[Action]:
-        actions = await super().get_actions_on_item(request)
-        action = await self.test_action.get_action(request)
-        actions.append(action)
-        return actions
-    
-    # 注册自定义路由
-    def register_router(self):
-        super().register_router()
-        # 注册动作路由
-        self.test_action = TestAction(self).register_router()
+    # 添加自定义单项和批量操作动作
+    admin_action_maker = [
+        lambda admin: TestAction(admin, name='test_action',flags=['item','bulk'])
+    ]
 ```
 
 示例-2中所完成的工作:
@@ -82,9 +85,8 @@ class ArticleAdmin(admin.ModelAdmin):
 - 定义了一个最基础的模型动作类`TestAction`,它的核心是`handle`
   方法.具体请参考: [ModelAction](/amis_admin/ModelAction/#baseformadmin)
 
-- 通过重载`register_router`方法,实例化`TestAction`类,并且注册路由,绑定到当前模型管理类属性字段当中.
+- 通过`admin_action_maker`字段,实例化`TestAction`类,绑定到当前模型管理类的单项和批量操作动作.
 
-- 重载`get_actions_on_item`方法,添加`TestAction`实例对应的模型动作,到单项操作动作列表.
 
 ## 自定义批量操作动作
 
@@ -92,6 +94,7 @@ class ArticleAdmin(admin.ModelAdmin):
 
 ```python
 from fastapi_amis_admin import admin
+
 
 # 创建表单ajax动作
 class TestFormAction(admin.ModelAction):
@@ -103,8 +106,9 @@ class TestFormAction(admin.ModelAction):
         username: str = Field(..., title='用户名')
         password: str = Field(..., title='密码', amis_form_item='input-password')
         is_active: bool = Field(True, title='是否激活')
-            
-	# 动作处理
+
+    # 动作处理
+
     async def handle(self, request: Request, item_id: List[str], data: schema, **kwargs):
         # 从数据库获取用户选择的数据列表
         items = await self.fetch_item_scalars(item_id)
@@ -112,25 +116,18 @@ class TestFormAction(admin.ModelAction):
         ...
         # 返回动作处理结果
         return BaseApiOut(data=dict(item_id=item_id, data=data, items=list(items)))
-    
+
+
 @site.register_admin
 class ArticleAdmin(admin.ModelAdmin):
     page_schema = PageSchema(label='文章管理', icon='fa fa-file')
     model = Article
 
-    # 添加自定义批量操作动作
-    async def get_actions_on_bulk(self, request: Request) -> List[Action]:
-        actions = await super().get_actions_on_bulk(request)
-        action = await self.test_form_action.get_action(request)
-        action.label = '自定义批量操作动作'
-        actions.append(action.copy())
-        return actions
-    
-    # 注册自定义路由
-    def register_router(self):
-        super().register_router()
-        # 注册动作路由
-        self.test_form_action = TestFormAction(self).register_router()
+    # 添加自定义单项和批量操作动作
+    admin_action_maker = [
+        lambda admin: TestAction(admin, name='test_action',flags=['item','bulk'])
+    ]
+
 ```
 
 示例-3与示例-2非常相似, 但是它允许用户添加一个自定义表单,这个在很多情况下,非常有用.

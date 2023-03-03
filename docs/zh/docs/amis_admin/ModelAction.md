@@ -1,49 +1,38 @@
-## BaseModelAction
+## AdminAction
 
-- 模型管理动作基类
+- 管理动作基类
 
 ### 字段
 
 #### admin
 
-- 当前动作所属模型管理对象.
+- 当前动作所属管理对象.
 
 #### action
 
 - 当前动作amis Action对象.
 - 参考:  [Action 行为按钮](https://baidu.gitee.io/amis/zh-CN/components/action?page=1#弹框)
 
-### 方法
+#### name
 
-#### register_router
+- 当前动作名称.必须存在,并且应当唯一,否则会覆盖之前的动作.
 
-- 注册动作路由.
+#### label
 
-#### fetch_item_scalars
+- 当前动作显示名称.
 
-- 获取选项数据.
+#### flags
 
-```python
-async def fetch_item_scalars(self,item_id: List[str]) -> List[BaseModel]:
-    stmt = select(self.admin.model).where(self.admin.pk.in_(item_id))
-    return await self.admin.db.async_execute(stmt)
-```
+当前动作标记.可用于决定在`ModelAdmin`中是否显示的方式.
 
-## ModelAction
+- item: 当前动作在列表中的每一行显示.
+- bulk: 当前动作在列表中的批量操作显示.
+- toolbar: 当前动作在列表中的工具栏显示.
+- column: 当前动作在列表中的最后一列显示.
 
-- 模型管理动作
+#### getter
 
-### 继承基类
-
-- #### [BaseFormAdmin](../FormAdmin/#baseformadmin)
-
-- #### [BaseModelAction](#basemodelaction)
-
-### 字段
-
-#### schema
-
-- 表单数据模型, 可以设置为: `None`.
+- 当前动作获取`Action`的方法.
 
 ### 方法
 
@@ -55,6 +44,25 @@ async def fetch_item_scalars(self,item_id: List[str]) -> List[BaseModel]:
 async def get_action(self, request: Request, **kwargs) -> Action
 ```
 
+
+## ModelAction
+
+- 模型管理动作
+
+### 继承基类
+
+- #### [FormAction](../FormAdmin/#baseformadmin)
+
+
+### 字段
+
+#### schema
+
+- 表单数据模型, 可以设置为: `None`.
+
+### 方法
+
+
 #### handle
 
 处理模型动作数据.
@@ -62,7 +70,6 @@ async def get_action(self, request: Request, **kwargs) -> Action
 - `request`: 当前请求对象.
 - `item_id`: 用户选择的模型数据主键列表.
 - `data`: 如果配置了动作表单数据模型`schema`,则表示表单数据对象.否则为`None`
-- `session`:当前管理模型所属数据库连接异步会话.
 
 ```python
 async def handle(

@@ -1,68 +1,75 @@
-## BaseModelAction
+## AdminAction
 
-- Model management action base class
+- 管理动作基类
 
-### fields
+### 字段
 
 #### admin
 
-- The model management object to which the current action belongs.
+- 当前动作所属管理对象.
 
 #### action
 
-- The current action amis Action object.
-- Reference: [Action Action Button](https://baidu.gitee.io/amis/zh-CN/components/action?page=1#popbox)
+- 当前动作amis Action对象.
+- 参考:  [Action 行为按钮](https://baidu.gitee.io/amis/zh-CN/components/action?page=1#弹框)
 
-### method
+#### name
 
-#### register_router
+- 当前动作名称.必须存在,并且应当唯一,否则会覆盖之前的动作.
 
-- Register action routes.
+#### label
 
-#### fetch_item_scalars
+- 当前动作显示名称.
 
-- Get option data.
+#### flags
 
-```python
-async def fetch_item_scalars(self,item_id: List[str]) -> List[BaseModel]:
-    stmt = select(self.admin.model).where(self.admin.pk.in_(item_id))
-    return await self.admin.db.async_execute(stmt)
-```
+当前动作标记.可用于决定在`ModelAdmin`中是否显示的方式.
 
-## ModelAction
+- item: 当前动作在列表中的每一行显示.
+- bulk: 当前动作在列表中的批量操作显示.
+- toolbar: 当前动作在列表中的工具栏显示.
+- column: 当前动作在列表中的最后一列显示.
 
-- Model management actions
+#### getter
 
-### Inherit from base class
+- 当前动作获取`Action`的方法.
 
-- #### [BaseFormAdmin](../FormAdmin/#baseformadmin)
-
-- #### [BaseModelAction](#basemodelaction)
-
-### fields
-
-#### schema
-
-- Form data model, can be set to: `None`.
-
-### method
+### 方法
 
 #### get_action
 
-- Get the current action amis Action object.
+- 获取当前动作amis Action对象.
 
 ```python
 async def get_action(self, request: Request, **kwargs) -> Action
 ```
 
+
+## ModelAction
+
+- 模型管理动作
+
+### 继承基类
+
+- #### [FormAction](../FormAdmin/#baseformadmin)
+
+
+### 字段
+
+#### schema
+
+- 表单数据模型, 可以设置为: `None`.
+
+### 方法
+
+
 #### handle
 
-Process model action data.
+处理模型动作数据.
 
-- `request`: The current request object.
-- `item_id`: A list of primary keys for model data selected by the user.
-- `data`: Form data object if the action form data model `schema` is configured. `None` otherwise
-- `session`: The asynchronous session of the database connection to which the current management model belongs.
+- `request`: 当前请求对象.
+- `item_id`: 用户选择的模型数据主键列表.
+- `data`: 如果配置了动作表单数据模型`schema`,则表示表单数据对象.否则为`None`
 
 ```python
 async def handle(
@@ -70,6 +77,7 @@ async def handle(
     request: Request, 
     item_id: List[str], 
     data: Optional[BaseModel],
-    **quargs
+    **kwargs
 ) -> BaseApiOut[Any]
 ```
+
