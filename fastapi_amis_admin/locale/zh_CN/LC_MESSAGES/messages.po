@@ -1,14 +1,14 @@
 # Chinese (Simplified, China) translations for PROJECT.
-# Copyright (C) 2022 ORGANIZATION
+# Copyright (C) 2023 ORGANIZATION
 # This file is distributed under the same license as the PROJECT project.
-# FIRST AUTHOR <EMAIL@ADDRESS>, 2022.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2023.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2022-05-21 22:09+0800\n"
-"PO-Revision-Date: 2022-05-21 22:12+0800\n"
+"POT-Creation-Date: 2023-03-03 08:56+0800\n"
+"PO-Revision-Date: 2023-03-03 08:57+0800\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: zh_Hans_CN\n"
 "Language-Team: zh_Hans_CN <LL@li.org>\n"
@@ -16,56 +16,65 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.10.1\n"
+"Generated-By: Babel 2.12.1\n"
 
-#: amis_admin/admin.py:175 amis_admin/admin.py:187 amis_admin/admin.py:190
+#: admin/admin.py:235 admin/admin.py:252 admin/admin.py:255
 msgid "Add Association"
 msgstr "添加关联"
 
-#: amis_admin/admin.py:176
+#: admin/admin.py:237
 msgid "Are you sure you want to add the association?"
 msgstr "你确定要添加关联吗?"
 
-#: amis_admin/admin.py:209
+#: admin/admin.py:278
 msgid "Remove Association"
 msgstr "移除关联"
 
-#: amis_admin/admin.py:210
+#: admin/admin.py:280
 msgid "Are you sure you want to remove the association?"
 msgstr "你确定要移除关联吗?"
 
-#: amis_admin/admin.py:335
+#: admin/admin.py:401
+msgid "Operation"
+msgstr "操作"
+
+#: admin/admin.py:449
 msgid "SHOWING ${items|count} OF ${total} RESULT(S)"
 msgstr "显示${total}条结果中的${items|count}条"
 
-#: amis_admin/admin.py:391
+#: admin/admin.py:535
 msgid "Filter"
 msgstr "数据筛选"
 
-#: amis_admin/admin.py:398
+#: admin/admin.py:542
 msgid "Clear"
 msgstr "清空"
 
-#: amis_admin/admin.py:403
+#: admin/admin.py:547
 msgid "Reset"
 msgstr "重置"
 
-#: amis_admin/admin.py:406
+#: admin/admin.py:550
 msgid "Search"
 msgstr "搜索"
 
-#: amis_admin/admin.py:443 amis_admin/admin.py:446
+#: admin/admin.py:623 admin/admin.py:626 admin/admin.py:1065
+msgid "View"
+msgstr "查看"
+
+#: admin/admin.py:636 admin/admin.py:639 admin/admin.py:1020
 msgid "Create"
 msgstr "新增"
 
+#: admin/admin.py:646 admin/admin.py:649 admin/admin.py:1057
 msgid "Bulk Create"
 msgstr "批量新增"
 
-#: amis_admin/admin.py:459 amis_admin/admin.py:461
+#: admin/admin.py:659 admin/admin.py:661 admin/admin.py:1027
 msgid "Update"
 msgstr "更新"
 
-#: amis_admin/admin.py:469 amis_admin/admin.py:471
+#: admin/admin.py:668 admin/admin.py:670 admin/admin.py:1073
 msgid "Bulk Update"
 msgstr "批量更新"
 
@@ -73,31 +82,31 @@ msgstr "批量更新"
 msgid "Bulk Delete"
 msgstr "批量删除"
 
-#: amis_admin/admin.py:485
-msgid "Are you sure you want to delete the selected rows?"
-msgstr "你确定要批量删除选中行吗?"
-
-#: amis_admin/admin.py:489
+#: admin/admin.py:1036
 msgid "Delete"
 msgstr "删除"
 
-#: amis_admin/admin.py:490
+#: admin/admin.py:1037
 #, python-format
 msgid "Are you sure you want to delete row ${%s}?"
 msgstr "你确定要删除行${%s}?"
 
-#: amis_admin/admin.py:864
+#: admin/admin.py:1047
+msgid "Are you sure you want to delete the selected rows?"
+msgstr "你确定要批量删除选中行吗?"
+
+#: admin/admin.py:1194
 msgid "Custom form actions"
 msgstr "自定义表单动作"
 
-msgid "Home"
-msgstr "首页"
-
+#: admin/parser.py:183
 msgid "YES"
 msgstr "是"
 
+#: admin/parser.py:184
 msgid "NO"
 msgstr "否"
 
-msgid "View"
-msgstr "查看"
+#: admin/site.py:50
+msgid "Home"
+msgstr "首页"
