@@ -390,6 +390,18 @@ class BaseModelAdmin(SQLModelCrud):
                 modelfield = self.parser.get_modelfield(field)
                 if modelfield:
                     columns.append(await self.get_list_column(request, modelfield))
+        # Append operation column
+        actions = await self.get_actions(request, flag="column")
+        if actions:
+            columns.append(
+                ColumnOperation(
+                    width=160,
+                    label=_("Operation"),
+                    breakpoint="*",
+                    buttons=actions,
+                )
+            )
+        # Append inline link model column
         for link_form in self.link_model_forms:
             form = await link_form.get_form_item(request)
             if form:
