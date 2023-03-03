@@ -673,8 +673,8 @@ class BaseModelAdmin(SQLModelCrud):
         else:
             return None
 
-    async def get_action(self, request: Request, key: str) -> Action:
-        admin_action = self.registered_admin_actions.get(key)
+    async def get_action(self, request: Request, name: str) -> Action:
+        admin_action = self.registered_admin_actions.get(name)
         return await admin_action.get_action(request)
 
     async def get_actions(self, request: Request, flag: str) -> List[Action]:
