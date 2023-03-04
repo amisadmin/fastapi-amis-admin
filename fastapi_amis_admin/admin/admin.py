@@ -682,8 +682,8 @@ class BaseModelAdmin(SQLModelCrud):
         for admin_action in self.registered_admin_actions.values():
             if flag not in admin_action.flags:
                 continue
-            if await self.has_action_permission(request, name=admin_action.action.name):
-                actions.append(await admin_action.get_action(request, name=admin_action.action.name))
+            if await self.has_action_permission(request, name=admin_action.name):
+                actions.append(await admin_action.get_action(request, name=admin_action.name))
         return list(filter(None, actions))
 
     async def has_action_permission(self, request: Request, name: str) -> bool:
@@ -1178,11 +1178,11 @@ class FormAction(FormAdmin, AdminAction):
         admin: ActionAdminT,
         *,
         action: Action = None,
-        flag: List[str] = None,
+        flags: List[str] = None,
         getter: Callable[[ActionAdminT, Request], ActionT] = None,
         **kwargs,
     ):
-        AdminAction.__init__(self, admin, action=action, flags=flag, getter=getter, **kwargs)
+        AdminAction.__init__(self, admin, action=action, flags=flags, getter=getter, **kwargs)
         self.router = self.admin.router
         FormAdmin.__init__(self, self.admin.app)
 
