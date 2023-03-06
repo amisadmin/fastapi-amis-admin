@@ -47,7 +47,8 @@ classDiagram
     PageAdmin --|> RouterAdmin
     PageAdmin: +Page page
     
-    BaseFormAdmin --|> PageAdmin
+    BaseActionAdmin --|> PageAdmin
+    BaseFormAdmin --|> BaseActionAdmin
     BaseFormAdmin: +Form form
     BaseFormAdmin: +BaseModel schema
     
@@ -60,7 +61,7 @@ classDiagram
     FormAction --|> AdminAction
     FormAction --|> FormAdmin
     ModelAction --|> FormAction
-    AdminAction: +ModelAdmin admin
+    AdminAction: +BaseActionAdmin admin
     AdminAction: +Action action
     
     class SQLModelSelector
@@ -69,6 +70,7 @@ classDiagram
     SQLModelCrud ..|> BaseCrud
     SQLModelCrud --|> SQLModelSelector
     
+    BaseModelAdmin --|> BaseActionAdmin
     BaseModelAdmin --|> SQLModelCrud
     ModelAdmin --|> BaseModelAdmin
 	ModelAdmin --|> PageAdmin

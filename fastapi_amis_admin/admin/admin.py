@@ -92,7 +92,6 @@ from fastapi_amis_admin.utils.translation import i18n as _
 BaseAdminT = TypeVar("BaseAdminT", bound="BaseAdmin")
 PageSchemaAdminT = TypeVar("PageSchemaAdminT", bound="PageSchemaAdmin")
 ActionT = Union[Action, Awaitable[Action]]
-ActionAdminT = Union["FormAdmin", "ModelAdmin"]
 
 
 class LinkModelForm:
@@ -320,7 +319,311 @@ class LinkModelForm:
         return self
 
 
-class BaseModelAdmin(SQLModelCrud):
+class BaseAdmin:
+    def __init__(self, app: "AdminApp"):
+        self.app = app
+        assert self.app, "app is None"
+
+    @cached_property
+    def site(self) -> "BaseAdminSite":
+        return self if self.app is self else self.app.site
+
+    @cached_property
+    def unique_id(self) -> str:
+        unique_str = f"{self.__class__.__module__}:{self.__class__.__qualname__}"
+        if self.app is not self:
+            unique_str += f"{self.app.unique_id}"
+        return md5_hex(unique_str)[:16]
+
+
+class PageSchemaAdmin(BaseAdmin):
+    page_schema: Union[PageSchema, str] = PageSchema()
+
+    def __init__(self, app: "AdminApp"):
+        super().__init__(app)
+        self.page_schema = self.get_page_schema()
+        if self.page_schema and self.page_schema.url:
+            self.page_schema.url = self.page_schema.url.replace(self.site.settings.site_url, "")
+
+    async def has_page_permission(self, request: Request, obj: "PageSchemaAdmin" = None, action: str = None) -> bool:
+        return self.app is self or await self.app.has_page_permission(request, obj=obj or self, action=action)
+
+    def get_page_schema(self) -> Optional[PageSchema]:
+        if self.page_schema:
+            if isinstance(self.page_schema, str):
+                self.page_schema = PageSchema(label=self.page_schema)
+            elif isinstance(self.page_schema, PageSchema):
+                self.page_schema = self.page_schema.copy(deep=True)
+                self.page_schema.label = self.page_schema.label or self.__class__.__name__
+            else:
+                raise TypeError()
+        return self.page_schema
+
+
+class LinkAdmin(PageSchemaAdmin):
+    link: str = ""
+
+    def get_page_schema(self) -> Optional[PageSchema]:
+        if super().get_page_schema():
+            assert self.link, "link is None"
+            self.page_schema.link = self.page_schema.link or self.link
+        return self.page_schema
+
+
+class IframeAdmin(PageSchemaAdmin):
+    iframe: Iframe = None
+    src: str = ""
+
+    def get_page_schema(self) -> Optional[PageSchema]:
+        if super().get_page_schema():
+            assert self.src, "src is None"
+            iframe = self.iframe or Iframe(src=self.src)
+            if self.site.settings.site_url and iframe.src.startswith(self.site.settings.site_url):
+                self.page_schema.url = iframe.src
+            else:
+                self.page_schema.url = re.sub(r"^https?:", "", iframe.src)
+            self.page_schema.schema_ = iframe
+        return self.page_schema
+
+
+class RouterAdmin(BaseAdmin, RouterMixin):
+    def __init__(self, app: "AdminApp"):
+        BaseAdmin.__init__(self, app)
+        RouterMixin.__init__(self)
+
+    def register_router(self):
+        raise NotImplementedError()
+
+    @cached_property
+    def router_path(self) -> str:
+        if self.router is self.app.router:
+            return self.app.router_path
+        return self.app.router_path + self.router.prefix
+
+
+class PageAdmin(PageSchemaAdmin, RouterAdmin):
+    """Amis page management"""
+
+    page: Page = None
+    page_path: Optional[str] = None
+    page_parser_mode: Literal["json", "html"] = "json"
+    page_route_kwargs: Dict[str, Any] = {}
+    template_name: str = ""
+    router_prefix = "/page"
+
+    def __init__(self, app: "AdminApp"):
+        RouterAdmin.__init__(self, app)
+        if self.page_path is None:
+            self.page_path = f"/{self.__class__.__module__}/{self.__class__.__name__}"
+        PageSchemaAdmin.__init__(self, app)
+
+    async def page_permission_depend(self, request: Request) -> bool:
+        return await self.has_page_permission(request, action="page") or self.error_no_page_permission(request)
+
+    def error_no_page_permission(self, request: Request):
+        raise HTTPException(
+            status_code=status.HTTP_307_TEMPORARY_REDIRECT,
+            detail="No page permissions",
+            headers={
+                "location": f"{self.app.site.router_path}/auth/form/login?redirect={request.url.path}",
+            },
+        )
+
+    async def get_page(self, request: Request) -> Page:
+        return self.page or Page()
+
+    def get_page_schema(self) -> Optional[PageSchema]:
+        if super().get_page_schema():
+            self.page_schema.url = f"{self.router_path}{self.page_path}"
+            self.page_schema.schemaApi = AmisAPI(
+                method="post",
+                url=f"{self.router_path}{self.page_path}",
+                data={},
+                cache=300000,
+            )
+            if self.page_parser_mode == "html":
+                self.page_schema.schema_ = Iframe(src=self.page_schema.url)
+        return self.page_schema
+
+    async def page_parser(self, request: Request, page: Page) -> Response:
+        if request.method == "GET":
+            result = page.amis_html(
+                template_path=self.template_name,
+                locale=_.get_language(),
+                cdn=self.site.settings.amis_cdn,
+                pkg=self.site.settings.amis_pkg,
+                theme=self.site.settings.amis_theme,
+                site_title=self.site.settings.site_title,
+                site_icon=self.site.settings.site_icon,
+            )
+            result = HTMLResponse(result)
+        else:
+            data = page.amis_dict()
+            if await request.body():
+                data = deep_update(data, (await request.json()).get("_update", {}))
+            result = BaseAmisApiOut(data=data)
+            result = JSONResponse(result.dict())
+        return result
+
+    def register_router(self):
+        self.router.add_api_route(
+            self.page_path,
+            self.route_page,
+            methods=["GET"],
+            dependencies=[Depends(self.page_permission_depend)],
+            include_in_schema=False,
+            response_class=HTMLResponse,
+            **self.page_route_kwargs,
+        )
+        self.router.add_api_route(
+            self.page_path,
+            self.route_page,
+            methods=["POST"],
+            dependencies=[Depends(self.page_permission_depend)],
+            response_model=BaseAmisApiOut,
+            include_in_schema=(self.page_parser_mode == "json"),
+            **self.page_route_kwargs,
+        )
+        return self
+
+    @property
+    def route_page(self) -> Callable:
+        async def route(request: Request, page: Page = Depends(self.get_page)):
+            return await self.page_parser(request, page)
+
+        return route
+
+
+class TemplateAdmin(PageAdmin):
+    """Jinja2 render template management"""
+
+    page: Dict[str, Any] = {}
+    page_parser_mode = "html"
+    templates: Jinja2Templates = None
+
+    def __init__(self, app: "AdminApp"):
+        assert self.templates, "templates:Jinja2Templates is None"
+        assert self.template_name, "template_name is None"
+        self.page_path = self.page_path or f"/{self.template_name}"
+        super().__init__(app)
+
+    async def page_parser(self, request: Request, page: Dict[str, Any]) -> Response:
+        page["request"] = request
+        return self.templates.TemplateResponse(self.template_name, page)
+
+    async def get_page(self, request: Request) -> Dict[str, Any]:
+        return {}
+
+
+class BaseActionAdmin(PageAdmin):
+    registered_admin_actions: Dict[str, "AdminAction"] = {}
+
+    async def get_action(self, request: Request, name: str) -> Action:
+        admin_action = self.registered_admin_actions.get(name)
+        return await admin_action.get_action(request)
+
+    async def get_actions(self, request: Request, flag: str) -> List[Action]:
+        actions = []
+        for admin_action in self.registered_admin_actions.values():
+            if flag not in admin_action.flags:
+                continue
+            if await self.has_action_permission(request, name=admin_action.name):
+                actions.append(await admin_action.get_action(request, name=admin_action.name))
+        return list(filter(None, actions))
+
+    async def has_action_permission(self, request: Request, name: str) -> bool:
+        return True
+
+
+class BaseFormAdmin(BaseActionAdmin, Generic[SchemaUpdateT]):
+    schema: Type[SchemaUpdateT] = None
+    schema_init_out: Type[Any] = Any
+    schema_submit_out: Type[Any] = Any
+    form: Form = None
+    form_init: bool = None
+    form_path: str = ""
+    route_submit: Callable = None
+    router_prefix: str = "/form"
+
+    def __init__(self, app: "AdminApp"):
+        super().__init__(app)
+        assert self.route_submit, "route_submit is None"
+        self.form_path = self.form_path or f"{self.page_path}/api"
+
+    async def get_page(self, request: Request) -> Page:
+        page = await super(BaseFormAdmin, self).get_page(request)
+        page.body = await self.get_form(request)
+        return page
+
+    async def get_form_item(self, request: Request, modelfield: ModelField) -> Union[FormItem, SchemaNode]:
+        return self.site.amis_parser.as_form_item(modelfield, set_default=True)
+
+    async def get_form(self, request: Request) -> Form:
+        form = self.form or Form()
+        form.api = AmisAPI(method="POST", url=f"{self.router_path}{self.form_path}")
+        form.initApi = AmisAPI(method="GET", url=f"{self.router_path}{self.form_path}") if self.form_init else None
+        form.title = ""
+        actions = await self.get_actions(request, flag="item")
+        if actions:
+            form.actions = actions
+        form.body = []
+        if self.schema:
+            for modelfield in self.schema.__fields__.values():
+                formitem = await self.get_form_item(request, modelfield)
+                if formitem:
+                    form.body.append(formitem)
+        return form
+
+    def register_router(self):
+        super().register_router()
+        self.router.add_api_route(
+            self.form_path,
+            self.route_submit,
+            methods=["POST"],
+            response_model=BaseApiOut[self.schema_submit_out],
+            dependencies=[Depends(self.page_permission_depend)],
+        )
+        if self.form_init:
+            self.schema_init_out = self.schema_init_out or schema_create_by_schema(
+                self.schema, f"{self.__class__.__name__}InitOut", set_none=True
+            )
+            self.router.add_api_route(
+                self.form_path,
+                self.route_init,
+                methods=["GET"],
+                response_model=BaseApiOut[self.schema_init_out],
+                dependencies=[Depends(self.page_permission_depend)],
+            )
+        return self
+
+    async def get_init_data(self, request: Request, **kwargs) -> BaseApiOut[Any]:
+        return BaseApiOut()
+
+    @property
+    def route_init(self):
+        async def route(request: Request):
+            return await self.get_init_data(request)
+
+        return route
+
+
+class FormAdmin(BaseFormAdmin):
+    """Form management"""
+
+    @property
+    def route_submit(self):
+        assert self.schema, "schema is None"
+
+        async def route(request: Request, data: self.schema):  # type:ignore
+            return await self.handle(request, data)  # type:ignore
+
+        return route
+
+    async def handle(self, request: Request, data: SchemaUpdateT, **kwargs) -> BaseApiOut[Any]:
+        raise NotImplementedError
+
+
+class BaseModelAdmin(SQLModelCrud, BaseActionAdmin):
     list_display: List[Union[SQLModelListField, TableColumn]] = []  # Fields to be displayed
     list_filter: List[Union[SQLModelListField, FormItem]] = []  # Query filterable fields
     list_per_page: int = 10  # Amount of data per page
@@ -330,7 +633,6 @@ class BaseModelAdmin(SQLModelCrud):
     enable_bulk_create: bool = False  # whether to enable batch creation
     search_fields: List[SQLModelListField] = []  # fuzzy search fields
     page_schema: Union[PageSchema, str] = PageSchema()
-    registered_admin_actions: Dict[str, "AdminAction"] = {}
 
     def __init__(self, app: "AdminApp"):
         assert self.model, "model is None"
@@ -673,22 +975,6 @@ class BaseModelAdmin(SQLModelCrud):
         else:
             return None
 
-    async def get_action(self, request: Request, name: str) -> Action:
-        admin_action = self.registered_admin_actions.get(name)
-        return await admin_action.get_action(request)
-
-    async def get_actions(self, request: Request, flag: str) -> List[Action]:
-        actions = []
-        for admin_action in self.registered_admin_actions.values():
-            if flag not in admin_action.flags:
-                continue
-            if await self.has_action_permission(request, name=admin_action.name):
-                actions.append(await admin_action.get_action(request, name=admin_action.name))
-        return list(filter(None, actions))
-
-    async def has_action_permission(self, request: Request, name: str) -> bool:
-        return True
-
     async def _conv_modelfields_to_formitems(
         self,
         request: Request,
@@ -709,288 +995,7 @@ class BaseModelAdmin(SQLModelCrud):
         return items
 
 
-class BaseAdmin:
-    def __init__(self, app: "AdminApp"):
-        self.app = app
-        assert self.app, "app is None"
-
-    @cached_property
-    def site(self) -> "BaseAdminSite":
-        return self if self.app is self else self.app.site
-
-    @cached_property
-    def unique_id(self) -> str:
-        unique_str = f"{self.__class__.__module__}:{self.__class__.__qualname__}"
-        if self.app is not self:
-            unique_str += f"{self.app.unique_id}"
-        return md5_hex(unique_str)[:16]
-
-
-class PageSchemaAdmin(BaseAdmin):
-    page_schema: Union[PageSchema, str] = PageSchema()
-
-    def __init__(self, app: "AdminApp"):
-        super().__init__(app)
-        self.page_schema = self.get_page_schema()
-        if self.page_schema and self.page_schema.url:
-            self.page_schema.url = self.page_schema.url.replace(self.site.settings.site_url, "")
-
-    async def has_page_permission(self, request: Request, obj: "PageSchemaAdmin" = None, action: str = None) -> bool:
-        return self.app is self or await self.app.has_page_permission(request, obj=obj or self, action=action)
-
-    def get_page_schema(self) -> Optional[PageSchema]:
-        if self.page_schema:
-            if isinstance(self.page_schema, str):
-                self.page_schema = PageSchema(label=self.page_schema)
-            elif isinstance(self.page_schema, PageSchema):
-                self.page_schema = self.page_schema.copy(deep=True)
-                self.page_schema.label = self.page_schema.label or self.__class__.__name__
-            else:
-                raise TypeError()
-        return self.page_schema
-
-
-class LinkAdmin(PageSchemaAdmin):
-    link: str = ""
-
-    def get_page_schema(self) -> Optional[PageSchema]:
-        if super().get_page_schema():
-            assert self.link, "link is None"
-            self.page_schema.link = self.page_schema.link or self.link
-        return self.page_schema
-
-
-class IframeAdmin(PageSchemaAdmin):
-    iframe: Iframe = None
-    src: str = ""
-
-    def get_page_schema(self) -> Optional[PageSchema]:
-        if super().get_page_schema():
-            assert self.src, "src is None"
-            iframe = self.iframe or Iframe(src=self.src)
-            if self.site.settings.site_url and iframe.src.startswith(self.site.settings.site_url):
-                self.page_schema.url = iframe.src
-            else:
-                self.page_schema.url = re.sub(r"^https?:", "", iframe.src)
-            self.page_schema.schema_ = iframe
-        return self.page_schema
-
-
-class RouterAdmin(BaseAdmin, RouterMixin):
-    def __init__(self, app: "AdminApp"):
-        BaseAdmin.__init__(self, app)
-        RouterMixin.__init__(self)
-
-    def register_router(self):
-        raise NotImplementedError()
-
-    @cached_property
-    def router_path(self) -> str:
-        if self.router is self.app.router:
-            return self.app.router_path
-        return self.app.router_path + self.router.prefix
-
-
-class PageAdmin(PageSchemaAdmin, RouterAdmin):
-    """Amis page management"""
-
-    page: Page = None
-    page_path: Optional[str] = None
-    page_parser_mode: Literal["json", "html"] = "json"
-    page_route_kwargs: Dict[str, Any] = {}
-    template_name: str = ""
-    router_prefix = "/page"
-
-    def __init__(self, app: "AdminApp"):
-        RouterAdmin.__init__(self, app)
-        if self.page_path is None:
-            self.page_path = f"/{self.__class__.__module__}/{self.__class__.__name__}"
-        PageSchemaAdmin.__init__(self, app)
-
-    async def page_permission_depend(self, request: Request) -> bool:
-        return await self.has_page_permission(request, action="page") or self.error_no_page_permission(request)
-
-    def error_no_page_permission(self, request: Request):
-        raise HTTPException(
-            status_code=status.HTTP_307_TEMPORARY_REDIRECT,
-            detail="No page permissions",
-            headers={
-                "location": f"{self.app.site.router_path}/auth/form/login?redirect={request.url.path}",
-            },
-        )
-
-    async def get_page(self, request: Request) -> Page:
-        return self.page or Page()
-
-    def get_page_schema(self) -> Optional[PageSchema]:
-        if super().get_page_schema():
-            self.page_schema.url = f"{self.router_path}{self.page_path}"
-            self.page_schema.schemaApi = AmisAPI(
-                method="post",
-                url=f"{self.router_path}{self.page_path}",
-                data={},
-                cache=300000,
-            )
-            if self.page_parser_mode == "html":
-                self.page_schema.schema_ = Iframe(src=self.page_schema.url)
-        return self.page_schema
-
-    async def page_parser(self, request: Request, page: Page) -> Response:
-        if request.method == "GET":
-            result = page.amis_html(
-                template_path=self.template_name,
-                locale=_.get_language(),
-                cdn=self.site.settings.amis_cdn,
-                pkg=self.site.settings.amis_pkg,
-                theme=self.site.settings.amis_theme,
-                site_title=self.site.settings.site_title,
-                site_icon=self.site.settings.site_icon,
-            )
-            result = HTMLResponse(result)
-        else:
-            data = page.amis_dict()
-            if await request.body():
-                data = deep_update(data, (await request.json()).get("_update", {}))
-            result = BaseAmisApiOut(data=data)
-            result = JSONResponse(result.dict())
-        return result
-
-    def register_router(self):
-        self.router.add_api_route(
-            self.page_path,
-            self.route_page,
-            methods=["GET"],
-            dependencies=[Depends(self.page_permission_depend)],
-            include_in_schema=False,
-            response_class=HTMLResponse,
-            **self.page_route_kwargs,
-        )
-        self.router.add_api_route(
-            self.page_path,
-            self.route_page,
-            methods=["POST"],
-            dependencies=[Depends(self.page_permission_depend)],
-            response_model=BaseAmisApiOut,
-            include_in_schema=(self.page_parser_mode == "json"),
-            **self.page_route_kwargs,
-        )
-        return self
-
-    @property
-    def route_page(self) -> Callable:
-        async def route(request: Request, page: Page = Depends(self.get_page)):
-            return await self.page_parser(request, page)
-
-        return route
-
-
-class TemplateAdmin(PageAdmin):
-    """Jinja2 render template management"""
-
-    page: Dict[str, Any] = {}
-    page_parser_mode = "html"
-    templates: Jinja2Templates = None
-
-    def __init__(self, app: "AdminApp"):
-        assert self.templates, "templates:Jinja2Templates is None"
-        assert self.template_name, "template_name is None"
-        self.page_path = self.page_path or f"/{self.template_name}"
-        super().__init__(app)
-
-    async def page_parser(self, request: Request, page: Dict[str, Any]) -> Response:
-        page["request"] = request
-        return self.templates.TemplateResponse(self.template_name, page)
-
-    async def get_page(self, request: Request) -> Dict[str, Any]:
-        return {}
-
-
-class BaseFormAdmin(PageAdmin, Generic[SchemaUpdateT]):
-    schema: Type[SchemaUpdateT] = None
-    schema_init_out: Type[Any] = Any
-    schema_submit_out: Type[Any] = Any
-    form: Form = None
-    form_init: bool = None
-    form_path: str = ""
-    route_submit: Callable = None
-    router_prefix: str = "/form"
-
-    def __init__(self, app: "AdminApp"):
-        super().__init__(app)
-        assert self.route_submit, "route_submit is None"
-        self.form_path = self.form_path or f"{self.page_path}/api"
-
-    async def get_page(self, request: Request) -> Page:
-        page = await super(BaseFormAdmin, self).get_page(request)
-        page.body = await self.get_form(request)
-        return page
-
-    async def get_form_item(self, request: Request, modelfield: ModelField) -> Union[FormItem, SchemaNode]:
-        return self.site.amis_parser.as_form_item(modelfield, set_default=True)
-
-    async def get_form(self, request: Request) -> Form:
-        form = self.form or Form()
-        form.api = AmisAPI(method="POST", url=f"{self.router_path}{self.form_path}")
-        form.initApi = AmisAPI(method="GET", url=f"{self.router_path}{self.form_path}") if self.form_init else None
-        form.title = ""
-        form.body = []
-        if self.schema:
-            for modelfield in self.schema.__fields__.values():
-                formitem = await self.get_form_item(request, modelfield)
-                if formitem:
-                    form.body.append(formitem)
-        return form
-
-    def register_router(self):
-        super().register_router()
-        self.router.add_api_route(
-            self.form_path,
-            self.route_submit,
-            methods=["POST"],
-            response_model=BaseApiOut[self.schema_submit_out],
-            dependencies=[Depends(self.page_permission_depend)],
-        )
-        if self.form_init:
-            self.schema_init_out = self.schema_init_out or schema_create_by_schema(
-                self.schema, f"{self.__class__.__name__}InitOut", set_none=True
-            )
-            self.router.add_api_route(
-                self.form_path,
-                self.route_init,
-                methods=["GET"],
-                response_model=BaseApiOut[self.schema_init_out],
-                dependencies=[Depends(self.page_permission_depend)],
-            )
-        return self
-
-    async def get_init_data(self, request: Request, **kwargs) -> BaseApiOut[Any]:
-        return BaseApiOut()
-
-    @property
-    def route_init(self):
-        async def route(request: Request):
-            return await self.get_init_data(request)
-
-        return route
-
-
-class FormAdmin(BaseFormAdmin):
-    """Form management"""
-
-    @property
-    def route_submit(self):
-        assert self.schema, "schema is None"
-
-        async def route(request: Request, data: self.schema):  # type:ignore
-            return await self.handle(request, data)  # type:ignore
-
-        return route
-
-    async def handle(self, request: Request, data: SchemaUpdateT, **kwargs) -> BaseApiOut[Any]:
-        raise NotImplementedError
-
-
-class ModelAdmin(BaseModelAdmin, PageAdmin):
+class ModelAdmin(BaseModelAdmin):
     """Model management"""
 
     page_path: str = ""
@@ -1133,12 +1138,12 @@ class ModelAdmin(BaseModelAdmin, PageAdmin):
 
 
 class AdminAction:
-    admin: ActionAdminT
+    admin: BaseActionAdmin
     action: Action = None
 
     def __init__(
         self,
-        admin: ActionAdminT,
+        admin: BaseActionAdmin,
         *,
         name: str = None,
         label: str = None,
@@ -1168,18 +1173,21 @@ class AdminAction:
             action = await action
         return action
 
+    async def has_page_permission(self, request: Request, obj: "PageSchemaAdmin" = None, action: str = None) -> bool:
+        return await self.admin.has_action_permission(request, name=self.name)
 
-class FormAction(FormAdmin, AdminAction):
+
+class FormAction(AdminAction, FormAdmin):
 
     action: Union[ActionType.Dialog, ActionType.Drawer]
 
     def __init__(
         self,
-        admin: ActionAdminT,
+        admin: BaseActionAdmin,
         *,
         action: Action = None,
         flags: List[str] = None,
-        getter: Callable[[ActionAdminT, Request], ActionT] = None,
+        getter: Callable[[BaseActionAdmin, Request], ActionT] = None,
         **kwargs,
     ):
         AdminAction.__init__(self, admin, action=action, flags=flags, getter=getter, **kwargs)
