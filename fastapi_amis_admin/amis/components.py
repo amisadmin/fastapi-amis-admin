@@ -30,6 +30,8 @@ from .utils import amis_templates
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
+RemarkT = Union[str, "Remark"]
+
 
 class Html(AmisNode):
     """Html"""
@@ -85,7 +87,7 @@ class Page(AmisNode):
     type: str = "page"  # Specify as Page component
     title: SchemaNode = None  # page title
     subTitle: SchemaNode = None  # Page subtitle
-    remark: "Remark" = None  # A prompt icon will appear near the title, and the content will be prompted when the
+    remark: RemarkT = None  # A prompt icon will appear near the title, and the content will be prompted when the
     # mouse is placed on it.
     aside: SchemaNode = None  # Add content to the sidebar area of the page
     asideResizor: bool = None  # whether the width of the sidebar area of the page can be adjusted
@@ -390,6 +392,7 @@ class PageSchema(AmisNode):
     children: List["PageSchema"] = None  # Submenu
     sort: int = None  # Unofficial attribute. sort
     tabsMode: TabsModeEnum = None  # Unofficial attribute. Display mode, the value can be line, card, radio, vertical,
+
     # chrome, simple, strong, tiled, sidebar
 
     def as_tabs_item(self, tabs_extra: Dict[str, Any] = None, item_extra: Dict[str, Any] = None):
@@ -593,7 +596,7 @@ class FormItem(AmisNode):
     label: Template = None  # form item label template or false
     labelAlign: str = None  # "right" # Form item label alignment, default right alignment, only effective when mode is
     value: Union[int, str] = None  # field value
-    labelRemark: "Remark" = None  # Form item label description
+    labelRemark: RemarkT = None  # Form item label description
     description: Template = None  # Form item description
     placeholder: str = None  # Form item description
     inline: bool = None  # whether it is inline mode
@@ -2208,7 +2211,7 @@ class TableColumn(AmisNode):
     sortable: bool = None  # False # whether it is sortable
     searchable: Union[bool, SchemaNode] = None  # False # whether to quickly search boolean|Schema
     width: Union[int, str] = None  # column width
-    remark: Remark = None  # prompt message
+    remark: RemarkT = None  # prompt message
     breakpoint: str = None  # *,ls. When there are too many columns, the content cannot be displayed completely,
     # some information can be displayed at the bottom, and users can expand to view the details
     filterable: Dict[str, Any] = None  # filter configuration
@@ -2706,7 +2709,7 @@ class Tasks(AmisNode):
     taskNameLabel: str = None  # "task name" # task name column description
     operationLabel: str = None  # "Operation" # Operation column description
     statusLabel: str = None  # "status" # description of status column
-    remarkLabel: str = None  # "Remark" # Remark column description
+    remarkLabel: RemarkT = None  # "Remark" # Remark column description
     btnText: str = None  # "Online" # Action button text
     retryBtnText: str = None  # "Retry" # Retry action button text
     btnClassName: str = None  # "btn-sm btn-default" # Configure the container button className
