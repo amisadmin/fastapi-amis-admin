@@ -643,7 +643,7 @@ class BaseModelAdmin(SQLModelCrud, BaseActionAdmin):
         self.parser = SQLModelFieldParser(default_model=self.model)
         list_display_insfield = self.parser.filter_insfield(self.list_display, save_class=(Label,))
         self.list_filter = self.list_filter and self.list_filter.copy() or list_display_insfield or [self.model]
-        self.list_filter.extend(self.search_fields)
+        self.list_filter.extend([field for field in self.search_fields if field not in self.list_filter])
         super().__init__(self.model, self.engine)
         self.fields.extend(list_display_insfield)
 
