@@ -642,14 +642,10 @@ class BaseModelAdmin(SQLModelCrud, BaseActionAdmin):
         self.amis_parser = self.app.site.amis_parser
         self.parser = SQLModelFieldParser(default_model=self.model)
         list_display_insfield = self.parser.filter_insfield(self.list_display, save_class=(Label,))
-        self.process_list_filter(list_display_insfield)
+        self.list_filter = self.list_filter and self.list_filter.copy() or list_display_insfield or [self.model]
+        self.list_filter.extend([field for field in self.search_fields if field not in self.list_filter])
         super().__init__(self.model, self.engine)
         self.fields.extend(list_display_insfield)
-
-    def process_list_filter(self, list_display_insfield: List[Union[InstrumentedAttribute, Any]]):
-        self.list_filter = self.list_filter and self.list_filter.copy() or list_display_insfield or [self.model]
-        self.list_filter.extend(self.search_fields)
-        self.list_filter = list(set(self.list_filter))
 
     @cached_property
     def router_path(self) -> str:
