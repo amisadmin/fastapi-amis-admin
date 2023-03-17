@@ -82,7 +82,6 @@ from fastapi_amis_admin.crud.schema import BaseApiOut, CrudEnum, Paginator
 from fastapi_amis_admin.crud.utils import (
     SqlalchemyDatabase,
     get_engine_db,
-    parser_item_id,
     parser_str_set_list,
     schema_create_by_schema,
 )
@@ -146,7 +145,7 @@ class LinkModelForm:
     def route_delete(self):
         async def route(
             request: Request,
-            item_id: List[str] = Depends(parser_item_id),
+            item_id: List[str] = Depends(self.pk_admin.filtered_item_id),
             link_id: str = Query(
                 ...,
                 min_length=1,
@@ -171,7 +170,7 @@ class LinkModelForm:
     def route_create(self):
         async def route(
             request: Request,
-            item_id: List[str] = Depends(parser_item_id),
+            item_id: List[str] = Depends(self.pk_admin.filtered_item_id),
             link_id: str = Query(
                 ...,
                 min_length=1,

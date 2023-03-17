@@ -433,6 +433,19 @@ class SQLModelCrud(BaseCrud, SQLModelSelector):
         return data
 
     @property
+    def filtered_item_id(self) -> Callable:
+        """Filter the id of the data that the user has permission to operate on."""
+
+        async def depend(
+            item_id: List[str] = Depends(parser_item_id),
+            stmt: Select = Depends(self._select_maker),
+        ):
+            filtered_id = await self.db.async_scalars(stmt.where(self.pk.in_(item_id)).with_only_columns([self.pk]))
+            return filtered_id.all()
+
+        return depend
+
+    @property
     def route_list(self) -> Callable:
         async def route(
             request: Request,
@@ -483,7 +496,7 @@ class SQLModelCrud(BaseCrud, SQLModelSelector):
     def route_read(self) -> Callable:
         async def route(
             request: Request,
-            item_id: List[str] = Depends(parser_item_id),
+            item_id: List[str] = Depends(self.filtered_item_id),
         ):
             if not await self.has_read_permission(request, item_id):
                 return self.error_no_router_permission(request)
@@ -498,7 +511,7 @@ class SQLModelCrud(BaseCrud, SQLModelSelector):
     def route_update(self) -> Callable:
         async def route(
             request: Request,
-            item_id: List[str] = Depends(parser_item_id),
+            item_id: List[str] = Depends(self.filtered_item_id),
             data: self.schema_update = Body(...),  # type: ignore
         ):
             if not await self.has_update_permission(request, item_id, data):
@@ -516,7 +529,7 @@ class SQLModelCrud(BaseCrud, SQLModelSelector):
     def route_delete(self) -> Callable:
         async def route(
             request: Request,
-            item_id: List[str] = Depends(parser_item_id),
+            item_id: List[str] = Depends(self.filtered_item_id),
         ):
             if not await self.has_delete_permission(request, item_id):
                 return self.error_no_router_permission(request)
