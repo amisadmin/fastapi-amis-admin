@@ -2,7 +2,7 @@ import os.path
 import platform
 import time
 import uuid
-
+from pathlib import Path
 import aiofiles
 from fastapi import FastAPI, File, UploadFile
 from pydantic import BaseModel
@@ -95,7 +95,7 @@ class FileAdmin(admin.RouterAdmin):
 
     def get_filename(self, file: UploadFile):
         filename = str(uuid.uuid4()).replace("-", "") + os.path.splitext(file.filename)[1]
-        return os.path.join(time.strftime("%Y%m"), filename)
+        return Path().joinpath(time.strftime("%Y%m"),filename).as_posix()
 
     def mount_staticfile(self) -> str:
         os.path.exists(self.file_directory) or os.makedirs(self.file_directory)
