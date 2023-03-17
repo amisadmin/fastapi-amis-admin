@@ -4,7 +4,6 @@ from .admin import (
     BaseAdmin,
     BaseAdminSite,
     BaseFormAdmin,
-    BaseModelAdmin,
     FormAction,
     FormAdmin,
     IframeAdmin,

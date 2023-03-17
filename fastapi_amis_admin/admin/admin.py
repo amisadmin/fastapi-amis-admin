@@ -99,7 +99,7 @@ class LinkModelForm:
 
     def __init__(
         self,
-        pk_admin: "BaseModelAdmin",
+        pk_admin: "ModelAdmin",
         display_admin: "ModelAdmin",
         link_model: Union[SQLModel, Table],
         link_col: Column,
@@ -116,7 +116,7 @@ class LinkModelForm:
         self.path = f"/{self.display_admin.model.__name__}"
 
     @classmethod
-    def bind_model_admin(cls, pk_admin: "BaseModelAdmin", insfield: InstrumentedAttribute) -> Optional["LinkModelForm"]:
+    def bind_model_admin(cls, pk_admin: "ModelAdmin", insfield: InstrumentedAttribute) -> Optional["LinkModelForm"]:
         if not isinstance(insfield.prop, RelationshipProperty):
             return None
         table = insfield.prop.secondary
@@ -159,16 +159,7 @@ class LinkModelForm:
                 return self.pk_admin.error_no_router_permission(request)
             stmt = (
                 delete(self.link_model)
-                .where(
-                    self.link_col.in_(
-                        list(
-                            map(
-                                get_python_type_parse(self.link_col),
-                                parser_str_set_list(link_id),
-                            )
-                        )
-                    )
-                )
+                .where(self.link_col.in_(list(map(get_python_type_parse(self.link_col), parser_str_set_list(link_id)))))
                 .where(self.item_col.in_(list(map(get_python_type_parse(self.item_col), item_id))))
             )
             result = await self.pk_admin.db.async_execute(stmt)
@@ -516,7 +507,16 @@ class TemplateAdmin(PageAdmin):
 
 
 class BaseActionAdmin(PageAdmin):
-    registered_admin_actions: Dict[str, "AdminAction"] = {}
+    admin_action_maker: List[Callable[["BaseActionAdmin"], "AdminAction"]] = []  # Actions
+
+    @cached_property
+    def registered_admin_actions(self) -> Dict[str, "AdminAction"]:
+        admin_actions = {}
+        for maker in self.admin_action_maker:
+            admin_action = maker(self)
+            if admin_action:
+                admin_actions[admin_action.name] = admin_action
+        return admin_actions
 
     async def get_action(self, request: Request, name: str) -> Action:
         admin_action = self.registered_admin_actions.get(name)
@@ -533,6 +533,12 @@ class BaseActionAdmin(PageAdmin):
 
     async def has_action_permission(self, request: Request, name: str) -> bool:
         return True
+
+    def register_router(self):
+        for admin_action in self.registered_admin_actions.values():
+            if isinstance(admin_action, RouterAdmin):
+                admin_action.register_router()
+        return super().register_router()
 
 
 class BaseFormAdmin(BaseActionAdmin, Generic[SchemaUpdateT]):
@@ -623,7 +629,7 @@ class FormAdmin(BaseFormAdmin):
         raise NotImplementedError
 
 
-class BaseModelAdmin(SQLModelCrud, BaseActionAdmin):
+class ModelAdmin(SQLModelCrud, BaseActionAdmin):
     list_display: List[Union[SQLModelListField, TableColumn]] = []  # Fields to be displayed
     list_filter: List[Union[SQLModelListField, FormItem]] = []  # Query filterable fields
     list_per_page: int = 10  # Amount of data per page
@@ -633,6 +639,9 @@ class BaseModelAdmin(SQLModelCrud, BaseActionAdmin):
     enable_bulk_create: bool = False  # whether to enable batch creation
     search_fields: List[SQLModelListField] = []  # fuzzy search fields
     page_schema: Union[PageSchema, str] = PageSchema()
+    page_path: str = ""
+    bind_model: bool = True
+    admin_action_maker: List[Callable[["ModelAdmin"], "AdminAction"]] = []  # Actions
 
     def __init__(self, app: "AdminApp"):
         assert self.model, "model is None"
@@ -642,14 +651,17 @@ class BaseModelAdmin(SQLModelCrud, BaseActionAdmin):
         self.amis_parser = self.app.site.amis_parser
         self.parser = SQLModelFieldParser(default_model=self.model)
         list_display_insfield = self.parser.filter_insfield(self.list_display, save_class=(Label,))
-        self.list_filter = self.list_filter and self.list_filter.copy() or list_display_insfield or [self.model]
+        self.list_filter = self.list_filter and self.list_filter.copy() or list_display_insfield or []
         self.list_filter.extend([field for field in self.search_fields if field not in self.list_filter])
-        super().__init__(self.model, self.engine)
+        SQLModelCrud.__init__(self, self.model, self.engine)
         self.fields.extend(list_display_insfield)
+        BaseActionAdmin.__init__(self, app)
 
-    @cached_property
-    def router_path(self) -> str:
-        return self.app.router_path + self.router.prefix
+    @property
+    def router_prefix(self):
+        if issubclass(self.__class__.__base__, ModelAdmin):
+            return f"/{self.__class__.__name__}"
+        return f"/{self.model.__name__}"
 
     def get_link_model_forms(self) -> List[LinkModelForm]:
         self.link_model_forms = list(
@@ -668,7 +680,10 @@ class BaseModelAdmin(SQLModelCrud, BaseActionAdmin):
 
     async def get_list_column(self, request: Request, modelfield: ModelField) -> TableColumn:
         column = self.amis_parser.as_table_column(modelfield)
-        if await self.has_update_permission(request, None, None) and modelfield.name in self.schema_update.__fields__:
+        if (
+            await self.has_update_permission(request, None, None)  # type: ignore
+            and modelfield.name in self.schema_update.__fields__
+        ):
             item = await self.get_form_item(request, modelfield, action=CrudEnum.update)
             if isinstance(item, BaseModel):
                 item = item.dict(exclude_none=True, by_alias=True, exclude={"name", "label"})
@@ -994,24 +1009,6 @@ class BaseModelAdmin(SQLModelCrud, BaseActionAdmin):
         items.sort(key=lambda i: isinstance(i, Service))
         return items
 
-
-class ModelAdmin(BaseModelAdmin):
-    """Model management"""
-
-    page_path: str = ""
-    bind_model: bool = True
-    admin_action_maker: List[Callable[["ModelAdmin"], "AdminAction"]] = []  # Actions
-
-    def __init__(self, app: "AdminApp"):
-        BaseModelAdmin.__init__(self, app)
-        PageAdmin.__init__(self, app)
-
-    @property
-    def router_prefix(self):
-        if issubclass(self.__class__.__base__, ModelAdmin):
-            return f"/{self.__class__.__name__}"
-        return f"/{self.model.__name__}"
-
     @cached_property
     def registered_admin_actions(self) -> Dict[str, "AdminAction"]:
         admin_actions = {
@@ -1083,9 +1080,6 @@ class ModelAdmin(BaseModelAdmin):
     def register_router(self):
         for form in self.link_model_forms:
             form.register_router()
-        for admin_action in self.registered_admin_actions.values():
-            if isinstance(admin_action, RouterAdmin):
-                admin_action.register_router()
         self.register_crud()
         super(ModelAdmin, self).register_router()
         return self
@@ -1178,7 +1172,6 @@ class AdminAction:
 
 
 class FormAction(AdminAction, FormAdmin):
-
     action: Union[ActionType.Dialog, ActionType.Drawer]
 
     def __init__(
@@ -1235,10 +1228,11 @@ class ModelAction(FormAction):
     @property
     def route_submit(self):
         default = ... if self.schema else None
+        schema = self.schema or Any
 
         async def route(
             request: Request,
-            data: self.schema = Body(default=default),  # type:ignore
+            data: schema = Body(default=default),  # type:ignore
             item_id: str = Query(
                 None,
                 title="item_id",
