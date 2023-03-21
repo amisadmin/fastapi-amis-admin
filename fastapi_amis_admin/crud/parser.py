@@ -126,17 +126,12 @@ class SQLModelFieldParser:
         """sqlalchemy select keys"""
         return [self.get_alias(column) for column in stmt.exported_columns]
 
-    def conv_row_to_dict(self, rows: Union[Row, List[Row]]) -> Union[None, Dict[str, Any], List[Dict[str, Any]]]:
+    def conv_row_to_dict(self, rows: List[Row]) -> List[Dict[str, Any]]:
         """sqlalchemy row to dict"""
         if not rows:
-            return None
-        elif isinstance(rows, list):
-            keys = self.get_row_keys(rows[0])
-            data = [dict(zip(keys, row)) for row in rows]
-        else:
-            keys = self.get_row_keys(rows)
-            data = dict(zip(keys, rows))
-        return data
+            return []
+        keys = self.get_row_keys(rows[0])
+        return [dict(zip(keys, row)) for row in rows]
 
     def get_sqlmodel_insfield(self, model: Type[SQLModel]) -> List[InstrumentedAttribute]:
         """Get all database fields in the sqlmodel model, excluding relationship fields."""
