@@ -199,6 +199,8 @@ class SQLModelSelector(Generic[SchemaModelT]):
         value: Any, operator: str = "__eq__", python_type_parse: Callable = str
     ) -> Tuple[Optional[str], Union[tuple, None]]:
         if isinstance(value, str):
+            if not value:
+                return None, None
             match = sql_operator_pattern.match(value)
             if match:
                 op_key = match.group(1)
