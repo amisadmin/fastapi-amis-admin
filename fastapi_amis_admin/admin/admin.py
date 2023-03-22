@@ -789,6 +789,7 @@ class ModelAdmin(SQLModelCrud, BaseActionAdmin):
             columns=await self.get_list_columns(request),
             primaryField=self.pk_name,
             quickSaveItemApi=f"put:{self.router_path}/item/${self.pk_name}",
+            defaultParams={k: v for k, v in request.query_params.items() if v},
         )
         if self.link_model_forms:
             table.footable = True
