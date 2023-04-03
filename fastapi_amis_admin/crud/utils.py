@@ -1,3 +1,4 @@
+from enum import Enum
 from typing import Any, Dict, Iterable, List, Set, Type, Union
 
 from fastapi.params import Path
@@ -17,7 +18,11 @@ SqlalchemyDatabase = Union[Engine, AsyncEngine, Database, AsyncDatabase]
 def validator_skip_blank(cls, v, config: BaseConfig, field: ModelField, *args, **kwargs):
     if isinstance(v, str):
         if not v:
-            return "" if issubclass(field.type_, str) else None
+            if not issubclass(field.type_, str):
+                return None
+            if issubclass(field.type_, Enum) and "" not in field.type_.__members__:
+                return None
+            return ""
         if issubclass(field.type_, int):
             v = int(v)
     return v
