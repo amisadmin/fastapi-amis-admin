@@ -386,7 +386,7 @@ class PageSchema(AmisNode):
     rewrite: str = None  # Change to rendering pages of other paths, the page address will not be modified in this way.
     isDefaultPage: Union[str, bool] = None  # Useful when you need a custom 404 page, don't have multiple such pages,
     # because only the first one will be useful.
-    visible: str = None  # Some pages may not want to appear in the menu, you can configure it to false, and the
+    visible: Union[str, bool] = None  # Some pages may not want to appear in the menu, you can configure it to false, and the
     # route with parameters does not need to be configured, it is directly invisible.
     className: str = None  # Menu class name.
     children: List["PageSchema"] = None  # Submenu
@@ -1152,6 +1152,16 @@ class Markdown(AmisNode):
     options: dict = None  # html, whether to support html tags, default false;
     # linkify, whether to automatically identify the link, the default value is true; breaks, whether the carriage
     # return is a newline, the default value is false
+
+
+class OfficeViewer(AmisNode):
+    """Office Viewer：https://aisuda.bce.baidu.com/amis/zh-CN/components/office-viewer"""
+
+    type: str = "office-viewer"
+    src: API = None  # Document address
+    loading: bool = None  # Whether to display the loading icon
+    enableVar: bool = None  # Whether to enable variable replacement function
+    wordOptions: dict = None  # Word rendering configuration
 
 
 class InputFile(FormItem):
