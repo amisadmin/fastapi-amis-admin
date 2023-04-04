@@ -240,11 +240,11 @@ class AmisParser:
         elif issubclass(type_, int):
             kwargs["type"] = "input-number"
             kwargs["precision"] = 0
-            kwargs["validations"] = Validation(isInt=True)
+            kwargs["validations"] = Validation(isInt=True).amis_dict()
         elif issubclass(type_, float):
             kwargs["type"] = "input-number"
             kwargs["precision"] = 3
-            kwargs["validations"] = Validation(isFloat=True)
+            kwargs["validations"] = Validation(isFloat=True).amis_dict()
         elif issubclass(type_, datetime.datetime):
             kwargs["type"] = "input-datetime"
             kwargs["format"] = "YYYY-MM-DD HH:mm:ss"
@@ -261,7 +261,7 @@ class AmisParser:
             kwargs["type"] = "input-sub-form"
             kwargs["labelField"] = get_model_label_field_name(type_)
             kwargs["btnLabel"] = getattr(type_.Config, "title", None)
-            kwargs["form"] = self.as_amis_form(type_, is_filter=is_filter)
+            kwargs["form"] = self.as_amis_form(type_, is_filter=is_filter).amis_dict()
         else:
             kwargs["type"] = "input-text"
         return kwargs

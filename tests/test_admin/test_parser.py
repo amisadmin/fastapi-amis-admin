@@ -242,8 +242,8 @@ def test_field_model():
     assert formitem.type == "input-sub-form"
     assert formitem.name == "role"
     assert formitem.label == "角色"
-    assert formitem.form.body[0].name == "id"  # type: ignore
-    assert formitem.form.body[1].name == "name"  # type: ignore
+    assert formitem.form["body"][0]["name"] == "id"  # type: ignore
+    assert formitem.form["body"][1]["name"] == "name"  # type: ignore
 
     modelfield2 = User.__fields__["roles"]
     assert modelfield2.type_ == Role
