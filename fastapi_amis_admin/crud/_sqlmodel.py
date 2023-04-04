@@ -463,7 +463,9 @@ class SQLModelCrud(BaseCrud, SQLModelSelector):
             if data.filters:
                 stmt = stmt.filter(*self.calc_filter_clause(data.filters))
             if paginator.show_total:
-                data.total = await self.db.async_scalar(select(func.count("*")).select_from(stmt.subquery()))
+                data.total = await self.db.async_scalar(
+                    select(func.count("*")).select_from(stmt.with_only_columns([self.pk]).subquery())
+                )
             orderBy = self._calc_ordering(paginator.orderBy, paginator.orderDir)
             if orderBy:
                 stmt = stmt.order_by(*orderBy)
