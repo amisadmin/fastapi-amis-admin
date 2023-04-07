@@ -350,13 +350,15 @@ class SQLModelCrud(BaseCrud, SQLModelSelector):
     def update_item(self, obj: SchemaModelT, values: Dict[str, Any]) -> None:
         """update schema_update data to database,support relational attributes"""
         for k, v in values.items():
-            if isinstance(v, dict) and hasattr(obj, k):
-                # Relational attributes, nested;such as: setattr(article.content, "body", "new body")
-                sub = getattr(obj, k)
-                if sub and not isinstance(sub, dict):  # Ensure that the attribute is an object.
-                    self.update_item(getattr(obj, k), v)
-                    continue
-            setattr(obj, k, v)
+            if not hasattr(obj, k):
+                continue
+            if not isinstance(v, dict):
+                setattr(obj, k, v)
+                continue
+            # Relational attributes, nested;such as: setattr(article.content, "body", "new body")
+            sub = getattr(obj, k)
+            if sub and not isinstance(sub, dict):  # Ensure that the attribute is an object.
+                self.update_item(sub, v)
 
     def delete_item(self, obj: SchemaModelT) -> None:
         """delete database data"""

@@ -106,7 +106,7 @@ class AmisParser:
         Returns:
             amis.Form
         """
-        form = amis.Form(title=getattr(model.Config, "title", None))
+        form = amis.Form(title=getattr(model.Config, "title", None), size="lg")
         form.body = [
             self.as_form_item(modelfield, set_default=set_default, is_filter=is_filter)
             for modelfield in model.__fields__.values()
