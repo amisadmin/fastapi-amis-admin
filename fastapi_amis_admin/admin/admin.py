@@ -540,23 +540,22 @@ class BaseActionAdmin(PageAdmin):
         return super().register_router()
 
 
-class BaseFormAdmin(BaseActionAdmin, Generic[SchemaUpdateT]):
+class FormAdmin(BaseActionAdmin, Generic[SchemaUpdateT]):
     schema: Type[SchemaUpdateT] = None
     schema_init_out: Type[Any] = Any
     schema_submit_out: Type[Any] = Any
     form: Form = None
     form_init: bool = None
     form_path: str = ""
-    route_submit: Callable = None
     router_prefix: str = "/form"
 
     def __init__(self, app: "AdminApp"):
         super().__init__(app)
-        assert self.route_submit, "route_submit is None"
+        assert self.schema, "schema is None"
         self.form_path = self.form_path or f"{self.page_path}/api"
 
     async def get_page(self, request: Request) -> Page:
-        page = await super(BaseFormAdmin, self).get_page(request)
+        page = await super(FormAdmin, self).get_page(request)
         page.body = await self.get_form(request)
         return page
 
@@ -611,17 +610,8 @@ class BaseFormAdmin(BaseActionAdmin, Generic[SchemaUpdateT]):
 
         return route
 
-    async def has_action_permission(self, request: Request, name: str) -> bool:
-        return await self.has_page_permission(request, action=name)
-
-
-class FormAdmin(BaseFormAdmin):
-    """Form management"""
-
     @property
     def route_submit(self):
-        assert self.schema, "schema is None"
-
         async def route(request: Request, data: self.schema):  # type:ignore
             return await self.handle(request, data)  # type:ignore
 
@@ -629,6 +619,9 @@ class FormAdmin(BaseFormAdmin):
 
     async def handle(self, request: Request, data: SchemaUpdateT, **kwargs) -> BaseApiOut[Any]:
         raise NotImplementedError
+
+    async def has_action_permission(self, request: Request, name: str) -> bool:
+        return await self.has_page_permission(request, action=name)
 
 
 class ModelAdmin(SQLModelCrud, BaseActionAdmin):

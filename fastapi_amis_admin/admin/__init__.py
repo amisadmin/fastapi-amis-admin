@@ -3,7 +3,6 @@ from .admin import (
     AdminApp,
     BaseAdmin,
     BaseAdminSite,
-    BaseFormAdmin,
     FormAction,
     FormAdmin,
     IframeAdmin,
