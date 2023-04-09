@@ -53,7 +53,7 @@ markdown_extensions:
   - pymdownx.tilde
 
 extra_javascript:
-  - https://unpkg.com/mermaid/dist/mermaid.min.js
+  - https://cdn.jsdelivr.net/npm/mermaid@9.4.3/dist/mermaid.min.js
   - https://hm.baidu.com/hm.js?0b1b8a60b3a22ae45d1f04245f409fe2
   - js/chat.js
   - js/sidecar-1.5.0.js
