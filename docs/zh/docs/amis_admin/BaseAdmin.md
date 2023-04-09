@@ -46,11 +46,9 @@ classDiagram
     PageAdmin: +Page page
     
     BaseActionAdmin --|> PageAdmin
-    BaseFormAdmin --|> BaseActionAdmin
-    BaseFormAdmin: +Form form
-    BaseFormAdmin: +BaseModel schema
-    
-    FormAdmin --|> BaseFormAdmin
+    FormAdmin --|> BaseActionAdmin
+    FormAdmin: +Form form
+    FormAdmin: +BaseModel schema
     
     TemplateAdmin --|> PageAdmin
     TemplateAdmin: +Jinja2Templates templates
@@ -68,9 +66,8 @@ classDiagram
     SQLModelCrud ..|> BaseCrud
     SQLModelCrud --|> SQLModelSelector
     
-    BaseModelAdmin --|> BaseActionAdmin
-    BaseModelAdmin --|> SQLModelCrud
-    ModelAdmin --|> BaseModelAdmin
+    ModelAdmin --|> BaseActionAdmin
+    ModelAdmin --|> SQLModelCrud
 	ModelAdmin --|> PageAdmin
 	
 	%% group,app,site
@@ -119,8 +116,8 @@ TableCRUD --|> CRUD
 Table *-- TableColumn
 TableColumn --|> AmisNode
 Action --|> AmisNode
-ModelAction --> Form
-ModelAction --> Action
+FormAction --> Form
+FormAction --> Action
 ModelAdmin --> TableCRUD
 ModelAdmin --> Action
 
