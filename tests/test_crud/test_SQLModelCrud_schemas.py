@@ -221,7 +221,8 @@ async def test_schema_update_relationship(app: FastAPI, async_client: AsyncClien
     assert article.title == "new_title"
 
     res = await async_client.put(
-        "/article/item/1", json={"content": {"id": 2, "content": "new_content"}}  # will be ignored by `update_exclude`
+        "/article/item/1",
+        json={"content": {"id": 2, "content": "new_content"}},  # will be ignored by `update_exclude`
     )
     assert res.json()["data"] == 1
     content = await async_session.get(ArticleContent, 1, with_for_update=True)

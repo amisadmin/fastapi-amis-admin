@@ -66,6 +66,7 @@ test = [
 dev = [
     "fastapi-amis-admin[test]",
     "pre-commit>=2.20.0",
+    "ruff>=0.0.261",
 ]
 cli = [
     "fastapi-amis-admin-cli>=0.1.0,<0.2.0",
@@ -83,14 +84,28 @@ testpaths = [
 # pytest-asyncio
 asyncio_mode = "auto"
 
-[tool.isort]
-profile = "black"
-atomic = true
-filter_files = true
-
 [tool.black]
 line-length = 130
 include = '\.pyi?$'
+
+[tool.ruff]
+select = [
+    "E",  # pycodestyle errors
+    "W",  # pycodestyle warnings
+    "F",  # pyflakes
+    "I",  # isort
+    "C",  # flake8-comprehensions
+    "B",  # flake8-bugbear
+]
+ignore = [
+    "B008",  # do not perform function calls in argument defaults
+    "C901",  # too complex
+]
+# Same as Black.
+line-length = 130
+
+[tool.ruff.per-file-ignores]
+"__init__.py" = ["F401"]
 
 [tool.pdm]
 [tool.pdm.dev-dependencies]

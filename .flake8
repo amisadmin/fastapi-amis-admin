@@ -1,4 +1,0 @@
-[flake8]
-max-line-length = 130
-exclude = venv,.git,__pycache__,__init__.py,fastapi_amis_admin/amis_admin/**,dev
-ignore = B008, W503

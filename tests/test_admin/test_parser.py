@@ -177,7 +177,11 @@ def test_field_datetime():
 def test_field_list():
     class User(BaseModel):
         tags: List[str] = Field([], title="标签")
-        email: List[str] = Field([], title="邮箱列表", amis_form_item=amis.InputArray(items=amis.InputText(type="input-email")))
+        email: List[str] = Field(
+            [],
+            title="邮箱列表",
+            amis_form_item=amis.InputArray(items=amis.InputText(type="input-email")),
+        )
         names: list = Field([], title="姓名列表")
 
     # test tags

@@ -115,7 +115,11 @@ class AmisParser:
         return form
 
     def update_common_attrs(
-        self, modelfield: ModelField, item: Union[FormItem, TableColumn], set_default: bool = False, is_filter: bool = False
+        self,
+        modelfield: ModelField,
+        item: Union[FormItem, TableColumn],
+        set_default: bool = False,
+        is_filter: bool = False,
     ):
         """Set common attributes for FormItem and TableColumn."""
         if not is_filter:
@@ -195,13 +199,17 @@ class AmisParser:
             kwargs["type"] = "mapping"
             kwargs["filterable"] = {"options": [{"label": v, "value": k} for k, v in items]}
             kwargs["map"] = {
-                k: f"<span class='label label-{l.value}'>{v}</span>" for (k, v), l in zip(items, cyclic_generator(LabelEnum))
+                k: f"<span class='label label-{label.value}'>{v}</span>"
+                for (k, v), label in zip(items, cyclic_generator(LabelEnum))
             }
         elif issubclass(type_, (dict, Json)):
             kwargs["type"] = "json"
         elif issubclass(type_, (list, set)):
             kwargs["type"] = "each"
-            kwargs["items"] = {"type": "tpl", "tpl": "<span class='label label-info m-l-sm'><%= this.item %></span>"}
+            kwargs["items"] = {
+                "type": "tpl",
+                "tpl": "<span class='label label-info m-l-sm'><%= this.item %></span>",
+            }
         return kwargs
 
     def get_field_amis_form_item_type(self, type_: Any, is_filter: bool, required: bool = False) -> dict:
@@ -214,7 +222,7 @@ class AmisParser:
             kwargs.update(
                 {
                     "type": "select",
-                    "options": [{"label": l, "value": v} for v, l in items],
+                    "options": [{"label": label, "value": v} for v, label in items],
                     "extractValue": True,
                     "joinValues": False,
                 }
@@ -283,7 +291,7 @@ class AmisParser:
         if isinstance(extra, (AmisNode, dict)):
             pass
         elif isinstance(extra, str):
-            extra = dict(type=extra)
+            extra = {"type": extra}
         else:
             extra = {}
         return extra

@@ -283,7 +283,7 @@ class LinkModelForm:
                 url=url,
                 data={},
                 cache=300000,
-                responseData=dict(controls=[picker]),
+                responseData={"controls": [picker]},
                 qsOptions={"id": f"${self.pk_admin.pk_name}"},
                 adaptor=adaptor,
             )
@@ -826,7 +826,7 @@ class ModelAdmin(SQLModelCrud, BaseActionAdmin):
                 url=url,
                 data={},
                 cache=300000,
-                responseData=dict(controls=[picker]),
+                responseData={"controls": [picker]},
             ),
         )
 
