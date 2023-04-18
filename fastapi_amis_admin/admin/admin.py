@@ -58,12 +58,7 @@ from fastapi_amis_admin.amis.components import (
     TableCRUD,
     Tpl,
 )
-from fastapi_amis_admin.amis.constants import (
-    DisplayModeEnum,
-    LevelEnum,
-    SizeEnum,
-    TabsModeEnum,
-)
+from fastapi_amis_admin.amis.constants import DisplayModeEnum, LevelEnum, SizeEnum
 from fastapi_amis_admin.amis.types import (
     AmisAPI,
     AmisNode,
@@ -1293,7 +1288,6 @@ class AdminApp(PageAdmin, AdminGroup):
 
     engine: SqlalchemyDatabase = None
     page_path = "/"
-    tabs_mode: TabsModeEnum = None  # Deprecated. Use the tabsMode attribute in the page_schema.
 
     def __init__(self, app: "AdminApp"):
         PageAdmin.__init__(self, app)
@@ -1361,7 +1355,6 @@ class AdminApp(PageAdmin, AdminGroup):
 
     def get_page_schema(self) -> Optional[PageSchema]:
         if super().get_page_schema():
-            self.page_schema.tabsMode = self.tabs_mode
             if self.page_schema.tabsMode is None:
                 self.page_schema.schemaApi = None
         return self.page_schema
@@ -1398,7 +1391,7 @@ class AdminApp(PageAdmin, AdminGroup):
     async def _get_page_as_tabs(self, request: Request) -> Page:
         page = await super(AdminApp, self).get_page(request)
         children = await self.get_page_schema_children(request)
-        page.body = PageSchema(children=children, tabsMode=self.page_schema.tabsMode).as_tabs_item().tab
+        page.body = PageSchema(children=children, tabsMode=self.page_schema.tabsMode).as_page_body()
         return page
 
 

@@ -392,31 +392,46 @@ class PageSchema(AmisNode):
     children: List["PageSchema"] = None  # Submenu
     sort: int = None  # Unofficial attribute. sort
     tabsMode: TabsModeEnum = None  # Unofficial attribute. Display mode, the value can be line, card, radio, vertical,
+    # chrome, simple, strong, tiled, sidebar, collapse
 
-    # chrome, simple, strong, tiled, sidebar
-
-    def as_tabs_item(self, tabs_extra: Dict[str, Any] = None, item_extra: Dict[str, Any] = None):
+    def as_page_body(self, group_extra: Dict[str, Any] = None, item_extra: Dict[str, Any] = None):
         if self.children:
-            tab = Tabs(
-                tabsMode=self.tabsMode,
-                mountOnEnter=True,
-                tabs=[item.as_tabs_item(tabs_extra, item_extra) for item in self.children],
-            ).update_from_dict(tabs_extra or {})
+            if self.tabsMode is None:
+                body = App(pages=[PageSchema(children=self.children)])
+            elif self.tabsMode == TabsModeEnum.collapse:
+                body = CollapseGroup(
+                    body=[
+                        CollapseGroup.CollapseItem(
+                            header=item.label,
+                            body=item.as_page_body(group_extra, item_extra),
+                        ).update_from_dict(item_extra or {})
+                        for item in self.children
+                    ],
+                ).update_from_dict(group_extra or {})
+            else:
+                body = Tabs(
+                    tabsMode=self.tabsMode,
+                    mountOnEnter=True,
+                    tabs=[
+                        Tabs.Item(
+                            title=item.label,
+                            icon=item.icon,
+                            tab=item.as_page_body(group_extra, item_extra),
+                        ).update_from_dict(item_extra or {})
+                        for item in self.children
+                    ],
+                ).update_from_dict(group_extra or {})
         elif self.schema_:
-            tab = self.schema_
-            if isinstance(tab, Iframe):
-                tab.height = 1080
+            body = self.schema_
+            if isinstance(body, Iframe):
+                body.height = 1080
         elif self.schemaApi:
-            tab = Service(schemaApi=self.schemaApi)
+            body = Service(schemaApi=self.schemaApi)
         elif self.link:
-            tab = Page(body=Link(href=self.link, body=self.label, blank=True))
+            body = Page(body=Link(href=self.link, body=self.label, blank=True))
         else:
-            tab = None
-        return Tabs.Item(
-            title=self.label,
-            icon=self.icon,
-            tab=tab,
-        ).update_from_dict(item_extra or {})
+            body = None
+        return body
 
 
 class App(Page):

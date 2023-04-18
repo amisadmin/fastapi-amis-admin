@@ -124,3 +124,4 @@ class TabsModeEnum(str, Enum):
     strong = "strong"
     tiled = "tiled"
     sidebar = "sidebar"
+    collapse = "collapse"  # collapse 容器, 用于将多个页面展示为折叠器.
