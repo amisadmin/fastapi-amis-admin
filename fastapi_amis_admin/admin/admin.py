@@ -698,28 +698,28 @@ class ModelAdmin(SQLModelCrud, BaseActionAdmin):
                 if modelfield:
                     columns.append(await self.get_list_column(request, modelfield))
         # Append operation column
-        actions = await self.get_actions(request, flag="column")
-        if actions:
+        actions = await self.get_actions(request, flag="column") or []
+        for action in actions:
             columns.append(
                 ColumnOperation(
-                    width=160,
-                    label=_("Operation"),
+                    label=getattr(action, "label", _("Operation")),
                     breakpoint="*",
-                    buttons=actions,
+                    buttons=[action],
                 )
             )
         # Append inline link model column
         for link_form in self.link_model_forms:
             form = await link_form.get_form_item(request)
-            if form:
-                columns.append(
-                    ColumnOperation(
-                        width=160,
-                        label=link_form.display_admin.page_schema.label,
-                        breakpoint="*",
-                        buttons=[form],
-                    )
+            if not form:
+                continue
+            columns.append(
+                ColumnOperation(
+                    width=160,
+                    label=link_form.display_admin.page_schema.label,
+                    breakpoint="*",
+                    buttons=[form],
                 )
+            )
         return columns
 
     async def get_list_table_api(self, request: Request) -> AmisAPI:
