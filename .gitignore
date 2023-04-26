@@ -138,6 +138,7 @@ cython_debug/
 
 # idea
 .idea/
+.vscode/
 dev/
 note/
 /docs/zh/site.rar
