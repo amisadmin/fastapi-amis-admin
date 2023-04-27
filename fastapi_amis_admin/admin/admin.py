@@ -1184,7 +1184,16 @@ class FormAction(AdminAction, FormAdmin):
         if node:
             node.title = node.title or action.label  # only override if not set
             node.size = node.size or SizeEnum.xl
-            node.body = node.body or ""  # keep it empty for non model related custom form
+            node.body = Service(
+                schemaApi=AmisAPI(
+                    method="post",
+                    url=self.router_path + self.page_path,
+                    responseData={
+                        "&": "${body}",
+                        "submitText": "",
+                    },
+                )
+            )
         return action
 
     async def handle(self, request: Request, data: SchemaUpdateT, **kwargs) -> BaseApiOut[Any]:
