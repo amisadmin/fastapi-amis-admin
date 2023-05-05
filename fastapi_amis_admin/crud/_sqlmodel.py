@@ -481,7 +481,7 @@ class SQLModelCrud(BaseCrud, SQLModelSelector):
     def route_create(self) -> Callable:
         async def route(
             request: Request,
-            data: Union[self.schema_create, List[self.schema_create]] = Body(...),  # type: ignore
+            data: Union[List[self.schema_create], self.schema_create] = Body(...),  # type: ignore
         ) -> BaseApiOut[Union[int, self.schema_model]]:  # type: ignore
             if not await self.has_create_permission(request, data):
                 return self.error_no_router_permission(request)
