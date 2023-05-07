@@ -702,6 +702,7 @@ class ModelAdmin(SQLModelCrud, BaseActionAdmin):
         for action in actions:
             columns.append(
                 ColumnOperation(
+                    fixed="right",
                     label=getattr(action, "label", _("Operation")),
                     breakpoint="*",
                     buttons=[action],
@@ -860,31 +861,27 @@ class ModelAdmin(SQLModelCrud, BaseActionAdmin):
 
     async def get_create_form(self, request: Request, bulk: bool = False) -> Form:
         fields = [field for field in self.schema_create.__fields__.values() if field.name != self.pk_name]
+        body = await self._conv_modelfields_to_formitems(request, fields, CrudEnum.create)
         if not bulk:
             return Form(
                 api=f"post:{self.router_path}/item",
                 name=CrudEnum.create,
-                body=await self._conv_modelfields_to_formitems(request, fields, CrudEnum.create),
+                body=body,
             )
-        columns, keys = [], {}
-        for field in fields:
-            column = await self.get_list_column(request, self.parser.get_modelfield(field))
-            keys[column.name] = "${" + column.label + "}"
-            column.name = column.label
-            columns.append(column)
         return Form(
             api=AmisAPI(
                 method="post",
                 url=f"{self.router_path}/item",
-                data={"&": {"$excel": keys}},
+                data={"&": "$excel"},
             ),
+            name=CrudEnum.create,
             mode=DisplayModeEnum.normal,
             body=[
                 InputExcel(name="excel"),
                 InputTable(
                     name="excel",
                     showIndex=True,
-                    columns=columns,
+                    columns=body,
                     addable=True,
                     copyable=True,
                     editable=True,
