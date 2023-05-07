@@ -22,7 +22,7 @@ class Settings(BaseSettings):
     database_url: str = Field("", env="DATABASE_URL")
     language: Union[Literal["zh_CN", "en_US", "de_DE"], str] = ""
     amis_cdn: str = "https://unpkg.com"
-    amis_pkg: str = "amis@2.9.0"
+    amis_pkg: str = "amis@3.0.0"
     amis_theme: Literal["cxd", "antd", "dark", "ang"] = "cxd"
     amis_image_receiver: API = None  # Image upload interface
     amis_file_receiver: API = None  # File upload interface
