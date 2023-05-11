@@ -392,6 +392,7 @@ class PageSchema(AmisNode):
     children: List["PageSchema"] = None  # Submenu
     sort: int = None  # Unofficial attribute. sort
     tabsMode: TabsModeEnum = None  # Unofficial attribute. Display mode, the value can be line, card, radio, vertical,
+
     # chrome, simple, strong, tiled, sidebar, collapse
 
     def as_page_body(self, group_extra: Dict[str, Any] = None, item_extra: Dict[str, Any] = None):
@@ -759,6 +760,10 @@ class Form(AmisNode):
     static: bool = None  # false # 2.4.0. The entire form is displayed statically.
     # For details, please refer to the:https://aisuda.bce.baidu.com/amis/examples/form/switchDisplay.
     staticClassName: str = None  # 2.4.0. The name of the class used when the form is statically displayed
+    labelAlign: Literal["right", "left"] = None  # "right"  # 表单项标签对齐方式，默认右对齐，仅在 mode为horizontal 时生效
+    labelWidth: Union[int, str] = None  # 表单项标签自定义宽度
+    persistDataKeys: List[str] = None  # 指指定只有哪些 key 缓存
+    closeDialogOnSubmit: bool = None  # 提交的时候是否关闭弹窗
 
 
 class InputSubForm(FormItem):
@@ -840,6 +845,7 @@ class InputArray(FormItem):
     addButtonText: str = None  # "Add" # Add button text
     minLength: int = None  # Limit the minimum length
     maxLength: int = None  # limit max length
+    scaffold: Any = None  # 新增成员时的默认值，一般根据items的数据类型指定需要的默认值
 
 
 class Hidden(FormItem):
@@ -855,6 +861,7 @@ class Checkbox(FormItem):
     option: str = None  # option description
     trueValue: Any = None  # identifies the true value
     falseValue: Any = None  # identifies a false value
+    optionType: Literal["default", "button"] = None  # 设置 option 类型
 
 
 class Radios(FormItem):
@@ -904,6 +911,9 @@ class Checkboxes(FormItem):
     editApi: API = None  # Configure editing options interface
     removable: bool = None  # False # remove option
     deleteApi: API = None  # Configure delete option interface
+    optionType: Literal["default", "button"] = None  # "default"  # 按钮模式
+    itemClassName: str = None  # 选项样式类名
+    labelClassName: str = None  # 选项标签样式类名
 
 
 class InputCity(FormItem):
@@ -1341,6 +1351,10 @@ class InputImage(FormItem):
     # accordingly according to this size.
     autoFill: Dict[str, str] = None  # After the upload is successful, the value returned by the upload interface can
     # be filled into a form item by configuring autoFill (not supported under non-form)
+    initAutoFill: bool = None  # False  # 表单反显时是否执行 autoFill
+    uploadBtnText: Union[str, SchemaNode] = None  # 上传按钮文案。支持tpl、schema形式配置。
+    dropCrop: bool = None  # True  # 图片上传后是否进入裁剪模式
+    initCrop: bool = None  # False  # 图片选择器初始化后是否立即进入裁剪模式
 
 
 class LocationPicker(FormItem):
@@ -2072,6 +2086,15 @@ class InputTree(FormItem):
     deferApi: API = None  # For lazy loading options, please configure defer to true, and then configure deferApi to
     # complete lazy loading
     selectFirst: bool = None
+    showOutline: bool = None  # False  # 是否显示树层级展开线
+    autoCheckChildren: bool = None  # True  # 当选中父节点时级联选择子节点。
+    onlyLeaf: bool = None  # False  # 只允许选择叶子节点
+    highlightTxt: str = None  # None  # 标签中需要高亮的字符，支持变量
+    itemHeight: int = None  # 32  # 每个选项的高度，用于虚拟渲染
+    virtualThreshold: int = None  # 100  # 在选项数量超过多少时开启虚拟渲染
+    menuTpl: str = None  # 选项自定义渲染 HTML 片段
+    enableDefaultIcon: bool = None  # True  # 是否为选项添加默认的前缀 Icon，父节点默认为folder，叶节点默认为file
+    heightAuto: bool = None  # False  # 默认高度会有个 maxHeight，即超过一定高度就会内部滚动，如果希望自动增长请设置此属性
 
 
 class TreeSelect(InputTree):
@@ -2230,6 +2253,11 @@ class CRUD(AmisNode):
     # will be automatically generated according to the searchable attribute value of the column element
     itemAction: Action = None  # Implement custom actions after clicking a row, support all configurations in action,
     # such as pop-up boxes, refresh other components, etc.
+    resizable: bool = None  # 是否可以调整列宽度
+    orderBy: str = None  # 默认排序字段，这个是传给后端，需要后端接口实现
+    orderDir: Literal["asc", "desc"] = None  # 排序方向
+    resetPageAfterAjaxItemAction: bool = None  # False  # 单条数据 ajax 操作后是否重置页码为第一页
+    autoFillHeight: Union[bool, Dict[str, int]] = None  # 内容区域自适应高度
 
 
 class TableColumn(AmisNode):
@@ -2250,7 +2278,7 @@ class TableColumn(AmisNode):
     remark: RemarkT = None  # prompt message
     breakpoint: str = None  # *,ls. When there are too many columns, the content cannot be displayed completely,
     # some information can be displayed at the bottom, and users can expand to view the details
-    filterable: Dict[str, Any] = None  # filter configuration
+    filterable: Union[bool, Dict[str, Any]] = None  # filter configuration
     toggled: bool = None  # whether to expand by default, in the column configuration, you can configure toggled to
     # false to not display this column by default
     backgroundScale: int = None  # Can be used to automatically assign color scales based on data control
@@ -2313,6 +2341,9 @@ class Table(AmisNode):
     # Some information can be displayed at the bottom, allowing users to expand to view the details. The
     # configuration is very simple, just turn on the footable attribute, and add a breakpoint attribute to the column
     # you want to display at the bottom as *.
+    resizable: bool = None  # 列宽度是否支持调整
+    selectable: bool = None  # 支持勾选
+    multiple: bool = None  # 勾选 icon 是否为多选样式checkbox， 默认为radio
 
 
 class Chart(AmisNode):
@@ -2626,6 +2657,7 @@ class Dialog(AmisNode):
     # and [Cancel]"
     data: dict = None  # Support data mapping, if not set, it will inherit the data in the context of the trigger
     # button by default.
+    showLoading: bool = None  # True # 是否在弹框左下角显示 loading 动画
 
 
 class Drawer(AmisNode):
@@ -2644,6 +2676,12 @@ class Drawer(AmisNode):
     actions: List[Action] = None  # Can not be set, there are only two buttons by default. "[Confirm] and [Cancel]"
     data: dict = None  # Support data mapping, if not set, it will inherit the data in the context of the trigger
     # button by default.
+    className: str = None  # Drawer 最外层容器的样式类名
+    headerClassName: str = None  # Drawer 头部 区域的样式类名
+    footerClassName: str = None  # Drawer 页脚 区域的样式类名
+    showCloseButton: bool = True  # 是否展示关闭按钮，当值为 false 时，默认开启 closeOnOutside
+    width: Union[int, str] = "500px"  # 容器的宽度，在 position 为 left 或 right 时生效
+    height: Union[int, str] = "500px"  # 容器的高度，在 position 为 top 或 bottom 时生效
 
 
 class Iframe(AmisNode):
