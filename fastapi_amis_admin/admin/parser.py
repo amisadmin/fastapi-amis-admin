@@ -84,9 +84,7 @@ class AmisParser:
         column = self._get_table_column_from_kwargs(modelfield)
         column = self.update_common_attrs(modelfield, column, set_default=False, is_filter=False)
         column.sortable = True
-        if column.type in ["text", None]:
-            column.searchable = True
-        elif column.type in ["switch", "mapping"]:
+        if column.type in ["switch", "mapping"]:
             column.sortable = False
         if quick_edit:
             column.quickEdit = self.as_form_item(modelfield, set_default=True).dict(
