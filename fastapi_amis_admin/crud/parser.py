@@ -3,7 +3,7 @@ from functools import lru_cache
 from typing import Any, Callable, Dict, Iterable, List, Optional, Tuple, Type, Union
 
 from fastapi.utils import create_cloned_field
-from pydantic import BaseConfig
+from pydantic import BaseConfig, BaseModel
 from pydantic.datetime_parse import parse_date, parse_datetime
 from pydantic.fields import FieldInfo, ModelField
 from sqlalchemy import Column
@@ -216,3 +216,11 @@ class PropertyField(ModelField):
         kwargs.setdefault("class_validators", {})
         kwargs.setdefault("model_config", BaseConfig)
         super().__init__(name=name, type_=type_, required=required, field_info=field_info, **kwargs)
+
+
+def get_modelfield_by_alias(model: Type[BaseModel], alias: str) -> Optional[ModelField]:
+    """Get the field of the model according to the alias"""
+    for field in model.__fields__.values():
+        if field.alias == alias:
+            return field
+    return None

@@ -47,6 +47,7 @@ from .parser import (
     SQLModelFieldParser,
     SQLModelListField,
     SQLModelPropertyField,
+    get_modelfield_by_alias,
     get_python_type_parse,
 )
 from .schema import BaseApiOut, ItemListSchema
@@ -350,15 +351,17 @@ class SQLModelCrud(BaseCrud, SQLModelSelector):
     def update_item(self, obj: SchemaModelT, values: Dict[str, Any]) -> None:
         """update schema_update data to database,support relational attributes"""
         for k, v in values.items():
-            if not hasattr(obj, k):
+            field = get_modelfield_by_alias(self.schema_model, k)
+            if not field and not hasattr(obj, k):
                 continue
+            name = field.name if field else k
             if isinstance(v, dict):
                 # Relational attributes, nested;such as: setattr(article.content, "body", "new body")
-                sub = getattr(obj, k)
+                sub = getattr(obj, name)
                 if not isinstance(sub, dict):  # Ensure that the attribute is an object.
                     self.update_item(sub, v)
                     continue
-            setattr(obj, k, v)
+            setattr(obj, name, v)
 
     def delete_item(self, obj: SchemaModelT) -> None:
         """delete database data"""
