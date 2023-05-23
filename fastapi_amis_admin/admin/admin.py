@@ -668,20 +668,24 @@ class ModelAdmin(SQLModelCrud, BaseActionAdmin):
     async def get_list_filter(self, request: Request) -> List[Union[SQLModelListField, FormItem]]:
         return self.list_filter or list(self.schema_filter.__fields__.values())
 
+    async def get_column_quick_edit(self, request: Request, modelfield: ModelField) -> Optional[Dict[str, Any]]:
+        item = await self.get_form_item(request, modelfield, action=CrudEnum.update)
+        if not isinstance(item, (dict, BaseModel)):
+            return None
+        if isinstance(item, BaseModel):
+            item = item.dict(exclude_none=True, by_alias=True, exclude={"name", "label"})
+        item.update({"saveImmediately": True})
+        if item.get("type") == "switch":
+            item.update({"mode": "inline"})
+        return item
+
     async def get_list_column(self, request: Request, modelfield: ModelField) -> TableColumn:
         column = self.amis_parser.as_table_column(modelfield)
         if (
             await self.has_update_permission(request, None, None)  # type: ignore
             and modelfield.name in self.schema_update.__fields__
         ):
-            item = await self.get_form_item(request, modelfield, action=CrudEnum.update)
-            if isinstance(item, BaseModel):
-                item = item.dict(exclude_none=True, by_alias=True, exclude={"name", "label"})
-            if isinstance(item, dict):
-                column.quickEdit = item
-                column.quickEdit.update({"saveImmediately": True})
-                if item.get("type") == "switch":
-                    column.quickEdit.update({"mode": "inline"})
+            column.quickEdit = await self.get_column_quick_edit(request, modelfield)
         return column
 
     async def get_list_columns(self, request: Request) -> List[TableColumn]:
@@ -861,18 +865,23 @@ class ModelAdmin(SQLModelCrud, BaseActionAdmin):
 
     async def get_create_form(self, request: Request, bulk: bool = False) -> Form:
         fields = [field for field in self.schema_create.__fields__.values() if field.name != self.pk_name]
-        body = await self._conv_modelfields_to_formitems(request, fields, CrudEnum.create)
         if not bulk:
             return Form(
                 api=f"post:{self.router_path}/item",
                 name=CrudEnum.create,
-                body=body,
+                body=await self._conv_modelfields_to_formitems(request, fields, CrudEnum.create),
             )
+        columns, keys = [], {}
+        for field in fields:
+            column = await self.get_list_column(request, self.parser.get_modelfield(field))
+            keys[column.name] = "${" + column.label + "}"
+            column.name = column.label
+            columns.append(column)
         return Form(
             api=AmisAPI(
                 method="post",
                 url=f"{self.router_path}/item",
-                data={"&": "$excel"},
+                data={"&": {"$excel": keys}},
             ),
             name=CrudEnum.create,
             mode=DisplayModeEnum.normal,
@@ -881,7 +890,7 @@ class ModelAdmin(SQLModelCrud, BaseActionAdmin):
                 InputTable(
                     name="excel",
                     showIndex=True,
-                    columns=body,
+                    columns=columns,
                     addable=True,
                     copyable=True,
                     editable=True,
