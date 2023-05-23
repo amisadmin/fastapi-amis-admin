@@ -145,4 +145,4 @@ note/
 /docs/zh/site/
 pypi/
 *.db
-/.pdm.toml
+/.pdm-python
