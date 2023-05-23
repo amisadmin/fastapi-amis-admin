@@ -150,6 +150,8 @@ class AmisParser:
         ):
             if not isinstance(formitem, FormItem):
                 formitem = InputArray(**formitem)
+            elif not isinstance(formitem, InputArray):
+                return formitem
             # Parse the internal type of the list.
             kwargs = self.get_field_amis_form_item_type(type_=modelfield.type_, is_filter=is_filter)
             update = formitem.items.amis_dict() if formitem.items else {}
