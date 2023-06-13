@@ -384,9 +384,9 @@ class PageSchema(AmisNode):
     link: str = None  # If you want to configure an external link menu, you only need to configure link.
     redirect: str = None  # Jump, when hitting the current page, jump to the target page.
     rewrite: str = None  # Change to rendering pages of other paths, the page address will not be modified in this way.
-    isDefaultPage: Union[str, bool] = None  # Useful when you need a custom 404 page, don't have multiple such pages,
+    isDefaultPage: Union[bool, str] = None  # Useful when you need a custom 404 page, don't have multiple such pages,
     # because only the first one will be useful.
-    visible: Union[str, bool] = None  # Some pages may not want to appear in the menu, you can configure it to false, and the
+    visible: Union[bool, str] = None  # Some pages may not want to appear in the menu, you can configure it to false, and the
     # route with parameters does not need to be configured, it is directly invisible.
     className: str = None  # Menu class name.
     children: List["PageSchema"] = None  # Submenu
@@ -656,7 +656,7 @@ class ButtonGroupSelect(FormItem):
     btnLevel: LevelEnum = LevelEnum.default  # button style
     btnActiveLevel: LevelEnum = LevelEnum.default  # Check button style
     options: OptionsNode = None  # option group
-    source: Union[str, API] = None  # dynamic group
+    source: API = None  # dynamic group
     multiple: bool = None  # Default False, multiple choice
     labelField: str = None  # Default "label"
     valueField: str = None  # Default "value"
@@ -670,7 +670,7 @@ class ListSelect(FormItem):
 
     type: str = "list-select"
     options: OptionsNode = None  # option group
-    source: Union[str, API] = None  # dynamic group
+    source: API = None  # dynamic group
     multiple: bool = None  # Default False, multiple choice
     labelField: str = None  # Default "label"
     valueField: str = None  # Default "value"
@@ -1226,7 +1226,7 @@ class InputFile(FormItem):
     valueField: str = None  # "value" # The value of the file is identified by that field.
     urlField: str = None  # "url" # The field name of the file download address.
     btnLabel: str = None  # The text of the upload button
-    downloadUrl: Union[str, bool] = None  # Version 1.1.6 supports post:http://xxx.com/${value}
+    downloadUrl: Union[bool, str] = None  # Version 1.1.6 supports post:http://xxx.com/${value}
     # When the file path is displayed by default, it will support direct download. It can support adding a prefix
     # such as: http://xx.dom/filename= . If you don't want this, you can set the current configuration item to false.
     useChunk: bool = None  # The server where amis is located limits the file upload size to no more than 10M,
@@ -1436,8 +1436,8 @@ class InputText(FormItem):
 
     type: str = "input-text"  # input-text|input-url|input-email|input-password|divider
     options: Union[List[str], List[dict]] = None  # Option group
-    source: Union[str, API] = None  # Dynamic option group
-    autoComplete: Union[str, API] = None  # autocomplete
+    source: API = None  # Dynamic option group
+    autoComplete: API = None  # autocomplete
     multiple: bool = None  # whether to select multiple
     delimiter: str = None  # Splice ","
     labelField: str = None  # option label field "label"
@@ -1594,7 +1594,7 @@ class InputTag(FormItem):
     type: str = "input-tag"
     options: List[Union[str, dict]] = None  # default option group
     optionsTip: List[Union[str, dict]] = None  # default "Your most recent tags", option hint
-    source: Union[str, API] = None  # default 	Dynamic option group
+    source: API = None  # default 	Dynamic option group
     delimiter: str = None  # default False, delimiter option
     labelField: str = None  # default "label", option label field
     valueField: str = None  # default "value", option value field
@@ -1711,7 +1711,7 @@ class Breadcrumb(AmisNode):
     separator: str = ">"  # delimeter
     labelMaxLength: int = None  # Default 16, max display length
     tooltipPosition: PlacementEnum = PlacementEnum.top  # tooltip position
-    source: Union[str, API] = None  # dynamic data
+    source: API = None  # dynamic data
     items: List[BreadcrumbItem] = None  # list of breadcrumb icons
 
 
@@ -1725,7 +1725,7 @@ class Card(AmisNode):
         className: str = None  # default "w-44 h-28", multimedia CSS class
         isLive: bool = None  # default False, video is live or not
         autoPlay: bool = None  # default False, autoplay video
-        poster: Union[str, bool] = None  # default false
+        poster: Union[bool, str] = None  # default false
 
     class Header(AmisNode):
         className: str = None  # The header class name
@@ -2316,7 +2316,7 @@ class Table(AmisNode):
     title: str = None  # title
     source: str = None  # "${items}" # Data source, bind the current environment variable
     affixHeader: bool = None  # True # whether to fix the header
-    columnsTogglable: Union[str, bool] = None  # "auto" # Display column display switch, automatic: it is
+    columnsTogglable: Union[bool, str] = None  # "auto" # Display column display switch, automatic: it is
     # automatically turned on when the number of columns is greater than or equal to 5
     placeholder: str = None  # "No data" # Text prompt when there is no data
     className: str = None  # "panel-default" # Outer CSS class name
