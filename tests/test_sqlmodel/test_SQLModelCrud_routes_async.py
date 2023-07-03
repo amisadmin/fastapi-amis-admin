@@ -5,7 +5,7 @@ from sqlalchemy import func, select
 
 from fastapi_amis_admin.crud import SQLModelCrud
 from tests.conftest import async_db as db
-from tests.models import Tag, User
+from tests.test_sqlmodel.models import Tag, User
 
 
 @pytest.fixture(autouse=True)

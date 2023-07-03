@@ -1,5 +1,5 @@
 from fastapi_amis_admin.crud import SQLModelSelector
-from tests.models import Article, User
+from tests.test_sqlmodel.models import Article, User
 
 
 async def test_fields():

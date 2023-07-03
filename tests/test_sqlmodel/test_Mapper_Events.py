@@ -6,8 +6,8 @@ from sqlalchemy import event
 
 from fastapi_amis_admin.crud import SQLModelCrud
 from tests.conftest import async_db as db
-from tests.models import User
-from tests.test_crud.test_SQLModelCrud_routes_async import (
+from tests.test_sqlmodel.models import User
+from tests.test_sqlmodel.test_SQLModelCrud_routes_async import (
     test_route_create,
     test_route_delete,
     test_route_update,

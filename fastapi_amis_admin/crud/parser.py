@@ -1,23 +1,22 @@
 import datetime
 from functools import lru_cache
-from typing import Any, Callable, Dict, Iterable, List, Optional, Tuple, Type, Union
+from typing import Any, Callable, Dict, Iterable, List, Optional, Tuple, Type, TypeVar, Union
 
 from fastapi.utils import create_cloned_field
 from pydantic import BaseConfig, BaseModel
 from pydantic.datetime_parse import parse_date, parse_datetime
 from pydantic.fields import FieldInfo, ModelField
-from sqlalchemy import Column
+from sqlalchemy import Column, Table
 from sqlalchemy.engine import Row
-from sqlalchemy.orm import InstrumentedAttribute
+from sqlalchemy.orm import InstrumentedAttribute, RelationshipProperty
 from sqlalchemy.sql import Select
 from sqlalchemy.sql.elements import Label
-from sqlmodel import SQLModel
 
-SQLModelField = Union[str, InstrumentedAttribute]
-SqlField = Union[InstrumentedAttribute, Label]
-SQLModelListField = Union[Type[SQLModel], SQLModelField, SqlField]
-SQLModelPropertyField = Union[Type[SQLModel], SQLModelField, "PropertyField"]
+SqlaInsAttr = Union[str, InstrumentedAttribute]
+SqlaField = Union[SqlaInsAttr, Label]
+SqlaPropertyField = Union[SqlaInsAttr, "PropertyField"]
 ModelFieldType = Union[ModelField, "ModelFieldProxy"]
+InspecTableType = TypeVar("InspecTableType")  # SQLModel,DeclarativeMeta,InspectTable
 
 
 class ModelFieldProxy:
@@ -44,14 +43,26 @@ class ModelFieldProxy:
         return modelfield
 
 
-class SQLModelFieldParser:
+def get_inspect_table_fields(inspec_table: Type[InspecTableType]) -> Dict[str, ModelField]:
+    """Get pydantic ModelField from sqlalchemy InspecTable."""
+    if hasattr(inspec_table, "__fields__"):
+        return inspec_table.__fields__
+    elif hasattr(inspec_table, "__schema__") and isinstance(inspec_table.__schema__, BaseModel):
+        return inspec_table.__schema__.__fields__
+    return {}
+
+
+class InspecTableParser:
     _name_format = "{model_name}_{field_name}"
     _alias_format = "{table_name}__{field_key}"
 
-    def __init__(self, default_model: Type[SQLModel]):
-        self.default_model = default_model
+    def __init__(self, inspec_table: Type[InspecTableType]):
+        assert hasattr(inspec_table, "__table__"), "inspec_table must be has __table__ attribute."
+        self.inspec_table = inspec_table
+        self.__table__: Table = self.inspec_table.__table__
+        self.__fields__ = get_inspect_table_fields(inspec_table)
 
-    def get_modelfield(self, field: Union[ModelField, SQLModelField, Label], clone: bool = False) -> Optional[ModelFieldType]:
+    def get_modelfield(self, field: Union[ModelField, SqlaInsAttr, Label], clone: bool = False) -> Optional[ModelFieldType]:
         """Get pydantic ModelField from sqlmodel field.
         Args:
             field:  ModelField, SQLModelField or Label
@@ -62,16 +73,16 @@ class SQLModelFieldParser:
         modelfield = None
         update = {}
         if isinstance(field, InstrumentedAttribute):
-            modelfield = field.class_.__fields__.get(field.key, None)
+            modelfield = get_inspect_table_fields(field.class_).get(field.key, None)
             if not modelfield:  # Maybe it's a declared_attr or column_property.
                 return None
-            if field.class_ is not self.default_model:
+            if field.class_.__table__ is not self.__fields__:
                 update = {
                     "name": self.get_name(field),
                     "alias": self.get_alias(field),
                 }
-        elif isinstance(field, str) and field in self.default_model.__fields__:
-            modelfield = self.default_model.__fields__[field]
+        elif isinstance(field, str) and field in self.__fields__:
+            modelfield = self.__fields__[field]
         elif isinstance(field, ModelField):
             modelfield = field
         elif isinstance(field, Label):
@@ -81,25 +92,25 @@ class SQLModelFieldParser:
         field_proxy = ModelFieldProxy(modelfield, update=update)
         return field_proxy.cloned_field() if clone else field_proxy
 
-    def get_column(self, field: SQLModelField) -> Optional[Column]:
+    def get_column(self, field: SqlaInsAttr) -> Optional[Column]:
         """sqlalchemy Column"""
         if isinstance(field, InstrumentedAttribute):
             return field.class_.__table__.columns.get(field.key)
         elif isinstance(field, str):
-            return self.default_model.__table__.columns.get(field)
+            return self.__table__.columns.get(field)
         return None
 
-    def get_alias(self, field: Union[Column, SQLModelField, Label]) -> str:
+    def get_alias(self, field: Union[Column, SqlaInsAttr, Label]) -> str:
         if isinstance(field, Column):
             return (
                 field.name
-                if field.table.name == self.default_model.__tablename__
+                if field.table.name == self.__table__.name
                 else self._alias_format.format(table_name=field.table.name, field_key=field.name)
             )
         elif isinstance(field, InstrumentedAttribute):
             return (
                 field.key
-                if field.class_.__tablename__ == self.default_model.__tablename__
+                if field.class_.__tablename__ == self.__table__.name
                 else self._alias_format.format(
                     table_name=field.class_.__tablename__,
                     field_key=field.expression.key,
@@ -107,14 +118,14 @@ class SQLModelFieldParser:
             )
         elif isinstance(field, Label):
             return field.key
-        elif isinstance(field, str) and field in self.default_model.__fields__:
+        elif isinstance(field, str) and field in self.__fields__:
             return field
         return ""
 
     def get_name(self, field: InstrumentedAttribute) -> str:
         return (
             field.key
-            if field.class_.__tablename__ == self.default_model.__tablename__
+            if field.class_.__tablename__ == self.__table__.name
             else self._name_format.format(model_name=field.class_.__tablename__, field_name=field.key)
         )
 
@@ -133,32 +144,29 @@ class SQLModelFieldParser:
         keys = self.get_row_keys(rows[0])
         return [dict(zip(keys, row)) for row in rows]
 
-    def get_sqlmodel_insfield(self, model: Type[SQLModel]) -> List[InstrumentedAttribute]:
-        """Get all database fields in the sqlmodel model, excluding relationship fields."""
-        return [model.__dict__[field_name] for field_name in model.__fields__]
-
-    def get_insfield(self, field: SQLModelField) -> Optional[InstrumentedAttribute]:
+    def get_insfield(self, field: SqlaInsAttr) -> Optional[InstrumentedAttribute]:
+        if isinstance(field, str):
+            field = self.inspec_table.__dict__.get(field, None)
         if isinstance(field, InstrumentedAttribute):
             return field
-        elif isinstance(field, str) and field in self.default_model.__fields__:
-            return self.default_model.__dict__[field]
-
         return None
 
     def filter_insfield(
         self,
-        fields: Iterable[Union[SQLModelListField, Any]],
+        fields: Iterable[Union[SqlaField, Any]],
         save_class: Tuple[Union[type, Tuple[Any, ...]], ...] = None,
+        exclude_prop: Tuple[Union[type, Tuple[Any, ...]], ...] = (RelationshipProperty,),
     ) -> List[Union[InstrumentedAttribute, Any]]:
         result = []
         for field in fields:
             insfield = self.get_insfield(field)
             if insfield is not None:
-                result.append(insfield)
-            elif isinstance(field, type) and issubclass(field, SQLModel):
-                result.extend(self.get_sqlmodel_insfield(field))
+                if isinstance(insfield.prop, exclude_prop):
+                    continue
             elif save_class and isinstance(field, save_class):
-                result.append(field)
+                insfield = field
+            if insfield is not None:
+                result.append(insfield)
         return sorted(set(result), key=result.index)  # 去重复并保持原顺序
 
 

@@ -7,7 +7,7 @@ from fastapi_amis_admin import admin
 from fastapi_amis_admin.admin import AdminSite
 from fastapi_amis_admin.crud.parser import LabelField
 from fastapi_amis_admin.models import Field
-from tests.models import Article, User
+from tests.test_sqlmodel.models import Article, User
 
 
 async def test_register_router(site: AdminSite):

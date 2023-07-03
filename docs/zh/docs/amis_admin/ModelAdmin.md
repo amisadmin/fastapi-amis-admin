@@ -12,7 +12,7 @@
 
 批量查询需要显示的字段列表.
 
-- 支持SQLModel模型字段, SQLModel模型, 当前模型数据库表字段名
+- 支持SQLModel模型字段, 当前模型数据库表字段名
 - 支持当前模型字段,和其它模型字段.
 - 支持amis类型:  TableColumn
 - 支持sqlalchemy Label类型: 可通过`LabelField`方法构造.

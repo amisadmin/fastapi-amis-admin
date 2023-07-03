@@ -27,7 +27,6 @@ from sqlalchemy.orm import InstrumentedAttribute, RelationshipProperty
 from sqlalchemy.sql.elements import Label
 from sqlalchemy.util import md5_hex
 from sqlalchemy_database import AsyncDatabase, Database
-from sqlmodel import SQLModel
 from starlette import status
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import HTMLResponse, JSONResponse, Response
@@ -69,8 +68,8 @@ from fastapi_amis_admin.amis.types import (
 from fastapi_amis_admin.crud import RouterMixin, SQLModelCrud
 from fastapi_amis_admin.crud.base import SchemaCreateT, SchemaFilterT, SchemaUpdateT
 from fastapi_amis_admin.crud.parser import (
-    SQLModelFieldParser,
-    SQLModelListField,
+    InspecTableParser,
+    SqlaField,
     get_python_type_parse,
 )
 from fastapi_amis_admin.crud.schema import BaseApiOut, CrudEnum, Paginator
@@ -95,7 +94,7 @@ class LinkModelForm:
         self,
         pk_admin: "ModelAdmin",
         display_admin: "ModelAdmin",
-        link_model: Union[SQLModel, Table],
+        link_model: Table,
         link_col: Column,
         item_col: Column,
     ):
@@ -620,14 +619,14 @@ class FormAdmin(BaseActionAdmin, Generic[SchemaUpdateT]):
 
 
 class ModelAdmin(SQLModelCrud, BaseActionAdmin):
-    list_display: List[Union[SQLModelListField, TableColumn]] = []  # Fields to be displayed
-    list_filter: List[Union[SQLModelListField, FormItem]] = []  # Query filterable fields
+    list_display: List[Union[SqlaField, TableColumn]] = []  # Fields to be displayed
+    list_filter: List[Union[SqlaField, FormItem]] = []  # Query filterable fields
     list_per_page: int = 10  # Amount of data per page
     link_model_fields: List[InstrumentedAttribute] = []  # inline field
     link_model_forms: List[LinkModelForm] = []
-    bulk_update_fields: List[Union[SQLModelListField, FormItem]] = []  # Bulk edit fields
+    bulk_update_fields: List[Union[SqlaField, FormItem]] = []  # Bulk edit fields
     enable_bulk_create: bool = False  # whether to enable batch creation
-    search_fields: List[SQLModelListField] = []  # fuzzy search fields
+    search_fields: List[SqlaField] = []  # fuzzy search fields
     page_schema: Union[PageSchema, str] = PageSchema()
     page_path: str = ""
     bind_model: bool = True
@@ -639,7 +638,7 @@ class ModelAdmin(SQLModelCrud, BaseActionAdmin):
         self.app = app
         self.engine = self.engine or self.app.engine
         self.amis_parser = self.app.site.amis_parser
-        self.parser = SQLModelFieldParser(default_model=self.model)
+        self.parser = InspecTableParser(self.model)
         list_display_insfield = self.parser.filter_insfield(self.list_display, save_class=(Label,))
         self.list_filter = self.list_filter and self.list_filter.copy() or list_display_insfield or []
         self.list_filter.extend([field for field in self.search_fields if field not in self.list_filter])
@@ -662,10 +661,10 @@ class ModelAdmin(SQLModelCrud, BaseActionAdmin):
         )
         return self.link_model_forms
 
-    async def get_list_display(self, request: Request) -> List[Union[SQLModelListField, TableColumn]]:
+    async def get_list_display(self, request: Request) -> List[Union[SqlaField, TableColumn]]:
         return self.list_display or list(self.schema_list.__fields__.values())
 
-    async def get_list_filter(self, request: Request) -> List[Union[SQLModelListField, FormItem]]:
+    async def get_list_filter(self, request: Request) -> List[Union[SqlaField, FormItem]]:
         return self.list_filter or list(self.schema_filter.__fields__.values())
 
     async def get_column_quick_edit(self, request: Request, modelfield: ModelField) -> Optional[Dict[str, Any]]:
@@ -693,10 +692,6 @@ class ModelAdmin(SQLModelCrud, BaseActionAdmin):
         for field in await self.get_list_display(request):
             if isinstance(field, BaseAmisModel):
                 columns.append(field)
-            elif isinstance(field, type) and issubclass(field, SQLModel):
-                ins_list = self.parser.get_sqlmodel_insfield(field)
-                modelfields = [self.parser.get_modelfield(ins) for ins in ins_list]
-                columns.extend([await self.get_list_column(request, modelfield) for modelfield in modelfields])
             else:
                 modelfield = self.parser.get_modelfield(field)
                 if modelfield:
@@ -990,7 +985,7 @@ class ModelAdmin(SQLModelCrud, BaseActionAdmin):
     async def _conv_modelfields_to_formitems(
         self,
         request: Request,
-        fields: Iterable[Union[SQLModelListField, ModelField, FormItem]],
+        fields: Iterable[Union[SqlaField, ModelField, FormItem]],
         action: CrudEnum = None,
     ) -> List[FormItem]:
         items = []

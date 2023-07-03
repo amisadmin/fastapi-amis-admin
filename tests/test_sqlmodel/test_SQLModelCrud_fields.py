@@ -11,14 +11,14 @@ from starlette.routing import NoMatchFound
 from fastapi_amis_admin.crud import SQLModelCrud
 from fastapi_amis_admin.crud.parser import LabelField, PropertyField
 from tests.conftest import async_db as db
-from tests.models import Article, ArticleContent, Category, Tag, User
+from tests.test_sqlmodel.models import Article, ArticleContent, Category, Tag, User
 
 
 async def test_pk_name(app: FastAPI, async_client: AsyncClient, fake_users):
     class UserCrud(SQLModelCrud):
         router_prefix = "/user"
         pk_name = "username"
-        read_fields = [User]
+        read_fields = [User.id, User.username, User.password]
 
     ins = UserCrud(User, db.engine).register_crud()
 
@@ -27,6 +27,7 @@ async def test_pk_name(app: FastAPI, async_client: AsyncClient, fake_users):
     # read one
     res = await async_client.get("/user/item/User_1")
     user = res.json()["data"]
+    print("user", user)
     assert user["id"] == 1
     assert user["username"] == "User_1"
     # read bulk
@@ -38,6 +39,8 @@ async def test_pk_name(app: FastAPI, async_client: AsyncClient, fake_users):
 
 
 async def test_readonly_fields(app: FastAPI, async_client: AsyncClient, fake_users):
+    print("fake_users", fake_users)
+
     class UserCrud(SQLModelCrud):
         router_prefix = "/user"
         readonly_fields = [User.username]

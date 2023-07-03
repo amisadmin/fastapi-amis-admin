@@ -8,9 +8,7 @@ from sqlmodel import SQLModel
 from starlette.middleware.base import BaseHTTPMiddleware
 
 from tests.conftest import async_db as db
-from tests.models import Article, ArticleContent, ArticleTagLink, Category, Tag, User
-
-pytestmark = pytest.mark.asyncio
+from tests.test_sqlmodel.models import Article, ArticleContent, ArticleTagLink, Category, Tag, User
 
 
 @pytest.fixture

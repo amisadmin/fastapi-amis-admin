@@ -7,7 +7,7 @@ from sqlmodel import SQLModel
 
 from fastapi_amis_admin.crud import SQLModelCrud
 from tests.conftest import async_db as db
-from tests.models import Article, ArticleContent, Category, Tag, User
+from tests.test_sqlmodel.models import Article, ArticleContent, Category, Tag, User
 
 
 async def test_schema_update(app: FastAPI, async_client: AsyncClient, fake_users):

@@ -144,7 +144,7 @@ async def startup():
 if __name__ == '__main__':
     import uvicorn
 
-    uvicorn.run(app, debug=True)
+    uvicorn.run(app)
 ```
 
 ## 表单管理示例
@@ -193,7 +193,7 @@ site.mount_app(app)
 if __name__ == '__main__':
     import uvicorn
 
-    uvicorn.run(app, debug=True)
+    uvicorn.run(app)
 ```
 
 ## 使用命令行

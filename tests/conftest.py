@@ -1,5 +1,11 @@
+from typing import AsyncGenerator
+
 import pytest
+from httpx import AsyncClient
 from sqlalchemy_database import AsyncDatabase, Database
+from starlette.testclient import TestClient
+
+from fastapi_amis_admin.admin import AdminSite, Settings
 
 # sqlite
 sync_db = Database.create("sqlite:///amisadmin.db?check_same_thread=False")
@@ -19,6 +25,23 @@ async_db = AsyncDatabase.create("sqlite+aiosqlite:///amisadmin.db?check_same_thr
 
 # SQL Server
 # sync_db = Database.create('mssql+pyodbc://scott:tiger@mydsn')
+
+
+@pytest.fixture
+def site() -> AdminSite:
+    return AdminSite(settings=Settings(site_path=""), engine=async_db.engine)
+
+
+@pytest.fixture
+def client(site: AdminSite) -> TestClient:
+    with TestClient(app=site.fastapi, base_url="http://testserver") as c:
+        yield c
+
+
+@pytest.fixture
+async def async_client(site: AdminSite) -> AsyncGenerator[AsyncClient, None]:
+    async with AsyncClient(app=site.fastapi, base_url="http://testserver") as c:
+        yield c
 
 
 @pytest.fixture

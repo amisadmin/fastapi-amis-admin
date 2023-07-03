@@ -12,7 +12,7 @@
 
 List of fields that need to be displayed for bulk query.
 
-- Support SQLModel model field, SQLModel model, current model database table field name
+- Support SQLModel model field, current model database table field name
 - Support current model fields, and other model fields.
 - Support amis type: TableColumn
 - Support sqlalchemy Label type: can be constructed by `LabelField` method.
