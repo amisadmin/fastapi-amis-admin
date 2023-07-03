@@ -6,7 +6,7 @@ from sqlalchemy import Column
 from sqlalchemy.orm import ColumnProperty
 from sqlmodel.main import FieldInfo
 
-from fastapi_amis_admin.amis.components import FormItem, TableColumn
+from fastapi_amis_admin.amis import FormItem, TableColumn
 
 
 def Field(

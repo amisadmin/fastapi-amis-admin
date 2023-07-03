@@ -5,17 +5,9 @@ import pytest
 from fastapi import FastAPI
 from httpx import AsyncClient
 from sqlmodel import SQLModel
-from starlette.middleware.base import BaseHTTPMiddleware
 
 from tests.conftest import async_db as db
 from tests.test_sqlmodel.models import Article, ArticleContent, ArticleTagLink, Category, Tag, User
-
-
-@pytest.fixture
-def app() -> FastAPI:
-    app = FastAPI()
-    app.add_middleware(BaseHTTPMiddleware, dispatch=db.asgi_dispatch)
-    return app
 
 
 @pytest.fixture

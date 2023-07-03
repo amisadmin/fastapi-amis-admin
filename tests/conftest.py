@@ -1,15 +1,27 @@
 from typing import AsyncGenerator
 
 import pytest
+from fastapi import FastAPI
 from httpx import AsyncClient
 from sqlalchemy_database import AsyncDatabase, Database
+from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.testclient import TestClient
 
 from fastapi_amis_admin.admin import AdminSite, Settings
 
 # sqlite
-sync_db = Database.create("sqlite:///amisadmin.db?check_same_thread=False")
-async_db = AsyncDatabase.create("sqlite+aiosqlite:///amisadmin.db?check_same_thread=False")
+sync_db = Database.create(
+    "sqlite:///amisadmin.db?check_same_thread=False",
+    session_options={
+        "expire_on_commit": False,
+    },
+)
+async_db = AsyncDatabase.create(
+    "sqlite+aiosqlite:///amisadmin.db?check_same_thread=False",
+    session_options={
+        "expire_on_commit": False,
+    },
+)
 
 
 # mysql
@@ -30,6 +42,13 @@ async_db = AsyncDatabase.create("sqlite+aiosqlite:///amisadmin.db?check_same_thr
 @pytest.fixture
 def site() -> AdminSite:
     return AdminSite(settings=Settings(site_path=""), engine=async_db.engine)
+
+
+@pytest.fixture
+def app() -> FastAPI:
+    app = FastAPI()
+    app.add_middleware(BaseHTTPMiddleware, dispatch=async_db.asgi_dispatch)
+    return app
 
 
 @pytest.fixture

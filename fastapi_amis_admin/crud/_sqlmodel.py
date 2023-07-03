@@ -8,9 +8,12 @@ from .parser import SqlaField
 from .utils import SqlalchemyDatabase
 
 SQLModelSelector = SqlalchemySelector
+"""Deprecated, use SqlalchemySelector instead."""
 
 
 class SQLModelCrud(SqlalchemyCrud):
+    """Deprecated, use SqlalchemyCrud instead."""
+
     def __init__(
         self,
         model: Type[SchemaModelT],
@@ -18,7 +21,7 @@ class SQLModelCrud(SqlalchemyCrud):
         fields: List[SqlaField] = None,
         router: APIRouter = None,
     ) -> None:
-        SqlalchemyCrud.__init__(self, model, engine, model, fields, router)
+        SqlalchemyCrud.__init__(self, model, model, engine, fields, router)
 
     @property
     def schema_name_prefix(self):

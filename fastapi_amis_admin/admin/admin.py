@@ -65,7 +65,7 @@ from fastapi_amis_admin.amis.types import (
     BaseAmisModel,
     SchemaNode,
 )
-from fastapi_amis_admin.crud import RouterMixin, SQLModelCrud
+from fastapi_amis_admin.crud import RouterMixin, SqlalchemyCrud
 from fastapi_amis_admin.crud.base import SchemaCreateT, SchemaFilterT, SchemaUpdateT
 from fastapi_amis_admin.crud.parser import (
     InspecTableParser,
@@ -125,7 +125,7 @@ class LinkModelForm:
             else:
                 item_key = key
         if admin and link_key and item_key:
-            admin.link_models[pk_admin.model.__tablename__] = (table, link_key.parent, item_key.parent)
+            admin.link_models[pk_admin.model.__table__.name] = (table, link_key.parent, item_key.parent)
             return LinkModelForm(
                 pk_admin=pk_admin,
                 display_admin=admin,
@@ -196,7 +196,7 @@ class LinkModelForm:
     async def get_form_item(self, request: Request):
         url = self.display_admin.router_path + self.display_admin.page_path
         picker = Picker(
-            name=self.display_admin.model.__tablename__,
+            name=self.display_admin.model.__table__.name,
             label=self.display_admin.page_schema.label,
             labelField="name",
             valueField="id",
@@ -208,7 +208,7 @@ class LinkModelForm:
             source={
                 "method": "post",
                 "data": "${body.api.data}",
-                "url": "${body.api.url}&link_model=" + self.pk_admin.model.__tablename__ + "&link_item_id=${api.qsOptions.id}",
+                "url": "${body.api.url}&link_model=" + self.pk_admin.model.__table__.name + "&link_item_id=${api.qsOptions.id}",
             },
         )
         adaptor = None
@@ -244,7 +244,7 @@ class LinkModelForm:
                             responseData={
                                 "&": "${body}",
                                 "api.url": "${body.api.url}&link_model="
-                                + self.pk_admin.model.__tablename__
+                                + self.pk_admin.model.__table__.name
                                 + "&link_item_id=!${api.qsOptions.id}",
                             },
                             qsOptions={"id": f"${self.pk_admin.pk_name}"},
@@ -618,7 +618,7 @@ class FormAdmin(BaseActionAdmin, Generic[SchemaUpdateT]):
         return await self.has_page_permission(request, action=name)
 
 
-class ModelAdmin(SQLModelCrud, BaseActionAdmin):
+class ModelAdmin(SqlalchemyCrud, BaseActionAdmin):
     list_display: List[Union[SqlaField, TableColumn]] = []  # Fields to be displayed
     list_filter: List[Union[SqlaField, FormItem]] = []  # Query filterable fields
     list_per_page: int = 10  # Amount of data per page
@@ -635,6 +635,9 @@ class ModelAdmin(SQLModelCrud, BaseActionAdmin):
     def __init__(self, app: "AdminApp"):
         assert self.model, "model is None"
         assert app, "app is None"
+        if self.schema_model is None and issubclass(self.model, BaseModel):
+            self.schema_model = self.model
+        assert self.schema_model, "schema_model is None"
         self.app = app
         self.engine = self.engine or self.app.engine
         self.amis_parser = self.app.site.amis_parser
@@ -642,7 +645,7 @@ class ModelAdmin(SQLModelCrud, BaseActionAdmin):
         list_display_insfield = self.parser.filter_insfield(self.list_display, save_class=(Label,))
         self.list_filter = self.list_filter and self.list_filter.copy() or list_display_insfield or []
         self.list_filter.extend([field for field in self.search_fields if field not in self.list_filter])
-        SQLModelCrud.__init__(self, self.model, self.engine)
+        SqlalchemyCrud.__init__(self, self.model, self.schema_model, self.engine)
         self.fields.extend(list_display_insfield)
         BaseActionAdmin.__init__(self, app)
 
@@ -1348,7 +1351,7 @@ class AdminApp(PageAdmin, AdminGroup):
     def get_model_admin(self, table_name: str) -> Optional[ModelAdmin]:
         for admin_cls, admin in self._registered.items():
             admin = admin or self.get_admin_or_create(admin_cls)
-            if issubclass(admin_cls, ModelAdmin) and admin.bind_model and admin.model.__tablename__ == table_name:
+            if issubclass(admin_cls, ModelAdmin) and admin.bind_model and admin.model.__table__.name == table_name:
                 return admin
             elif isinstance(admin, AdminApp) and self.engine is admin.engine:
                 admin = admin.get_model_admin(table_name)

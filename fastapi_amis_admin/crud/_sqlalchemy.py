@@ -250,8 +250,8 @@ class SqlalchemyCrud(BaseCrud, SqlalchemySelector):
     def __init__(
         self,
         model: Type[InspecTableType],
-        engine: SqlalchemyDatabase,
         schema_model: Type[SchemaModelT],
+        engine: SqlalchemyDatabase,
         fields: List[SqlaField] = None,
         router: APIRouter = None,
     ) -> None:
