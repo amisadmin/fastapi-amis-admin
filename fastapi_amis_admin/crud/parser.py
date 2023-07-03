@@ -2,21 +2,38 @@ import datetime
 from functools import lru_cache
 from typing import Any, Callable, Dict, Iterable, List, Optional, Tuple, Type, TypeVar, Union
 
+import sqlalchemy
 from fastapi.utils import create_cloned_field
 from pydantic import BaseConfig, BaseModel
 from pydantic.datetime_parse import parse_date, parse_datetime
 from pydantic.fields import FieldInfo, ModelField
 from sqlalchemy import Column, Table
 from sqlalchemy.engine import Row
-from sqlalchemy.orm import InstrumentedAttribute, RelationshipProperty
+from sqlalchemy.orm import DeclarativeMeta, InstrumentedAttribute, RelationshipProperty
 from sqlalchemy.sql import Select
 from sqlalchemy.sql.elements import Label
+
+from fastapi_amis_admin.crud.base import SchemaModelT
+from fastapi_amis_admin.crud.utils import schema_create_by_modelfield
 
 SqlaInsAttr = Union[str, InstrumentedAttribute]
 SqlaField = Union[SqlaInsAttr, Label]
 SqlaPropertyField = Union[SqlaInsAttr, "PropertyField"]
 ModelFieldType = Union[ModelField, "ModelFieldProxy"]
-InspecTableType = TypeVar("InspecTableType")  # SQLModel,DeclarativeMeta,InspectTable
+SchemaT = TypeVar("SchemaT", bound=BaseModel)
+TableModel = DeclarativeMeta
+
+if sqlalchemy.__version__.startswith("2."):
+    from sqlalchemy.orm import DeclarativeBase
+
+    TableModel = Union[DeclarativeMeta, DeclarativeBase]
+try:  # sqlmodel orm
+    from sqlmodel import SQLModel
+
+    TableModel = Union[TableModel, SQLModel]
+except ImportError:
+    pass
+TableModelT = TypeVar("TableModelT", bound=TableModel)
 
 
 class ModelFieldProxy:
@@ -43,24 +60,41 @@ class ModelFieldProxy:
         return modelfield
 
 
-def get_inspect_table_fields(inspec_table: Type[InspecTableType]) -> Dict[str, ModelField]:
-    """Get pydantic ModelField from sqlalchemy InspecTable."""
-    if hasattr(inspec_table, "__fields__"):
-        return inspec_table.__fields__
-    elif hasattr(inspec_table, "__schema__") and isinstance(inspec_table.__schema__, BaseModel):
-        return inspec_table.__schema__.__fields__
-    return {}
-
-
-class InspecTableParser:
+class TableModelParser:
     _name_format = "{model_name}_{field_name}"
     _alias_format = "{table_name}__{field_key}"
 
-    def __init__(self, inspec_table: Type[InspecTableType]):
-        assert hasattr(inspec_table, "__table__"), "inspec_table must be has __table__ attribute."
-        self.inspec_table = inspec_table
-        self.__table__: Table = self.inspec_table.__table__
-        self.__fields__ = get_inspect_table_fields(inspec_table)
+    def __init__(self, table_model: Type[TableModelT]):
+        assert hasattr(table_model, "__table__"), "table_model must be has __table__ attribute."
+        self.table_model = table_model
+        self.__table__: Table = self.table_model.__table__  # type: ignore
+        self.__fields__ = self.get_table_model_fields(table_model)
+
+    @staticmethod
+    def get_table_model_insfields(table_model: Type[TableModelT]) -> Dict[str, InstrumentedAttribute]:
+        """Get sqlalchemy InstrumentedAttribute from InspecTable."""
+        return {name: field for name, field in table_model.__dict__.items() if isinstance(field, InstrumentedAttribute)}
+
+    @staticmethod
+    def get_table_model_fields(table_model: Type[TableModelT]) -> Dict[str, ModelField]:
+        """Get pydantic ModelField from sqlalchemy InspecTable."""
+        if hasattr(table_model, "__fields__"):
+            return table_model.__fields__
+        elif hasattr(table_model, "__schema__") and issubclass(table_model.__schema__, BaseModel):
+            return table_model.__schema__.__fields__
+        return {}
+
+    @staticmethod
+    def get_table_model_schema(table_model: Type[TableModelT]) -> Optional[Type[BaseModel]]:
+        """Get pydantic schema from sqlalchemy InspecTable."""
+
+        if issubclass(table_model, BaseModel):
+            return table_model
+        elif hasattr(table_model, "__schema__") and issubclass(table_model.__schema__, BaseModel):
+            return table_model.__schema__
+        elif hasattr(table_model, "__fields__"):
+            return schema_create_by_modelfield(f"{table_model.__name__}Schema", table_model.__fields__, orm_mode=True)
+        return None
 
     def get_modelfield(self, field: Union[ModelField, SqlaInsAttr, Label], clone: bool = False) -> Optional[ModelFieldType]:
         """Get pydantic ModelField from sqlmodel field.
@@ -73,7 +107,7 @@ class InspecTableParser:
         modelfield = None
         update = {}
         if isinstance(field, InstrumentedAttribute):
-            modelfield = get_inspect_table_fields(field.class_).get(field.key, None)
+            modelfield = self.get_table_model_fields(field.class_).get(field.key, None)
             if not modelfield:  # Maybe it's a declared_attr or column_property.
                 return None
             if field.class_.__table__ is not self.__fields__:
@@ -131,7 +165,10 @@ class InspecTableParser:
 
     def get_row_keys(self, row: Row) -> List[str]:
         """sqlalchemy row keys"""
-        return [self.get_alias(row._keymap[field][2][1]) for field in row._fields]
+        keymap = getattr(row, "_keymap", None)
+        if not keymap:
+            keymap = row._parent._keymap
+        return [self.get_alias(keymap[field_name][2][1]) for field_name in row._fields]
 
     def get_select_keys(self, stmt: Select) -> List[str]:
         """sqlalchemy select keys"""
@@ -146,7 +183,7 @@ class InspecTableParser:
 
     def get_insfield(self, field: SqlaInsAttr) -> Optional[InstrumentedAttribute]:
         if isinstance(field, str):
-            field = self.inspec_table.__dict__.get(field, None)
+            field = self.table_model.__dict__.get(field, None)
         if isinstance(field, InstrumentedAttribute):
             return field
         return None
@@ -155,13 +192,13 @@ class InspecTableParser:
         self,
         fields: Iterable[Union[SqlaField, Any]],
         save_class: Tuple[Union[type, Tuple[Any, ...]], ...] = None,
-        exclude_prop: Tuple[Union[type, Tuple[Any, ...]], ...] = (RelationshipProperty,),
+        exclude_property: Tuple[Union[type, Tuple[Any, ...]], ...] = (RelationshipProperty,),
     ) -> List[Union[InstrumentedAttribute, Any]]:
         result = []
         for field in fields:
             insfield = self.get_insfield(field)
             if insfield is not None:
-                if isinstance(insfield.prop, exclude_prop):
+                if isinstance(insfield.property, exclude_property):
                     continue
             elif save_class and isinstance(field, save_class):
                 insfield = field
@@ -226,9 +263,24 @@ class PropertyField(ModelField):
         super().__init__(name=name, type_=type_, required=required, field_info=field_info, **kwargs)
 
 
-def get_modelfield_by_alias(model: Type[BaseModel], alias: str) -> Optional[ModelField]:
+def get_insfield_by_key(table_model: Type[TableModelT], key: str) -> Optional[InstrumentedAttribute]:
     """Get the field of the model according to the alias"""
-    for field in model.__fields__.values():
+    for insfield in table_model.__dict__.values():
+        if isinstance(insfield, InstrumentedAttribute) and insfield.key == key:
+            return insfield
+    return None
+
+
+def get_modelfield_by_alias(table_model: Type[TableModelT], alias: str) -> Optional[ModelField]:
+    """Get the field of the model according to the alias"""
+    fields = TableModelParser.get_table_model_fields(table_model).values()
+    for field in fields:
         if field.alias == alias:
             return field
     return None
+
+
+def parse_obj_to_schema(obj: SchemaModelT, schema: Type[SchemaT]) -> SchemaT:
+    """parse obj to schema"""
+    parse = schema.from_orm if getattr(schema.Config, "orm_mode", False) else schema.parse_obj
+    return parse(obj)

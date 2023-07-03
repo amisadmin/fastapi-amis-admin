@@ -1,12 +1,12 @@
 from enum import Enum
 from typing import List, Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing_extensions import get_origin
 
 from fastapi_amis_admin import amis
 from fastapi_amis_admin.admin.parser import AmisParser
-from fastapi_amis_admin.models import Field, IntegerChoices
+from fastapi_amis_admin.models import IntegerChoices
 
 amis_parser = AmisParser()
 

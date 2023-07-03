@@ -1,11 +1,10 @@
 from fastapi_amis_admin import admin
 from fastapi_amis_admin.admin import AdminSite
 from fastapi_amis_admin.admin.admin import AdminGroup
-from tests.models import User
 
 
-class UserAdmin(admin.ModelAdmin):
-    model = User
+class DocsAdmin(admin.IframeAdmin):
+    src = "https://docs.amis.work"
 
 
 class TmpLinkAdmin(admin.LinkAdmin):
@@ -14,17 +13,17 @@ class TmpLinkAdmin(admin.LinkAdmin):
 
 async def test_AdminGroup(site: AdminSite):
     group = site.get_admin_or_create(AdminGroup)
-    user_admin = UserAdmin(site)
+    docs_admin = DocsAdmin(site)
     link_admin = TmpLinkAdmin(site)
 
     # test append_child
     group.append_child(link_admin)
-    group.append_child(user_admin)
-    assert user_admin in group
+    group.append_child(docs_admin)
+    assert docs_admin in group
 
     # test get_page_schema_child
-    admin, parent = group.get_page_schema_child(user_admin.unique_id)
-    assert admin is user_admin
+    admin, parent = group.get_page_schema_child(docs_admin.unique_id)
+    assert admin is docs_admin
     assert parent is group
 
     # test get_page_schema_children
@@ -32,8 +31,8 @@ async def test_AdminGroup(site: AdminSite):
     assert len(children) == 2
 
     # test site.get_page_schema_child
-    admin, parent = site.get_page_schema_child(user_admin.unique_id)
-    assert admin is user_admin
+    admin, parent = site.get_page_schema_child(docs_admin.unique_id)
+    assert admin is docs_admin
     assert parent is group
 
     # test site.get_page_schema_children
@@ -42,11 +41,11 @@ async def test_AdminGroup(site: AdminSite):
     assert len(children[0].children) == 2
 
     # test remove_child
-    group.remove_child(user_admin.unique_id)
-    assert user_admin not in group
+    group.remove_child(docs_admin.unique_id)
+    assert docs_admin not in group
 
     # test get_page_schema_child
-    admin, parent = group.get_page_schema_child(user_admin.unique_id)
+    admin, parent = group.get_page_schema_child(docs_admin.unique_id)
     assert admin is None
     assert parent is None
 
@@ -55,7 +54,7 @@ async def test_AdminGroup(site: AdminSite):
     assert len(children) == 1
 
     # test site.get_page_schema_child
-    admin, parent = site.get_page_schema_child(user_admin.unique_id)
+    admin, parent = site.get_page_schema_child(docs_admin.unique_id)
     assert admin is None
     assert parent is None
 

@@ -3,31 +3,30 @@ from typing import List
 import pytest
 from fastapi import FastAPI
 from httpx import AsyncClient
-from sqlmodel import Field
-from sqlmodel.sql.expression import Select
+from pydantic import Field
+from sqlalchemy.sql import Select
 from starlette.requests import Request
 from starlette.routing import NoMatchFound
 
-from fastapi_amis_admin.crud import SQLModelCrud
+from fastapi_amis_admin.crud import SqlalchemyCrud
 from fastapi_amis_admin.crud.parser import LabelField, PropertyField
 from tests.conftest import async_db as db
-from tests.test_sqlmodel.models import Article, ArticleContent, Category, Tag, User
+from tests.models.schemas import ArticleContentSchema, CategorySchema, TagSchema
 
 
-async def test_pk_name(app: FastAPI, async_client: AsyncClient, fake_users):
-    class UserCrud(SQLModelCrud):
+async def test_pk_name(app: FastAPI, async_client: AsyncClient, fake_users, models):
+    class UserCrud(SqlalchemyCrud):
         router_prefix = "/user"
         pk_name = "username"
-        read_fields = [User.id, User.username, User.password]
+        read_fields = [models.User.id, models.User.username, models.User.password]
 
-    ins = UserCrud(User, db.engine).register_crud()
+    ins = UserCrud(models.User, db.engine).register_crud()
 
     app.include_router(ins.router)
     assert ins.pk.key == "username"
     # read one
     res = await async_client.get("/user/item/User_1")
     user = res.json()["data"]
-    print("user", user)
     assert user["id"] == 1
     assert user["username"] == "User_1"
     # read bulk
@@ -38,14 +37,12 @@ async def test_pk_name(app: FastAPI, async_client: AsyncClient, fake_users):
     assert users[2]["username"] == "User_4"
 
 
-async def test_readonly_fields(app: FastAPI, async_client: AsyncClient, fake_users):
-    print("fake_users", fake_users)
-
-    class UserCrud(SQLModelCrud):
+async def test_readonly_fields(app: FastAPI, async_client: AsyncClient, fake_users, models):
+    class UserCrud(SqlalchemyCrud):
         router_prefix = "/user"
-        readonly_fields = [User.username]
+        update_exclude = {"username"}
 
-    ins = UserCrud(User, db.engine).register_crud()
+    ins = UserCrud(models.User, db.engine).register_crud()
 
     app.include_router(ins.router)
 
@@ -62,12 +59,12 @@ async def test_readonly_fields(app: FastAPI, async_client: AsyncClient, fake_use
     assert res.json()["data"] == 1
 
 
-async def test_update_fields(app: FastAPI, async_client: AsyncClient, fake_users):
-    class UserCrud(SQLModelCrud):
+async def test_update_fields(app: FastAPI, async_client: AsyncClient, fake_users, models):
+    class UserCrud(SqlalchemyCrud):
         router_prefix = "/user"
-        update_fields = [User.username]
+        update_fields = [models.User.username]
 
-    ins = UserCrud(User, db.engine).register_crud()
+    ins = UserCrud(models.User, db.engine).register_crud()
 
     app.include_router(ins.router)
 
@@ -85,12 +82,12 @@ async def test_update_fields(app: FastAPI, async_client: AsyncClient, fake_users
     assert res.json() == {"detail": "error data handle"}
 
 
-async def test_list_filter(app: FastAPI, async_client: AsyncClient, fake_users):
-    class UserCrud(SQLModelCrud):
+async def test_list_filter(app: FastAPI, async_client: AsyncClient, fake_users, models):
+    class UserCrud(SqlalchemyCrud):
         router_prefix = "/user"
-        list_filter = [User.id, User.username]
+        list_filter = [models.User.id, models.User.username]
 
-    ins = UserCrud(User, db.engine).register_crud()
+    ins = UserCrud(models.User, db.engine).register_crud()
 
     app.include_router(ins.router)
 
@@ -117,12 +114,12 @@ async def test_list_filter(app: FastAPI, async_client: AsyncClient, fake_users):
     assert items
 
 
-async def test_create_fields(app: FastAPI, async_client: AsyncClient):
-    class UserCrud(SQLModelCrud):
+async def test_create_fields(app: FastAPI, async_client: AsyncClient, models):
+    class UserCrud(SqlalchemyCrud):
         router_prefix = "/user"
-        create_fields = [User.username]
+        create_fields = [models.User.username]
 
-    ins = UserCrud(User, db.engine).register_crud()
+    ins = UserCrud(models.User, db.engine).register_crud()
 
     app.include_router(ins.router)
 
@@ -143,25 +140,25 @@ async def test_create_fields(app: FastAPI, async_client: AsyncClient):
     assert data["password"] == ""
 
 
-async def test_list_filter_relationship(app: FastAPI, async_client: AsyncClient, fake_articles):
-    class ArticleCrud(SQLModelCrud):
+async def test_list_filter_relationship(app: FastAPI, async_client: AsyncClient, fake_articles, models):
+    class ArticleCrud(SqlalchemyCrud):
         router_prefix = "/article"
         list_filter = [
             "id",
-            Article.title,
-            User.username,
-            User.password.label("pwd"),
+            models.Article.title,
+            models.User.username,
+            models.User.password.label("pwd"),
             LabelField(
-                label=User.password.label("pwd2"),
+                label=models.User.password.label("pwd2"),
                 field=Field(None, title="pwd_title"),
             ),
         ]
 
         async def get_select(self, request: Request) -> Select:
             sel = await super().get_select(request)
-            return sel.outerjoin(User, User.id == Article.user_id)
+            return sel.outerjoin(models.User, models.User.id == models.Article.user_id)
 
-    ins = ArticleCrud(Article, db.engine).register_crud()
+    ins = ArticleCrud(models.Article, db.engine).register_crud()
 
     app.include_router(ins.router)
     # test schemas
@@ -200,25 +197,25 @@ async def test_list_filter_relationship(app: FastAPI, async_client: AsyncClient,
     assert items[0]["id"] == 2
 
 
-async def test_fields(app: FastAPI, async_client: AsyncClient, fake_articles):
-    class ArticleCrud(SQLModelCrud):
+async def test_fields(app: FastAPI, async_client: AsyncClient, fake_articles, models):
+    class ArticleCrud(SqlalchemyCrud):
         router_prefix = "/article"
         fields = [
-            Article.title,
-            User.username,
-            User.password.label("pwd"),
+            models.Article.title,
+            models.User.username,
+            models.User.password.label("pwd"),
             "not_exist",
             LabelField(
-                label=User.password.label("pwd2"),
+                label=models.User.password.label("pwd2"),
                 field=Field(None, title="pwd_title"),
             ),
         ]
 
         async def get_select(self, request: Request) -> Select:
             sel = await super().get_select(request)
-            return sel.outerjoin(User, User.id == Article.user_id)
+            return sel.outerjoin(models.User, models.User.id == models.Article.user_id)
 
-    ins = ArticleCrud(Article, db.engine).register_crud()
+    ins = ArticleCrud(models.Article, db.engine).register_crud()
 
     app.include_router(ins.router)
 
@@ -254,17 +251,17 @@ async def test_fields(app: FastAPI, async_client: AsyncClient, fake_articles):
     assert items[0]["pwd"] == "password_2"
 
 
-async def test_read_fields(app: FastAPI, async_client: AsyncClient, fake_articles):
-    class ArticleCrud(SQLModelCrud):
+async def test_read_fields(app: FastAPI, async_client: AsyncClient, fake_articles, models):
+    class ArticleCrud(SqlalchemyCrud):
         router_prefix = "/article"
         read_fields = [
-            Article.title,
-            Article.description,
+            models.Article.title,
+            models.Article.description,
             # Article.category,  # Relationship
             # Article.user  # Relationship
         ]
 
-    ins = ArticleCrud(Article, db.engine).register_crud()
+    ins = ArticleCrud(models.Article, db.engine).register_crud()
 
     app.include_router(ins.router)
 
@@ -280,19 +277,19 @@ async def test_read_fields(app: FastAPI, async_client: AsyncClient, fake_article
     assert items["description"] == "Description_1"
 
 
-async def test_read_fields_relationship(app: FastAPI, async_client: AsyncClient, fake_articles, fake_article_tags):
-    class ArticleCrud(SQLModelCrud):
+async def test_read_fields_relationship(app: FastAPI, async_client: AsyncClient, fake_articles, fake_article_tags, models):
+    class ArticleCrud(SqlalchemyCrud):
         router_prefix = "/article"
         read_fields = [
-            Article.title,
-            Article.description,
-            PropertyField(name="category", type_=Category),  # Relationship attribute
+            models.Article.title,
+            models.Article.description,
+            PropertyField(name="category", type_=CategorySchema),  # Relationship attribute
             # Article.category,  # Relationship todo support
             PropertyField(name="content_text", type_=str),  # property attribute
-            PropertyField(name="tags", type_=List[Tag]),  # property attribute
+            PropertyField(name="tags", type_=List[TagSchema]),  # property attribute
         ]
 
-    ins = ArticleCrud(Article, db.engine).register_crud()
+    ins = ArticleCrud(models.Article, db.engine).register_crud()
 
     app.include_router(ins.router)
 
@@ -312,16 +309,21 @@ async def test_read_fields_relationship(app: FastAPI, async_client: AsyncClient,
     assert items["tags"][0]["name"] == "Tag_1"
 
 
-async def test_update_fields_relationship(app: FastAPI, async_client: AsyncClient, fake_articles, async_session):
-    class ArticleCrud(SQLModelCrud):
+async def test_update_fields_relationship(app: FastAPI, async_client: AsyncClient, fake_articles, async_session, models):
+    class ArticleCrud(SqlalchemyCrud):
         router_prefix = "/article"
         update_exclude = {"content": {"id"}}
         update_fields = [
-            Article.description,
-            PropertyField(name="content", type_=ArticleContent),  # Relationship attribute
+            models.Article.description,
+            PropertyField(name="content", type_=ArticleContentSchema),  # Relationship attribute
+        ]
+        read_fields = [
+            models.Article.title,
+            models.Article.description,
+            PropertyField(name="content", type_=ArticleContentSchema),  # Relationship attribute
         ]
 
-    ins = ArticleCrud(Article, db.engine).register_crud()
+    ins = ArticleCrud(models.Article, db.engine).register_crud()
 
     app.include_router(ins.router)
 
@@ -344,19 +346,27 @@ async def test_update_fields_relationship(app: FastAPI, async_client: AsyncClien
         },
     )
     assert res.json()["data"] == 1
-    article = await async_session.get(Article, 1)
+    # ret=await async_client.get(
+    #     "/article/item/1",
+    # )
+    # print(ret.json())
+
+    article = await async_session.get(models.Article, 1)
+    await async_session.refresh(article)
+
     assert article.title != "new_title"
     assert article.description == "new_description"
 
-    content = await async_session.get(ArticleContent, 1)
+    content = await async_session.get(models.ArticleContent, 1)
+    await async_session.refresh(content)
     assert content.content == "new_content"
 
 
-async def test_read_fields_and_schema_read_is_none(app: FastAPI, async_client: FastAPI):
-    class ArticleCrud(SQLModelCrud):
+async def test_read_fields_and_schema_read_is_none(app: FastAPI, async_client: FastAPI, models):
+    class ArticleCrud(SqlalchemyCrud):
         router_prefix = "/article"
 
-    ins = ArticleCrud(Article, db.engine).register_crud()
+    ins = ArticleCrud(models.Article, db.engine).register_crud()
 
     app.include_router(ins.router)
     assert ins.schema_read is None

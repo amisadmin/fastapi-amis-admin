@@ -4,19 +4,18 @@ from typing import Any, AsyncGenerator, List
 import pytest
 from fastapi import FastAPI
 from httpx import AsyncClient
-from sqlmodel import SQLModel
 
 from tests.conftest import async_db as db
-from tests.test_sqlmodel.models import Article, ArticleContent, ArticleTagLink, Category, Tag, User
+from tests.models.sqla import Article, ArticleContent, Category, Tag, User
 
 
 @pytest.fixture
-async def prepare_database() -> AsyncGenerator[None, None]:
+async def prepare_database(models) -> AsyncGenerator[None, None]:
     async with db.engine.begin() as conn:
-        await conn.run_sync(SQLModel.metadata.drop_all)
-        await conn.run_sync(SQLModel.metadata.create_all)
+        await conn.run_sync(models.Base.metadata.drop_all)
+        await conn.run_sync(models.Base.metadata.create_all)
         yield
-        await conn.run_sync(SQLModel.metadata.drop_all)
+        await conn.run_sync(models.Base.metadata.drop_all)
 
 
 @pytest.fixture
@@ -26,9 +25,9 @@ async def async_client(app: FastAPI, prepare_database: Any) -> AsyncGenerator[As
 
 
 @pytest.fixture
-async def fake_users(async_session) -> List[User]:
+async def fake_users(async_session, models) -> List[User]:
     data = [
-        User(
+        models.User(
             id=i,
             username=f"User_{i}",
             password=f"password_{i}",
@@ -44,25 +43,25 @@ async def fake_users(async_session) -> List[User]:
 
 
 @pytest.fixture
-async def fake_categorys(async_session) -> List[Category]:
-    data = [Category(id=i, name=f"Category_{i}") for i in range(1, 6)]
+async def fake_categorys(async_session, models) -> List[Category]:
+    data = [models.Category(id=i, name=f"Category_{i}") for i in range(1, 6)]
     async_session.add_all(data)
     await async_session.commit()
     return data
 
 
 @pytest.fixture
-async def fake_article_contents(async_session) -> List[ArticleContent]:
-    data = [ArticleContent(id=i, content=f"Content_{i}") for i in range(1, 6)]
+async def fake_article_contents(async_session, models) -> List[ArticleContent]:
+    data = [models.ArticleContent(id=i, content=f"Content_{i}") for i in range(1, 6)]
     async_session.add_all(data)
     await async_session.commit()
     return data
 
 
 @pytest.fixture
-async def fake_articles(async_session, fake_users, fake_categorys, fake_article_contents) -> List[Article]:
+async def fake_articles(async_session, fake_users, fake_categorys, fake_article_contents, models) -> List[Article]:
     data = [
-        Article(
+        models.Article(
             id=i,
             title=f"Article_{i}",
             description=f"Description_{i}",
@@ -78,12 +77,12 @@ async def fake_articles(async_session, fake_users, fake_categorys, fake_article_
 
 
 @pytest.fixture
-async def fake_article_tags(async_session, fake_articles) -> List[Tag]:
+async def fake_article_tags(async_session, fake_articles, models) -> List[Tag]:
     # add tags
-    data = [Tag(id=i, name=f"Tag_{i}") for i in range(1, 6)]
+    data = [models.Tag(id=i, name=f"Tag_{i}") for i in range(1, 6)]
     async_session.add_all(data)
     await async_session.commit()
     # add article_tag_link
-    async_session.add_all([ArticleTagLink(article_id=i, tag_id=i) for i in range(1, 6)])
+    async_session.add_all([models.ArticleTagLink(article_id=i, tag_id=i) for i in range(1, 6)])
     await async_session.commit()
     return data

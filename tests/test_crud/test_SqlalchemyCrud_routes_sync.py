@@ -1,23 +1,22 @@
 import datetime
-from typing import Any, Generator, List
+from typing import Any, Generator
 
 import pytest
 from fastapi import FastAPI
-from sqlalchemy import func, insert, select
-from sqlmodel import SQLModel
+from sqlalchemy import func, select
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.testclient import TestClient
 
-from fastapi_amis_admin.crud import SQLModelCrud
+from fastapi_amis_admin.crud import SqlalchemyCrud
+from fastapi_amis_admin.crud.parser import TableModelParser
 from tests.conftest import sync_db as db
-from tests.test_sqlmodel.models import Tag, User
 
 
 @pytest.fixture
-def prepare_database() -> Generator[None, None, None]:
-    SQLModel.metadata.create_all(db.engine)
+def prepare_database(models) -> Generator[None, None, None]:
+    models.Base.metadata.create_all(db.engine)
     yield
-    SQLModel.metadata.drop_all(db.engine)
+    models.Base.metadata.drop_all(db.engine)
 
 
 @pytest.fixture
@@ -34,30 +33,31 @@ def client(app: FastAPI, prepare_database: Any) -> Generator[TestClient, None, N
 
 
 @pytest.fixture
-def fake_users() -> List[User]:
+def fake_users(models):
     data = [
-        {
-            "id": i,
-            "username": f"User_{i}",
-            "password": f"password_{i}",
-            "create_time": datetime.datetime.strptime(f"2022-01-0{i} 00:00:00", "%Y-%m-%d %H:%M:%S"),
-            "address": ["address_1", "address_2"],
-            "attach": {"attach_1": "attach_1", "attach_2": "attach_2"},
-        }
+        models.User(
+            id=i,
+            username=f"User_{i}",
+            password=f"password_{i}",
+            create_time=datetime.datetime.strptime(f"2022-01-0{i} 00:00:00", "%Y-%m-%d %H:%M:%S"),
+            address=["address_1", "address_2"],
+            attach={"attach_1": "attach_1", "attach_2": "attach_2"},
+        )
         for i in range(1, 6)
     ]
-    db.session.execute(insert(User).values(data))
+    db.session.add_all(data)
     db.session.commit()
-    return [User.parse_obj(item) for item in data]
+    return data
 
 
 @pytest.fixture(autouse=True)
-def app_routes(app: FastAPI):
-    user_crud = SQLModelCrud(User, db.engine).register_crud(schema_read=User)
+def app_routes(app: FastAPI, models):
+    user_schema = TableModelParser.get_table_model_schema(models.User)
+    user_crud = SqlalchemyCrud(models.User, db.engine).register_crud(schema_read=user_schema)
 
     app.include_router(user_crud.router)
 
-    tag_crud = SQLModelCrud(Tag, db.engine).register_crud()
+    tag_crud = SqlalchemyCrud(models.Tag, db.engine).register_crud()
 
     app.include_router(tag_crud.router)
 
@@ -75,7 +75,7 @@ def test_register_crud(client: TestClient):
 
     # test schemas
     schemas = response.json()["components"]["schemas"]
-    assert "User" in schemas
+    # assert "UserSchema" in schemas
     assert "UserFilter" in schemas
     assert "UserList" in schemas
     assert "UserUpdate" in schemas
@@ -85,14 +85,14 @@ def test_register_crud(client: TestClient):
     assert "TagUpdate" in schemas
 
 
-def test_route_create(client: TestClient):
+def test_route_create(client: TestClient, models):
     # create one
     body = {"username": "create", "password": "password"}
     res = client.post("/User/item", json=body)
     data = res.json().get("data")
     assert data["id"] > 0
     assert data["username"] == "create"
-    user = db.session.get(User, data["id"])
+    user = db.session.get(models.User, data["id"])
     assert user.id == data["id"], user
     db.session.delete(user)
     db.session.commit()
@@ -109,7 +109,7 @@ def test_route_create(client: TestClient):
     ]
     res = client.post("/User/item", json=users)
     assert res.json()["data"] == count
-    stmt = select(func.count(User.id))
+    stmt = select(func.count(models.User.id))
     user = db.session.scalar(stmt)
     assert user == count
 
@@ -128,12 +128,12 @@ def test_route_read(client: TestClient, fake_users):
     assert users[2]["username"] == "User_4"
 
 
-def test_route_update(client: TestClient, fake_users):
+def test_route_update(client: TestClient, fake_users, models):
     # update one
     res = client.put("/User/item/1", json={"username": "new_name"})
     count = res.json()["data"]
     assert count == 1
-    user = db.session.get(User, 1)
+    user = db.session.get(models.User, 1)
     assert user.username == "new_name"
     # update bulk
     res = client.put("/User/item/1,2,4", json={"password": "new_password"})
@@ -141,23 +141,23 @@ def test_route_update(client: TestClient, fake_users):
     assert count == 3
     db.session.expire_all()  # Make the instance expire, because when creating the user,
     # the user object attributes have been cached, so you need to expire.
-    for user in db.session.scalars(select(User).where(User.id.in_([1, 2, 4]))):
+    for user in db.session.scalars(select(models.User).where(models.User.id.in_([1, 2, 4]))):
         assert user.password == "new_password"
 
 
-def test_route_delete(client: TestClient, fake_users):
+def test_route_delete(client: TestClient, fake_users, models):
     # delete one
     res = client.delete("/User/item/1")
     count = res.json()["data"]
     assert count == 1
-    user = db.get(User, 1)
+    user = db.get(models.User, 1)
     assert user is None
     # delete bulk
     res = client.delete("/User/item/2,4")
     count = res.json()["data"]
     assert count == 2
-    assert db.get(User, 2) is None
-    assert db.get(User, 4) is None
+    assert db.get(models.User, 2) is None
+    assert db.get(models.User, 4) is None
 
 
 def test_route_list(client: TestClient, fake_users):

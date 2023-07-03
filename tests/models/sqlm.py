@@ -4,6 +4,8 @@ from typing import List, Optional
 from sqlalchemy import JSON, Column, String, Text
 from sqlmodel import Field, Relationship, SQLModel
 
+Base = SQLModel
+
 
 class PkModelMixin(SQLModel):
     id: int = Field(default=None, primary_key=True, nullable=False)
@@ -51,9 +53,7 @@ class Tag(PkModelMixin, CreateTimeModelMixin, table=True):
 
 
 class ArticleContent(PkModelMixin, table=True):
-    id: int = Field(default=None, primary_key=True, nullable=False)
     content: str = Field(title="ArticleContent", sa_column=Column(Text, default=""))
-
     article: Optional["Article"] = Relationship(back_populates="content")
 
 

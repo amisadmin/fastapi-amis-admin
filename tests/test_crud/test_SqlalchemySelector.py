@@ -1,19 +1,18 @@
-from fastapi_amis_admin.crud import SQLModelSelector
-from tests.test_sqlmodel.models import Article, User
+from fastapi_amis_admin.crud import SqlalchemySelector
 
 
-async def test_fields():
-    class ArticleSelector(SQLModelSelector):
+async def test_fields(models):
+    class ArticleSelector(SqlalchemySelector):
         router_prefix = "/user"
         fields = [
             "id",
-            Article.title,
-            User.username,
-            User.password.label("pwd"),
+            models.Article.title,
+            models.User.username,
+            models.User.password.label("pwd"),
             "not_exist",
         ]
 
-    selector = ArticleSelector(Article)
+    selector = ArticleSelector(models.Article)
     assert "id" in selector._select_entities
     assert "title" in selector._select_entities
     assert "user__username" in selector._select_entities
@@ -22,18 +21,18 @@ async def test_fields():
     assert selector._filter_entities == selector._select_entities
 
 
-async def test_list_filter():
-    class ArticleSelector(SQLModelSelector):
+async def test_list_filter(models):
+    class ArticleSelector(SqlalchemySelector):
         router_prefix = "/user"
         list_filter = [
             "id",
-            Article.title,
-            User.username,
-            User.password.label("pwd"),
+            models.Article.title,
+            models.User.username,
+            models.User.password.label("pwd"),
             "not_exist",
         ]
 
-    selector = ArticleSelector(Article)
+    selector = ArticleSelector(models.Article)
     assert "id" in selector._filter_entities
     assert "title" in selector._filter_entities
     assert "user__username" in selector._filter_entities

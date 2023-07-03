@@ -1,16 +1,15 @@
 import pytest
 from httpx import AsyncClient
-from sqlmodel.sql.expression import Select
+from pydantic import Field
+from sqlalchemy.sql import Select
 from starlette.requests import Request
 
 from fastapi_amis_admin import admin
 from fastapi_amis_admin.admin import AdminSite
 from fastapi_amis_admin.crud.parser import LabelField
-from fastapi_amis_admin.models import Field
-from tests.test_sqlmodel.models import Article, User
 
 
-async def test_register_router(site: AdminSite):
+async def test_register_router(site: AdminSite, models):
     site.register_admin(admin.ModelAdmin)
     with pytest.raises(AssertionError) as exc:
         ins = site.get_admin_or_create(admin.ModelAdmin)
@@ -19,7 +18,7 @@ async def test_register_router(site: AdminSite):
 
     @site.register_admin
     class UserAdmin(admin.ModelAdmin):
-        model = User
+        model = models.User
 
     ins = site.get_admin_or_create(UserAdmin)
     assert ins.engine
@@ -33,11 +32,11 @@ async def test_register_router(site: AdminSite):
     assert f"{ins.router_prefix}/item/{{item_id}}" in paths
 
 
-async def test_list_display(site: AdminSite, async_client: AsyncClient):
+async def test_list_display(site: AdminSite, async_client: AsyncClient, models):
     @site.register_admin
     class UserAdmin(admin.ModelAdmin):
-        model = User
-        list_display = [User.id, User.username]
+        model = models.User
+        list_display = [models.User.id, models.User.username]
 
     site.register_router()
     ins = site.get_admin_or_create(UserAdmin)
@@ -49,24 +48,24 @@ async def test_list_display(site: AdminSite, async_client: AsyncClient):
     assert "username" in schemas["UserAdminList"]["properties"]
 
 
-async def test_list_display_join(site: AdminSite, async_client: AsyncClient):
+async def test_list_display_join(site: AdminSite, async_client: AsyncClient, models):
     @site.register_admin
     class ArticleAdmin(admin.ModelAdmin):
-        model = Article
+        model = models.Article
         list_display = [
-            Article.title,
-            User.username,
+            models.Article.title,
+            models.User.username,
             "description",
-            User.username.label("nickname"),
+            models.User.username.label("nickname"),
             LabelField(
-                label=User.password.label("pwd"),
+                label=models.User.password.label("pwd"),
                 field=Field(None, title="pwd_title"),
             ),
         ]
 
         async def get_select(self, request: Request) -> Select:
             sel = await super().get_select(request)
-            return sel.outerjoin(User, User.id == Article.user_id)
+            return sel.outerjoin(models.User, models.User.id == models.Article.user_id)
 
     site.register_router()
 
@@ -93,12 +92,12 @@ async def test_list_display_join(site: AdminSite, async_client: AsyncClient):
     assert "pwd" in schemas["ArticleAdminList"]["properties"]
 
 
-async def test_list_filter(site: AdminSite, async_client: AsyncClient):
+async def test_list_filter(site: AdminSite, async_client: AsyncClient, models):
     @site.register_admin
     class UserAdmin(admin.ModelAdmin):
-        model = User
-        list_filter = [User.id, User.username.label("name")]
-        search_fields = [User.username]
+        model = models.User
+        list_filter = [models.User.id, models.User.username.label("name")]
+        search_fields = [models.User.username]
 
     site.register_router()
     ins = site.get_admin_or_create(UserAdmin)
@@ -113,10 +112,10 @@ async def test_list_filter(site: AdminSite, async_client: AsyncClient):
     assert "password" not in schemas["UserAdminFilter"]["properties"]
 
 
-async def test_list_filter_default(site: AdminSite, async_client: AsyncClient):
+async def test_list_filter_default(site: AdminSite, async_client: AsyncClient, models):
     @site.register_admin
     class UserAdmin(admin.ModelAdmin):
-        model = User
+        model = models.User
 
     site.register_router()
     ins = site.get_admin_or_create(UserAdmin)

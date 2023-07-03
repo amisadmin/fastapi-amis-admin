@@ -1,2 +1,8 @@
 from .enums import IntegerChoices, TextChoices
-from .fields import Field
+
+try:
+    from .fields import Field
+
+    # must install sqlmodel to use
+except ImportError:
+    pass

@@ -17,7 +17,7 @@ from typing import (
 
 from fastapi import APIRouter, Body, Depends, Query
 from fastapi.encoders import DictIntStrAny, SetIntStr
-from pydantic import Extra, Json
+from pydantic import EmailStr, Extra, Json
 from pydantic.fields import ModelField
 from pydantic.utils import ValueItems
 from sqlalchemy import Column, Table, func
@@ -43,13 +43,14 @@ from .base import (
     SchemaUpdateT,
 )
 from .parser import (
-    InspecTableParser,
-    InspecTableType,
     SqlaField,
     SqlaInsAttr,
     SqlaPropertyField,
+    TableModelParser,
+    TableModelT,
     get_modelfield_by_alias,
     get_python_type_parse,
+    parse_obj_to_schema,
 )
 from .schema import BaseApiOut, ItemListSchema
 from .utils import (
@@ -78,8 +79,8 @@ sql_operator_map: Dict[str, str] = {
 }
 
 
-class SqlalchemySelector(Generic[InspecTableType]):
-    model: Type[InspecTableType] = None  # SQLModel,DeclarativeMeta,InspectTable
+class SqlalchemySelector(Generic[TableModelT]):
+    model: Type[TableModelT] = None  # SQLModel,DeclarativeMeta,InspectTable
     fields: List[SqlaField] = []  # Need to query the field from the database
     list_filter: List[SqlaField] = []  # Query filterable fields
     exclude: List[SqlaInsAttr] = []  # Model fields that do not need to be queried. It is not recommended to use.
@@ -97,14 +98,14 @@ class SqlalchemySelector(Generic[InspecTableType]):
     """
     pk_name: str = "id"  # Primary key name
 
-    def __init__(self, model: Type[InspecTableType] = None, fields: List[SqlaField] = None) -> None:
+    def __init__(self, model: Type[TableModelT] = None, fields: List[SqlaField] = None) -> None:
         self.model = model or self.model
         assert self.model, "model is None"
         assert hasattr(self.model, "__table__"), "model must be has __table__ attribute."
         self.pk_name: str = self.pk_name or self.model.__table__.primary_key.columns.keys()[0]
         self.pk: InstrumentedAttribute = self.model.__dict__[self.pk_name]
-        self.parser = InspecTableParser(self.model)
-        fields = fields or self.fields or list(self.model.__dict__.values())
+        self.parser = TableModelParser(self.model)
+        fields = fields or self.fields or self.model_insfields
         exclude = self.parser.filter_insfield(self.exclude)
         self.fields = [
             sqlfield
@@ -115,6 +116,10 @@ class SqlalchemySelector(Generic[InspecTableType]):
         self.list_filter = self.list_filter and self.list_filter.copy() or self.fields
         self.link_models = self.link_models or {}
         """Make sure the value of link_models is an object attribute, not a class attribute."""
+
+    @cached_property
+    def model_insfields(self) -> List[SqlaInsAttr]:
+        return self.parser.filter_insfield(self.model.__dict__.values())
 
     @cached_property
     def _select_entities(self) -> Dict[str, Union[InstrumentedAttribute, Label]]:
@@ -233,12 +238,13 @@ class SqlalchemySelector(Generic[InspecTableType]):
         return lst
 
 
-class SqlalchemyCrud(BaseCrud, SqlalchemySelector):
+class SqlalchemyCrud(
+    BaseCrud[SchemaModelT, SchemaListT, SchemaFilterT, SchemaCreateT, SchemaReadT, SchemaUpdateT], SqlalchemySelector[TableModelT]
+):
     engine: SqlalchemyDatabase = None  # sqlalchemy engine
     create_fields: List[SqlaInsAttr] = []  # Create item data field
-    readonly_fields: List[SqlaField] = []
-    """readonly fields, priority is higher than update_fields.
-    readonly fields, deprecated, not recommended, will be removed in version 0.4.0"""
+    create_exclude: Optional[Union[SetIntStr, DictIntStrAny]] = None
+    """create exclude fields, such as: {'id', 'key', 'name'} or {'id': True, 'category': {'id', 'name'}}."""
     update_fields: List[SqlaPropertyField] = []
     """model update fields;support model property and relationship field."""
     update_exclude: Optional[Union[SetIntStr, DictIntStrAny]] = None
@@ -249,8 +255,7 @@ class SqlalchemyCrud(BaseCrud, SqlalchemySelector):
 
     def __init__(
         self,
-        model: Type[InspecTableType],
-        schema_model: Type[SchemaModelT],
+        model: Type[TableModelT],
         engine: SqlalchemyDatabase,
         fields: List[SqlaField] = None,
         router: APIRouter = None,
@@ -259,12 +264,17 @@ class SqlalchemyCrud(BaseCrud, SqlalchemySelector):
         assert self.engine, "engine is None"
         self.db = get_engine_db(self.engine)
         SqlalchemySelector.__init__(self, model, fields)
+        schema_model: Type[SchemaModelT] = self.schema_model or TableModelParser.get_table_model_schema(model)
         BaseCrud.__init__(self, schema_model, router)
         # if self.readonly_fields:
         #     logging.warning(
         #         "readonly fields, deprecated, not recommended, will be removed in version 0.4.0."
         #         "Please replace them with update_fields and update_exclude."
         #     )
+
+    @property
+    def router_prefix(self):
+        return f"/{self.model.__name__}"
 
     def _create_schema_list(self) -> Type[SchemaListT]:
         if self.schema_list:
@@ -291,7 +301,7 @@ class SqlalchemyCrud(BaseCrud, SqlalchemySelector):
         for modelfield in modelfields:
             if not issubclass(modelfield.type_, (Enum, bool)) and issubclass(
                 modelfield.type_,
-                (int, float, datetime.datetime, datetime.date, datetime.time, Json),
+                (int, float, datetime.datetime, datetime.date, datetime.time, Json, EmailStr),
             ):
                 modelfield.type_ = str
                 modelfield.outer_type_ = str
@@ -307,7 +317,6 @@ class SqlalchemyCrud(BaseCrud, SqlalchemySelector):
             return self.schema_read
         if not self.read_fields:
             return None
-        self.read_fields = self.read_fields or self.schema_model.__fields__.values()
         self.read_fields = self.parser.filter_insfield(self.read_fields, save_class=(ModelField,))
         modelfields = [self.parser.get_modelfield(ins, clone=True) for ins in self.read_fields]
         return schema_create_by_modelfield(f"{self.schema_name_prefix}Read", modelfields, orm_mode=True)
@@ -315,46 +324,39 @@ class SqlalchemyCrud(BaseCrud, SqlalchemySelector):
     def _create_schema_update(self) -> Type[SchemaUpdateT]:
         if self.schema_update:
             return self.schema_update
-        self.update_fields = (
-            self.parser.filter_insfield(self.update_fields, save_class=(ModelField,)) or self.schema_model.__fields__.values()
-        )
+        self.update_fields = self.update_fields or self.model_insfields
+        self.update_fields = self.parser.filter_insfield(self.update_fields, save_class=(ModelField,))
         modelfields = [self.parser.get_modelfield(ins, clone=True) for ins in self.update_fields]
-        if self.update_exclude is None:  # deprecated in version 0.4.0
-            exclude = {self.pk_name} | {
-                self.parser.get_modelfield(ins).name
-                for ins in self.parser.filter_insfield(self.readonly_fields)  # readonly fields, deprecated
-            }
-        else:
-            exclude = {k for k, v in ValueItems.merge(self.update_exclude, {}).items() if not isinstance(v, (dict, list, set))}
+        exclude = {k for k, v in ValueItems.merge(self.update_exclude, {}).items() if not isinstance(v, (dict, list, set))} | {
+            self.pk_name
+        }
         modelfields = [field for field in modelfields if field.name not in exclude]
         return schema_create_by_modelfield(f"{self.schema_name_prefix}Update", modelfields, set_none=True)
 
     def _create_schema_create(self) -> Type[SchemaCreateT]:
         if self.schema_create:
             return self.schema_create
-        if not self.create_fields:
-            return super()._create_schema_create()
-        modelfields = list(
-            filter(
-                None,
-                [self.parser.get_modelfield(field, clone=True) for field in self.create_fields],
-            )
-        )
+        self.create_fields = self.create_fields or self.model_insfields
+        self.create_fields = self.parser.filter_insfield(self.create_fields, save_class=(ModelField,))
+        modelfields = [self.parser.get_modelfield(ins, clone=True) for ins in self.create_fields]
+        exclude = {k for k, v in ValueItems.merge(self.create_exclude, {}).items() if not isinstance(v, (dict, list, set))} | {
+            self.pk_name
+        }
+        modelfields = [field for field in modelfields if field.name not in exclude]
         return schema_create_by_modelfield(f"{self.schema_name_prefix}Create", modelfields)
 
-    def create_item(self, item: Dict[str, Any]) -> SchemaModelT:
+    def create_item(self, item: Dict[str, Any]) -> TableModelT:
         """Create a database orm object through a dictionary."""
         return self.model(**item)
 
-    def read_item(self, obj: SchemaModelT) -> SchemaReadT:
+    def read_item(self, obj: TableModelT) -> SchemaReadT:
         """read database data and parse to schema_read"""
-        parse = self.schema_read.from_orm if getattr(self.schema_read.Config, "orm_mode", False) else self.schema_read.parse_obj
-        return parse(obj)
+        return parse_obj_to_schema(obj, self.schema_read)
 
-    def update_item(self, obj: SchemaModelT, values: Dict[str, Any]) -> None:
+    def update_item(self, obj: TableModelT, values: Dict[str, Any]) -> None:
         """update schema_update data to database,support relational attributes"""
         for k, v in values.items():
-            field = get_modelfield_by_alias(self.schema_model, k)
+            field = get_modelfield_by_alias(self.model, k)
             if not field and not hasattr(obj, k):
                 continue
             name = field.name if field else k
@@ -366,7 +368,7 @@ class SqlalchemyCrud(BaseCrud, SqlalchemySelector):
                     continue
             setattr(obj, name, v)
 
-    def delete_item(self, obj: SchemaModelT) -> None:
+    def delete_item(self, obj: TableModelT) -> None:
         """delete database data"""
         object_session(obj).delete(obj)
 
@@ -374,24 +376,24 @@ class SqlalchemyCrud(BaseCrud, SqlalchemySelector):
         """Parse the database data query result dictionary into schema_list."""
         return self.schema_list.parse_obj(values)
 
-    def _fetch_item_scalars(self, session: Session, item_id: Iterable[str]) -> List[SchemaModelT]:
+    def _fetch_item_scalars(self, session: Session, item_id: Iterable[str]) -> List[TableModelT]:
         stmt = select(self.model).where(self.pk.in_(list(map(get_python_type_parse(self.pk), item_id))))
         return session.scalars(stmt).all()
 
-    async def fetch_items(self, *item_id: str) -> List[SchemaModelT]:
+    async def fetch_items(self, *item_id: str) -> List[TableModelT]:
         """Fetch the database data by id."""
         return await self.db.async_run_sync(self._fetch_item_scalars, item_id)
 
     def _create_items(self, session: Session, items: List[Dict[str, Any]]) -> Union[int, SchemaModelT]:
         count = len(items)
-        obj = None
         for item in items:
             obj = self.create_item(item)
             session.add(obj)
-        if count == 1:
+            if count > 1:
+                continue
             session.flush()
             session.refresh(obj)
-            return self.schema_model.parse_obj(obj)
+            return parse_obj_to_schema(obj, self.schema_model)
         return count
 
     def _read_items(self, session: Session, item_id: List[str]) -> List[SchemaReadT]:
@@ -450,7 +452,7 @@ class SqlalchemyCrud(BaseCrud, SqlalchemySelector):
             item_id: List[str] = Depends(parser_item_id),
             stmt: Select = Depends(self._select_maker),
         ):
-            filtered_id = await self.db.async_scalars(stmt.where(self.pk.in_(item_id)).with_only_columns([self.pk]))
+            filtered_id = await self.db.async_scalars(stmt.where(self.pk.in_(item_id)).with_only_columns(self.pk))
             return filtered_id.all()
 
         return depend
@@ -472,7 +474,7 @@ class SqlalchemyCrud(BaseCrud, SqlalchemySelector):
                 stmt = stmt.filter(*self.calc_filter_clause(data.filters))
             if paginator.show_total:
                 data.total = await self.db.async_scalar(
-                    select(func.count("*")).select_from(stmt.with_only_columns([self.pk]).subquery())
+                    select(func.count("*")).select_from(stmt.with_only_columns(self.pk).subquery())
                 )
             orderBy = self._calc_ordering(paginator.orderBy, paginator.orderDir)
             if orderBy:

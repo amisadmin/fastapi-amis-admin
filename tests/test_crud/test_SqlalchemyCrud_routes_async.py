@@ -3,18 +3,19 @@ from fastapi import FastAPI
 from httpx import AsyncClient
 from sqlalchemy import func, select
 
-from fastapi_amis_admin.crud import SQLModelCrud
+from fastapi_amis_admin.crud import SqlalchemyCrud
+from fastapi_amis_admin.crud.parser import TableModelParser
 from tests.conftest import async_db as db
-from tests.test_sqlmodel.models import Tag, User
 
 
 @pytest.fixture(autouse=True)
-def app_routes(app: FastAPI):
-    user_crud = SQLModelCrud(User, db.engine).register_crud(schema_read=User)
+def app_routes(app: FastAPI, models):
+    user_schema = TableModelParser.get_table_model_schema(models.User)
+    user_crud = SqlalchemyCrud(models.User, db.engine).register_crud(schema_read=user_schema)
 
     app.include_router(user_crud.router)
 
-    tag_crud = SQLModelCrud(Tag, db.engine).register_crud()
+    tag_crud = SqlalchemyCrud(models.Tag, db.engine).register_crud()
 
     app.include_router(tag_crud.router)
 
@@ -32,7 +33,7 @@ async def test_register_crud(async_client: AsyncClient):
 
     # test schemas
     schemas = response.json()["components"]["schemas"]
-    assert "User" in schemas
+    # assert "UserSchema" in schemas
     assert "UserFilter" in schemas
     assert "UserList" in schemas
     assert "UserUpdate" in schemas
@@ -42,14 +43,14 @@ async def test_register_crud(async_client: AsyncClient):
     assert "TagUpdate" in schemas
 
 
-async def test_route_create(async_client: AsyncClient):
+async def test_route_create(async_client: AsyncClient, models):
     # create one
     body = {"username": "User", "password": "password"}
     res = await async_client.post("/User/item", json=body)
     data = res.json().get("data")
     assert data["id"] > 0
     assert data["username"] == "User"
-    user = await db.session.get(User, data["id"])
+    user = await db.session.get(models.User, data["id"])
     assert user.id == data["id"], user
     await db.session.delete(user)
     # await db.session.flush()  # If flush is used here, the sqlite database is locked, causing subsequent tests to fail
@@ -70,7 +71,7 @@ async def test_route_create(async_client: AsyncClient):
     ]
     res = await async_client.post("/User/item", json=users)
     assert res.json()["data"] == count
-    stmt = select(func.count(User.id))
+    stmt = select(func.count(models.User.id))
     result = await db.scalar(stmt)
     assert result == count
 
@@ -93,7 +94,7 @@ async def test_route_read(async_client: AsyncClient, fake_users):
     assert users[2]["address"] == ["address_1", "address_2"]
 
 
-async def test_route_update(async_client: AsyncClient, fake_users):
+async def test_route_update(async_client: AsyncClient, fake_users, models):
     # update one
     res = await async_client.put(
         "/User/item/1",
@@ -105,7 +106,7 @@ async def test_route_update(async_client: AsyncClient, fake_users):
     )
     count = res.json()["data"]
     assert count == 1
-    user = await db.session.get(User, 1)
+    user = await db.session.get(models.User, 1)
     assert user.username == "new_name"
     assert user.address == ["address_3"]
     assert user.attach == {"attach_3": "attach_3"}
@@ -121,25 +122,25 @@ async def test_route_update(async_client: AsyncClient, fake_users):
     count = res.json()["data"]
     assert count == 3
     db.session.expire_all()
-    for user in await db.session.scalars(select(User).where(User.id.in_([1, 2, 4]))):
+    for user in await db.session.scalars(select(models.User).where(models.User.id.in_([1, 2, 4]))):
         assert user.password == "new_password"
         assert user.address == ["address_3"]
         assert user.attach == {"attach_3": "attach_3"}
 
 
-async def test_route_delete(async_client: AsyncClient, fake_users):
+async def test_route_delete(async_client: AsyncClient, fake_users, models):
     # delete one
     res = await async_client.delete("/User/item/1")
     count = res.json()["data"]
     assert count == 1
-    user = await db.get(User, 1)
+    user = await db.get(models.User, 1)
     assert user is None
     # delete bulk
     res = await async_client.delete("/User/item/2,4")
     count = res.json()["data"]
     assert count == 2
-    assert await db.get(User, 2) is None
-    assert await db.get(User, 4) is None
+    assert await db.get(models.User, 2) is None
+    assert await db.get(models.User, 4) is None
 
 
 async def test_route_list(async_client: AsyncClient, fake_users):

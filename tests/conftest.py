@@ -1,6 +1,9 @@
+import importlib
+from importlib.util import find_spec
 from typing import AsyncGenerator
 
 import pytest
+import sqlalchemy
 from fastapi import FastAPI
 from httpx import AsyncClient
 from sqlalchemy_database import AsyncDatabase, Database
@@ -8,6 +11,7 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.testclient import TestClient
 
 from fastapi_amis_admin.admin import AdminSite, Settings
+from tests.models import sqla
 
 # sqlite
 sync_db = Database.create(
@@ -73,6 +77,18 @@ def session():
 async def async_session():
     async with async_db.session_maker() as session:
         yield session
+
+
+models_params_list = ["sqla"]
+if sqlalchemy.__version__.startswith("2."):
+    models_params_list.append("sqla2")
+if find_spec("sqlmodel"):
+    models_params_list.append("sqlm")
+
+
+@pytest.fixture(params=models_params_list, ids=models_params_list)
+async def models(request) -> sqla:
+    return importlib.import_module(f"tests.models.{request.param}")
 
 
 @pytest.fixture(autouse=True)
