@@ -277,14 +277,15 @@ class SqlalchemyCrud(
         return f"/{self.model.__name__}"
 
     def _create_schema_list(self) -> Type[SchemaListT]:
-        if self.schema_list:
-            return self.schema_list
-        modelfields = list(
-            filter(
-                None,
-                [self.parser.get_modelfield(sqlfield, clone=True) for sqlfield in self._select_entities.values()],
-            )
+        # Get the model fields from the select entities
+        modelfields = self.parser.filter_modelfield(
+            self._select_entities.values(),
+            save_class=(
+                Label,
+                ModelField,
+            ),
         )
+        # Create the schema using the model fields
         return schema_create_by_modelfield(
             schema_name=f"{self.schema_name_prefix}List",
             modelfields=modelfields,
@@ -293,11 +294,11 @@ class SqlalchemyCrud(
         )
 
     def _create_schema_filter(self) -> Type[SchemaFilterT]:
-        if self.schema_filter:
-            return self.schema_filter
-        list_filter = self.parser.filter_insfield(self.list_filter, save_class=(Label,)) or self._select_entities.values()
-        modelfields = list(filter(None, [self.parser.get_modelfield(sqlfield, clone=True) for sqlfield in list_filter]))
-        # todo perfect
+        # Get the filter fields from the list filter or select entities
+        list_filter = self.list_filter or self._select_entities.values()
+        # Filter out the model fields from the filter fields
+        modelfields = self.parser.filter_modelfield(list_filter, save_class=(Label,))
+        # Modify the modelfields if necessary
         for modelfield in modelfields:
             if not issubclass(modelfield.type_, (Enum, bool)) and issubclass(
                 modelfield.type_,
@@ -306,6 +307,7 @@ class SqlalchemyCrud(
                 modelfield.type_ = str
                 modelfield.outer_type_ = str
                 modelfield.validators = []
+        # Create the schema using the model fields
         return schema_create_by_modelfield(
             schema_name=f"{self.schema_name_prefix}Filter",
             modelfields=modelfields,
@@ -313,37 +315,47 @@ class SqlalchemyCrud(
         )
 
     def _create_schema_read(self) -> Optional[Type[SchemaReadT]]:
-        if self.schema_read:
-            return self.schema_read
         if not self.read_fields:
             return None
-        self.read_fields = self.parser.filter_insfield(self.read_fields, save_class=(ModelField,))
-        modelfields = [self.parser.get_modelfield(ins, clone=True) for ins in self.read_fields]
-        return schema_create_by_modelfield(f"{self.schema_name_prefix}Read", modelfields, orm_mode=True)
+        # Filter out any non-model fields from the read fields
+        modelfields = self.parser.filter_modelfield(self.read_fields)
+        # Create the schema using the model fields
+        return schema_create_by_modelfield(
+            f"{self.schema_name_prefix}Read",
+            modelfields,
+            orm_mode=True,
+        )
 
     def _create_schema_update(self) -> Type[SchemaUpdateT]:
-        if self.schema_update:
-            return self.schema_update
+        # Set the update fields to the model insfields if not provided
         self.update_fields = self.update_fields or self.model_insfields
-        self.update_fields = self.parser.filter_insfield(self.update_fields, save_class=(ModelField,))
-        modelfields = [self.parser.get_modelfield(ins, clone=True) for ins in self.update_fields]
-        exclude = {k for k, v in ValueItems.merge(self.update_exclude, {}).items() if not isinstance(v, (dict, list, set))} | {
+        # Exclude certain fields if specified
+        exclude = {k for k, v in ValueItems.merge(self.update_exclude, {}).items() if not isinstance(v, (dict, list, set))} or {
             self.pk_name
         }
-        modelfields = [field for field in modelfields if field.name not in exclude]
-        return schema_create_by_modelfield(f"{self.schema_name_prefix}Update", modelfields, set_none=True)
+        # Filter out any non-model fields from the update fields
+        modelfields = self.parser.filter_modelfield(self.update_fields, exclude=exclude)
+        # Create the schema using the model fields
+        return schema_create_by_modelfield(
+            f"{self.schema_name_prefix}Update",
+            modelfields,
+            set_none=True,
+        )
 
     def _create_schema_create(self) -> Type[SchemaCreateT]:
-        if self.schema_create:
-            return self.schema_create
+        # Set the create fields to the model insfields if not provided
         self.create_fields = self.create_fields or self.model_insfields
-        self.create_fields = self.parser.filter_insfield(self.create_fields, save_class=(ModelField,))
-        modelfields = [self.parser.get_modelfield(ins, clone=True) for ins in self.create_fields]
-        exclude = {k for k, v in ValueItems.merge(self.create_exclude, {}).items() if not isinstance(v, (dict, list, set))} | {
+        # Exclude certain fields if specified
+        exclude = {k for k, v in ValueItems.merge(self.create_exclude, {}).items() if not isinstance(v, (dict, list, set))} or {
             self.pk_name
         }
-        modelfields = [field for field in modelfields if field.name not in exclude]
-        return schema_create_by_modelfield(f"{self.schema_name_prefix}Create", modelfields)
+        # Filter out any non-model fields from the create fields
+        modelfields = self.parser.filter_modelfield(self.create_fields, exclude=exclude)
+        # Create the schema using the model fields
+        return schema_create_by_modelfield(
+            f"{self.schema_name_prefix}Create",
+            modelfields,
+        )
 
     def create_item(self, item: Dict[str, Any]) -> TableModelT:
         """Create a database orm object through a dictionary."""

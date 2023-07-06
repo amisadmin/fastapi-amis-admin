@@ -110,9 +110,9 @@ class LinkModelForm:
 
     @classmethod
     def bind_model_admin(cls, pk_admin: "ModelAdmin", insfield: InstrumentedAttribute) -> Optional["LinkModelForm"]:
-        if not isinstance(insfield.prop, RelationshipProperty):
+        if not isinstance(insfield.property, RelationshipProperty):
             return None
-        table = insfield.prop.secondary
+        table = insfield.property.secondary
         if table is None:
             return None
         admin = None

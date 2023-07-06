@@ -165,9 +165,7 @@ class TableModelParser:
 
     def get_row_keys(self, row: Row) -> List[str]:
         """sqlalchemy row keys"""
-        keymap = getattr(row, "_keymap", None)
-        if not keymap:
-            keymap = row._parent._keymap
+        keymap = row._parent._keymap
         return [self.get_alias(keymap[field_name][2][1]) for field_name in row._fields]
 
     def get_select_keys(self, stmt: Select) -> List[str]:
@@ -205,6 +203,20 @@ class TableModelParser:
             if insfield is not None:
                 result.append(insfield)
         return sorted(set(result), key=result.index)  # 去重复并保持原顺序
+
+    def filter_modelfield(
+        self,
+        fields: Iterable[Union[SqlaField, Any]],
+        save_class: Tuple[Union[type, Tuple[Any, ...]], ...] = (ModelField,),
+        exclude: Iterable[str] = None,
+    ) -> List[ModelField]:
+        exclude = exclude or []
+        # Filter out any non-model fields from the read fields
+        fields = self.filter_insfield(fields, save_class=save_class)
+        modelfields = [self.get_modelfield(ins, clone=True) for ins in fields]
+        # Filter out any None values or out excluded fields
+        modelfields = [field for field in modelfields if field and field.name not in exclude]
+        return modelfields
 
 
 @lru_cache()

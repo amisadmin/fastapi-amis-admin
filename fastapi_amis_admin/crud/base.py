@@ -78,11 +78,11 @@ class BaseCrud(RouterMixin, Generic[SchemaModelT, SchemaListT, SchemaFilterT, Sc
         depends_update: List[Depends] = None,
         depends_delete: List[Depends] = None,
     ) -> "BaseCrud":
-        self.schema_list = schema_list or self._create_schema_list()
-        self.schema_filter = schema_filter or self._create_schema_filter()
-        self.schema_create = schema_create or self._create_schema_create()
-        self.schema_read = schema_read or self._create_schema_read()
-        self.schema_update = schema_update or self._create_schema_update()
+        self.schema_list = schema_list or self.schema_list or self._create_schema_list()
+        self.schema_filter = schema_filter or self.schema_filter or self._create_schema_filter()
+        self.schema_create = schema_create or self.schema_create or self._create_schema_create()
+        self.schema_read = schema_read or self.schema_read or self._create_schema_read()
+        self.schema_update = schema_update or self.schema_update or self._create_schema_update()
         self.list_per_page_max = list_per_page_max or self.list_per_page_max
         self.paginator = Paginator(perPageMax=self.list_per_page_max)
         self.router.add_api_route(
@@ -129,16 +129,16 @@ class BaseCrud(RouterMixin, Generic[SchemaModelT, SchemaListT, SchemaFilterT, Sc
         return self
 
     def _create_schema_list(self) -> Type[SchemaListT]:
-        return self.schema_list or self.schema_model
+        return self.schema_model
 
     def _create_schema_filter(self) -> Type[SchemaFilterT]:
-        return self.schema_filter or schema_create_by_schema(self.schema_list, f"{self.schema_name_prefix}Filter", set_none=True)
+        return schema_create_by_schema(self.schema_list, f"{self.schema_name_prefix}Filter", set_none=True)
 
     def _create_schema_read(self) -> Optional[Type[SchemaReadT]]:
-        return self.schema_read
+        return None
 
     def _create_schema_update(self) -> Type[SchemaUpdateT]:
-        return self.schema_update or schema_create_by_schema(
+        return schema_create_by_schema(
             self.schema_model,
             f"{self.schema_name_prefix}Update",
             exclude={self.pk_name},
@@ -146,7 +146,7 @@ class BaseCrud(RouterMixin, Generic[SchemaModelT, SchemaListT, SchemaFilterT, Sc
         )
 
     def _create_schema_create(self) -> Type[SchemaCreateT]:
-        return self.schema_create or schema_create_by_schema(
+        return schema_create_by_schema(
             self.schema_model,
             f"{self.schema_name_prefix}Create",
             exclude={self.pk_name},
