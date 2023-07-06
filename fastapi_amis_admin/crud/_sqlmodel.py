@@ -13,10 +13,11 @@ from typing import (
     Type,
     Union,
 )
+from uuid import UUID
 
 from fastapi import APIRouter, Body, Depends, Query
 from fastapi.encoders import DictIntStrAny, SetIntStr
-from pydantic import Extra, Json
+from pydantic import EmailStr, Extra, IPvAnyAddress, Json
 from pydantic.fields import ModelField
 from pydantic.utils import ValueItems
 from sqlalchemy import Column, Table, func
@@ -288,7 +289,7 @@ class SQLModelCrud(BaseCrud, SQLModelSelector):
         for modelfield in modelfields:
             if not issubclass(modelfield.type_, (Enum, bool)) and issubclass(
                 modelfield.type_,
-                (int, float, datetime.datetime, datetime.date, datetime.time, Json),
+                (int, float, datetime.datetime, datetime.date, datetime.time, Json, EmailStr, IPvAnyAddress, UUID),
             ):
                 modelfield.type_ = str
                 modelfield.outer_type_ = str
@@ -447,7 +448,7 @@ class SQLModelCrud(BaseCrud, SQLModelSelector):
             item_id: List[str] = Depends(parser_item_id),
             stmt: Select = Depends(self._select_maker),
         ):
-            filtered_id = await self.db.async_scalars(stmt.where(self.pk.in_(item_id)).with_only_columns([self.pk]))
+            filtered_id = await self.db.async_scalars(stmt.where(self.pk.in_(item_id)).with_only_columns(self.pk))
             return filtered_id.all()
 
         return depend
@@ -469,7 +470,7 @@ class SQLModelCrud(BaseCrud, SQLModelSelector):
                 stmt = stmt.filter(*self.calc_filter_clause(data.filters))
             if paginator.show_total:
                 data.total = await self.db.async_scalar(
-                    select(func.count("*")).select_from(stmt.with_only_columns([self.pk]).subquery())
+                    select(func.count("*")).select_from(stmt.with_only_columns(self.pk).subquery())
                 )
             orderBy = self._calc_ordering(paginator.orderBy, paginator.orderDir)
             if orderBy:
