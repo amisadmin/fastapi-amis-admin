@@ -72,4 +72,3 @@ class ArticleSchema(PkSchemaMixin, CreateTimeSchemaMixin):
 
 
 UserSchema.update_forward_refs()
-ArticleTagLinkSchema.update_forward_refs()

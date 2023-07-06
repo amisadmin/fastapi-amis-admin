@@ -6,10 +6,10 @@ import sqlalchemy
 from fastapi.utils import create_cloned_field
 from pydantic import BaseConfig, BaseModel
 from pydantic.datetime_parse import parse_date, parse_datetime
-from pydantic.fields import FieldInfo, ModelField
-from sqlalchemy import Column, Table
+from pydantic.fields import Field, FieldInfo, ModelField
+from sqlalchemy import Column, String, Table
 from sqlalchemy.engine import Row
-from sqlalchemy.orm import DeclarativeMeta, InstrumentedAttribute, RelationshipProperty
+from sqlalchemy.orm import ColumnProperty, DeclarativeMeta, InstrumentedAttribute, RelationshipProperty
 from sqlalchemy.sql import Select
 from sqlalchemy.sql.elements import Label
 
@@ -93,8 +93,17 @@ class TableModelParser:
         elif hasattr(table_model, "__schema__") and issubclass(table_model.__schema__, BaseModel):
             return table_model.__schema__
         elif hasattr(table_model, "__fields__"):
-            return schema_create_by_modelfield(f"{table_model.__name__}Schema", table_model.__fields__, orm_mode=True)
-        return None
+            table_model.__schema__ = schema_create_by_modelfield(
+                table_model.__name__, table_model.__fields__.values(), orm_mode=True
+            )
+            return table_model.__schema__
+        insfields = TableModelParser.get_table_model_insfields(table_model)
+        if not insfields:
+            return None
+        modelfields = [insfield_to_modelfield(insfield) for insfield in insfields.values()]
+        modelfields = list(filter(None, modelfields))
+        table_model.__schema__ = schema_create_by_modelfield(table_model.__name__, modelfields, orm_mode=True)
+        return table_model.__schema__
 
     def get_modelfield(self, field: Union[ModelField, SqlaInsAttr, Label], clone: bool = False) -> Optional[ModelFieldType]:
         """Get pydantic ModelField from sqlmodel field.
@@ -296,3 +305,37 @@ def parse_obj_to_schema(obj: SchemaModelT, schema: Type[SchemaT]) -> SchemaT:
     """parse obj to schema"""
     parse = schema.from_orm if getattr(schema.Config, "orm_mode", False) else schema.parse_obj
     return parse(obj)
+
+
+def insfield_to_modelfield(insfield: InstrumentedAttribute) -> Optional[ModelField]:
+    """InstrumentedAttribute to ModelField"""
+    if not isinstance(insfield.property, ColumnProperty):
+        return None
+    expression = insfield.expression
+    field_info_kwargs = {}
+    required = not expression.nullable
+    default = ...
+    if expression.nullable:
+        default = None
+    if expression.default:
+        if expression.default.is_scalar:
+            default = expression.default.arg
+            required = False
+        elif expression.default.is_callable:
+            field_info_kwargs["default_factory"] = expression.default.arg
+            required = False
+    if isinstance(expression.type, String):
+        field_info_kwargs["max_length"] = expression.type.length
+    if "default_factory" not in field_info_kwargs:
+        field_info_kwargs["default"] = default
+    return ModelField(
+        name=insfield.key,
+        type_=expression.type.python_type,
+        required=required,
+        class_validators={},
+        model_config=BaseConfig,
+        field_info=Field(
+            title=expression.comment,
+            **field_info_kwargs,
+        ),
+    )

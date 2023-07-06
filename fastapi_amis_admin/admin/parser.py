@@ -104,7 +104,7 @@ class AmisParser:
         Returns:
             amis.Form
         """
-        form = amis.Form(title=getattr(model.Config, "title", None), size="lg")
+        form = amis.Form(title=getattr(model.Config, "title", None), size="lg")  # type: ignore
         form.body = [
             self.as_form_item(modelfield, set_default=set_default, is_filter=is_filter)
             for modelfield in model.__fields__.values()
@@ -120,25 +120,20 @@ class AmisParser:
         is_filter: bool = False,
     ):
         """Set common attributes for FormItem and TableColumn."""
+        field_info = modelfield.field_info
         if not is_filter:
-            if modelfield.field_info.max_length:
-                item.maxLength = modelfield.field_info.max_length
-            if modelfield.field_info.min_length:
-                item.minLength = modelfield.field_info.min_length
+            if field_info.max_length:
+                item.maxLength = field_info.max_length
+            if field_info.min_length:
+                item.minLength = field_info.min_length
             item.required = modelfield.required and not issubclass(modelfield.type_, bool)
             if set_default:
                 item.value = modelfield.default
         item.name = modelfield.alias
-        if item.label is None:
-            item.label = _(modelfield.field_info.title or modelfield.name)  # The use of I18N
-        else:
-            item.label = _(modelfield.field_info.title)  # The use of I18N
-
+        item.label = _(field_info.title) if field_info.title else _(modelfield.name)  # The use of I18N
         label_name = "labelRemark" if isinstance(item, FormItem) else "remark"
         if getattr(item, label_name, None) is None:
-            label = (
-                Remark(content=_(modelfield.field_info.description)) if modelfield.field_info.description else None
-            )  # The use of I18N
+            label = Remark(content=_(field_info.description)) if field_info.description else None  # The use of I18N
             setattr(item, label_name, label)
         return item
 
