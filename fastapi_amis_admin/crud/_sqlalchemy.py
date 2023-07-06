@@ -14,10 +14,11 @@ from typing import (
     Type,
     Union,
 )
+from uuid import UUID
 
 from fastapi import APIRouter, Body, Depends, Query
 from fastapi.encoders import DictIntStrAny, SetIntStr
-from pydantic import EmailStr, Extra, Json
+from pydantic import EmailStr, Extra, IPvAnyAddress, Json
 from pydantic.fields import ModelField
 from pydantic.utils import ValueItems
 from sqlalchemy import Column, Table, func
@@ -302,7 +303,7 @@ class SqlalchemyCrud(
         for modelfield in modelfields:
             if not issubclass(modelfield.type_, (Enum, bool)) and issubclass(
                 modelfield.type_,
-                (int, float, datetime.datetime, datetime.date, datetime.time, Json, EmailStr),
+                (int, float, datetime.datetime, datetime.date, datetime.time, Json, EmailStr, IPvAnyAddress, UUID),
             ):
                 modelfield.type_ = str
                 modelfield.outer_type_ = str
