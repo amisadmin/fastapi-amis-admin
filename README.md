@@ -66,19 +66,30 @@ everyone's sponsorship and support.
 
 ## Composition
 
-`fastapi-amis-admin` consists of three core modules, of which, `amis`, `fastapi-sqlmodel-crud` can be used as separate
-modules, `amis_admin` is developed by the former.
+`fastapi-amis-admin` consists of three core modules, of which, `amis`, `crud` can be used as separate
+modules, `admin` is developed by the former.
 
 - `amis`: Based on the `pydantic` data model building library of `baidu amis`. To generate/parse data rapidly.
-- `fastapi-sqlmodel-crud`: Based on `FastAPI` &`SQLModel`. To quickly build Create, Read, Update, Delete common API
+- `crud`: Based on `FastAPI` &`Sqlalchemy`. To quickly build Create, Read, Update, Delete common API
   interface .
-- `admin`: Inspired by `Django-Admin`. Combine `amis` with `fastapi-sqlmodel-crud`. To quickly build Web Admin
+- `admin`: Inspired by `Django-Admin`. Combine `amis` with `crud`. To quickly build Web Admin
   dashboard .
 
 ## Installation
 
 ```bash
 pip install fastapi_amis_admin
+```
+
+### Note
+
+- `sqlmodel` currently does not support `sqlalchemy 2.0+`. If you use `sqlalchemy 2.0+` to create a model, you cannot
+  use `sqlmodel` at the same time.
+- After version `fastapi-amis-admin>=0.6.0`, `sqlmodel` is no longer a required dependency library. If you use `sqlmodel`
+  to create a model, you can install it with the following command.
+
+```bash
+pip install fastapi_amis_admin[sqlmodel]
 ```
 
 ## Simple Example
@@ -100,10 +111,92 @@ site.mount_app(app)
 if __name__ == '__main__':
     import uvicorn
 
-    uvicorn.run(app, debug=True)
+    uvicorn.run(app)
 ```
 
 ## ModelAdmin Example
+
+### Create Model
+
+- Support `SQLModel` model, `SQLAlchemy` model, `SQLAlchemy 2.0` model
+- Method 1: Create model through `SQLModel`.
+
+```python
+from sqlmodel import SQLModel
+from fastapi_amis_admin.models.fields import Field
+
+
+class Base(SQLModel):
+    pass
+
+
+# Create an SQLModel, see document for details: https://sqlmodel.tiangolo.com/
+class Category(SQLModel, table=True):
+    id: int = Field(default=None, primary_key=True, nullable=False)
+    name: str = Field(title='CategoryName', max_length=100, unique=True, index=True, nullable=False)
+    description: str = Field(default='', title='Description', max_length=255)
+
+```
+
+- Method 2: Create model through `SQLAlchemy`.
+
+```python
+from sqlalchemy import Column, Integer, String
+from sqlalchemy.ext.declarative import declarative_base
+
+Base = declarative_base()
+
+
+# Create an SQLAlchemy model, see document for details: https://docs.sqlalchemy.org/en/14/orm/tutorial.html
+class Category(Base):
+    __tablename__ = 'category'
+    # Specify the Schema class corresponding to the model. It is recommended to specify it. If omitted, it can be automatically generated.
+    __schema__ = CategorySchema
+
+    id = Column(Integer, primary_key=True, nullable=False)
+    name = Column(String(100), unique=True, index=True, nullable=False)
+    description = Column(String(255), default='')
+```
+
+- Method 3: Create model through `SQLAlchemy 2.0`.
+
+```python
+from sqlalchemy import String
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+
+
+class Base(DeclarativeBase):
+    pass
+
+
+# Create an SQLAlchemy 2.0 model, see document for details: https://docs.sqlalchemy.org/en/20/orm/quickstart.html
+class Category(Base):
+    __tablename__ = "category"
+    # Specify the Schema class corresponding to the model. It is recommended to specify it. If omitted, it can be automatically generated.
+    __schema__ = CategorySchema
+
+    id: Mapped[int] = mapped_column(primary_key=True, nullable=False)
+    name: Mapped[str] = mapped_column(String(100), unique=True, index=True, nullable=False)
+    description: Mapped[str] = mapped_column(String(255), default="")
+```
+
+- If you create a model through `sqlalchemy`, it is recommended to create a corresponding pydantic model at the same
+  time, and set `orm_mode=True`.
+
+```python
+from pydantic import BaseModel, Field
+
+
+class CategorySchema(BaseModel):
+    id: int = Field(default=None, primary_key=True, nullable=False)
+    name: str = Field(title="CategoryName")
+    description: str = Field(default="", title="CategoryDescription")
+
+    class Config:
+        orm_mode = True
+```
+
+### Register ModelAdmin
 
 ```python
 from fastapi import FastAPI
@@ -111,20 +204,12 @@ from sqlmodel import SQLModel
 from fastapi_amis_admin.admin.settings import Settings
 from fastapi_amis_admin.admin.site import AdminSite
 from fastapi_amis_admin.admin import admin
-from fastapi_amis_admin.models.fields import Field
 
 # create FastAPI application
 app = FastAPI()
 
 # create AdminSite instance
 site = AdminSite(settings=Settings(database_url_async='sqlite+aiosqlite:///amisadmin.db'))
-
-
-# Create an SQLModel, see document for details: https://sqlmodel.tiangolo.com/
-class Category(SQLModel, table=True):
-    id: int = Field(default=None, primary_key=True, nullable=False)
-    name: str = Field(title='CategoryName')
-    description: str = Field(default='', title='Description')
 
 
 # register ModelAdmin
@@ -148,7 +233,7 @@ async def startup():
 if __name__ == '__main__':
     import uvicorn
 
-    uvicorn.run(app, debug=True)
+    uvicorn.run(app)
 ```
 
 ## FormAdmin Example
@@ -197,7 +282,7 @@ site.mount_app(app)
 if __name__ == '__main__':
     import uvicorn
 
-    uvicorn.run(app, debug=True)
+    uvicorn.run(app)
 ```
 
 ## Working with Command
@@ -231,12 +316,13 @@ faa run
 
 ## Project
 
-- [`Amis-Admin-Theme-Editor`](https://github.com/swelcker/amis-admin-theme-editor):Theme-Editor for the fastapi-amis-admin. 
+- [`Amis-Admin-Theme-Editor`](https://github.com/swelcker/amis-admin-theme-editor):Theme-Editor for the fastapi-amis-admin.
   Allows to add custom css styles and to apply theme --vars change on the fly.
 - [`FastAPI-User-Auth`](https://github.com/amisadmin/fastapi_user_auth): A simple and powerful `FastAPI` user `RBAC`
   authentication and authorization library.
 - [`FastAPI-Scheduler`](https://github.com/amisadmin/fastapi_scheduler): A simple scheduled task management `FastAPI` extension
   based on `APScheduler`.
+- [`FastAPI-Config`](https://github.com/amisadmin/fastapi-config): A visual dynamic configuration management extension package based on `FastAPI-Amis-Admin`.
 - [`FastAPI-Amis-Admin-Demo`](https://github.com/amisadmin/fastapi_amis_admin_demo): An example `FastAPI-Amis-Admin` application.
 - [`FastAPI-User-Auth-Demo`](https://github.com/amisadmin/fastapi_user_auth_demo): An example `FastAPI-User-Auth` application.
 

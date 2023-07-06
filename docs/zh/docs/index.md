@@ -1,10 +1,13 @@
+[简体中文](https://github.com/amisadmin/fastapi_amis_admin/blob/master/README.zh.md)
+| [English](https://github.com/amisadmin/fastapi_amis_admin)
+
 # 项目介绍
 
 <h2 align="center">
   FastAPI-Amis-Admin
 </h2>
 <p align="center">
-    <em>fastapi-amis-admin是一个拥有高性能,高效率,易拓展的fastapi管理后台框架</em><br/>
+    <em>fastapi-amis-admin是一个拥有高性能,高效率,易拓展的fastapi管理后台框架.</em><br/>
     <em>启发自Django-Admin,并且拥有不逊色于Django-Admin的强大功能.</em>
 </p>
 <p align="center">
@@ -51,7 +54,7 @@
 
 - **前后端分离**: 前端由`Amis`渲染, 后端接口由`fastapi-amis-admin`自动生成, 接口可重复利用.
 
-- **可拓展性强**:  后台页面支持`Amis`页面及普通`html`页面,开发者可以很方便的自由定制界面.
+- **可拓展性强**: 后台页面支持`Amis`页面及普通`html`页面,开发者可以很方便的自由定制界面.
 
 - **自动生成API文档**: 由`FastAPI`自动生成接口文档,方便开发者调试,以及接口分享.
 
@@ -65,17 +68,26 @@
 
 ## 项目组成
 
-`fastapi-amis-admin`由三部分核心模块组成,其中`amis`, `fastapi-sqlmodel-crud` 可作为独立模块单独使用,`amis_admin`基于前者共同构建.
+`fastapi-amis-admin`由三部分核心模块组成,其中`amis`, `crud` 可作为独立模块单独使用,`admin`基于前者共同构建.
 
 - `amis`: 基于`baidu amis`的`pydantic`数据模型构建库,用于快速生成/解析`amis` `json` 数据.
-- `fastapi-sqlmodel-crud`: 基于`FastAPI`+`SQLModel`, 用于快速构建Create,Read,Update,Delete通用API接口.
-- `admin`: 启发自`Django-Admin`, 结合`amis`+`fastapi-sqlmodel-crud`, 用于快速构建`Web Admin`管理后台.
+- `crud`: 基于`FastAPI`+`Sqlalchemy`, 用于快速构建Create,Read,Update,Delete通用API接口.
+- `admin`: 启发自`Django-Admin`, 结合`amis`+`crud`, 用于快速构建`Web Admin`管理后台.
 
 ## 安装
 
 ```bash
 pip install fastapi_amis_admin
 ```
+
+### 注意
+
+- `sqlmodel`目前暂不支持`sqlalchemy 2.0+`, 如果你使用`sqlalchemy 2.0+`创建模型, 则不可同时使用`sqlmodel`.
+- `fastapi-amis-admin>=0.6.0`版本以后,`sqlmodel`不再是必须依赖库,如果你使用`sqlmodel`创建模型, 可以通过以下命令安装.
+
+```bash
+pip install fastapi_amis_admin[sqlmodel]
+``` 
 
 ## 简单示例
 
@@ -96,10 +108,89 @@ site.mount_app(app)
 if __name__ == '__main__':
     import uvicorn
 
-    uvicorn.run(app, debug=True)
+    uvicorn.run(app)
 ```
 
 ## 模型管理示例
+
+### 创建模型
+
+- 支持`SQLModel`模型的、`SQLAlchemy`模型、`SQLAlchemy 2.0`模型
+- 方式一: 通过`SQLModel`创建模型.
+
+```python
+from sqlmodel import SQLModel
+from fastapi_amis_admin.models.fields import Field
+
+
+class Base(SQLModel):
+    pass
+
+
+# 创建SQLModel模型,详细请参考: https://sqlmodel.tiangolo.com/
+class Category(SQLModel, table=True):
+    id: int = Field(default=None, primary_key=True, nullable=False)
+    name: str = Field(title='CategoryName', max_length=100, unique=True, index=True, nullable=False)
+    description: str = Field(default='', title='Description', max_length=255)
+
+```
+
+- 方式二: 通过`SQLAlchemy`创建模型.
+
+```python
+from sqlalchemy import Column, Integer, String
+from sqlalchemy.ext.declarative import declarative_base
+
+Base = declarative_base()
+
+
+# 创建SQLAlchemy模型,详细请参考: https://docs.sqlalchemy.org/en/14/orm/tutorial.html
+class Category(Base):
+    __tablename__ = 'category'
+    __schema__ = CategorySchema  # 指定模型对应的Schema类.省略可自动生成,但是建议指定.
+
+    id = Column(Integer, primary_key=True, nullable=False)
+    name = Column(String(100), unique=True, index=True, nullable=False)
+    description = Column(String(255), default='')
+```
+
+- 方式三: 通过`SQLAlchemy 2.0`创建模型.
+
+```python
+from sqlalchemy import String
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+
+
+class Base(DeclarativeBase):
+    pass
+
+
+# 创建SQLAlchemy 2.0模型,详细请参考: https://docs.sqlalchemy.org/en/20/orm/quickstart.html
+class Category(Base):
+    __tablename__ = "category"
+    __schema__ = CategorySchema  # 指定模型对应的Schema类.省略可自动生成,但是建议指定.
+
+    id: Mapped[int] = mapped_column(primary_key=True, nullable=False)
+    name: Mapped[str] = mapped_column(String(100), unique=True, index=True, nullable=False)
+    description: Mapped[str] = mapped_column(String(255), default="")
+```
+
+- 如果你通过`sqlalchemy`创建模型,建议同时创建一个对应的pydantic模型,并且设置`orm_mode=True`.
+
+```python
+from pydantic import BaseModel, Field
+
+
+class CategorySchema(BaseModel):
+    id: int = Field(default=None, primary_key=True, nullable=False)
+    name: str = Field(title="CategoryName")
+    description: str = Field(default="", title="CategoryDescription")
+
+    class Config:
+        orm_mode = True
+```
+
+### 注册模型管理
 
 ```python
 from fastapi import FastAPI
@@ -107,20 +198,12 @@ from sqlmodel import SQLModel
 from fastapi_amis_admin.admin.settings import Settings
 from fastapi_amis_admin.admin.site import AdminSite
 from fastapi_amis_admin.admin import admin
-from fastapi_amis_admin.models.fields import Field
 
 # 创建FastAPI应用
 app = FastAPI()
 
 # 创建AdminSite实例
 site = AdminSite(settings=Settings(database_url_async='sqlite+aiosqlite:///amisadmin.db'))
-
-
-# 先创建一个SQLModel模型,详细请参考: https://sqlmodel.tiangolo.com/
-class Category(SQLModel, table=True):
-    id: int = Field(default=None, primary_key=True, nullable=False)
-    name: str = Field(title='CategoryName')
-    description: str = Field(default='', title='Description')
 
 
 # 注册ModelAdmin
@@ -138,7 +221,7 @@ site.mount_app(app)
 # 创建初始化数据库表
 @app.on_event("startup")
 async def startup():
-    await site.db.async_run_sync(SQLModel.metadata.create_all, is_session=False)
+    await site.db.async_run_sync(Base.metadata.create_all, is_session=False)
 
 
 if __name__ == '__main__':
@@ -230,7 +313,8 @@ faa run
 - [`Amis-Admin-Theme-Editor`](https://github.com/swelcker/amis-admin-theme-editor):`FastAPI-Amis-Admin`的主题编辑器。
   允许添加自定义css样式和应用主题,变量改变及时生效.
 - [`FastAPI-User-Auth`](https://github.com/amisadmin/fastapi_user_auth): 一个简单而强大的`FastAPI`用户`RBAC`认证与授权库.
-- [`FastAPI-Scheduler`](https://github.com/amisadmin/fastapi_scheduler): 一个基于`FastAPI`+`APScheduler`的简单定时任务管理项目.
+- [`FastAPI-Scheduler`](https://github.com/amisadmin/fastapi_scheduler): 一个基于`APScheduler`的简单定时任务管理`FastAPI`拓展库.
+- [`FastAPI-Config`](https://github.com/amisadmin/fastapi-config): 一个基于`FastAPI-Amis-Admin`的可视化动态配置管理拓展包.
 - [`FastAPI-Amis-Admin-Demo`](https://github.com/amisadmin/fastapi_amis_admin_demo):  一个`FastAPI-Amis-Admin` 应用程序示例.
 - [`FastAPI-User-Auth-Demo`](https://github.com/amisadmin/fastapi_user_auth_demo): 一个`FastAPI-User-Auth` 应用程序示例.
 

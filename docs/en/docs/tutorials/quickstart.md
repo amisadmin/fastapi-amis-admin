@@ -43,7 +43,7 @@ site.mount_app(app)
 if __name__ == '__main__':
     import uvicorn
 
-    uvicorn.run(app, debug=True)
+    uvicorn.run(app)
 ```
 
 ## Run the program
