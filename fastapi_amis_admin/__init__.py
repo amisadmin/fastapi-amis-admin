@@ -1,4 +1,4 @@
-__version__ = "0.5.8"
+__version__ = "0.6.0a1"
 __url__ = "https://github.com/amisadmin/fastapi_amis_admin"
 
 import gettext
