@@ -16,8 +16,8 @@ from typing import (
 )
 from uuid import UUID
 
-from fastapi import APIRouter, Body, Depends, Query
-from fastapi.encoders import DictIntStrAny, SetIntStr
+from fastapi import APIRouter, Body, Depends
+from fastapi.types import IncEx
 from pydantic import EmailStr, Extra, IPvAnyAddress, Json
 from pydantic.fields import ModelField
 from pydantic.utils import ValueItems
@@ -28,6 +28,7 @@ from sqlalchemy.orm import InstrumentedAttribute, Session, object_session
 from sqlalchemy.sql import Select
 from sqlalchemy.sql.elements import BinaryExpression, Label, UnaryExpression
 from starlette.requests import Request
+from typing_extensions import Literal
 
 try:
     from functools import cached_property
@@ -55,9 +56,10 @@ from .parser import (
 )
 from .schema import BaseApiOut, ItemListSchema
 from .utils import (
+    IdStrQuery,
+    ItemIdListDepend,
     SqlalchemyDatabase,
     get_engine_db,
-    parser_item_id,
     parser_str_set_list,
     schema_create_by_modelfield,
 )
@@ -172,12 +174,8 @@ class SqlalchemySelector(Generic[TableModelT]):
         self,
         request: Request,
         link_model: str = None,
-        link_item_id: Union[int, str] = Query(
-            None,
-            title="pk",
-            example="1,2,3",
-            description="Link Model Primary key or list of primary keys",
-        ),
+        link_item_id: IdStrQuery = None,
+        op: Literal["in_", "not_in", None] = None,
     ) -> Optional[Any]:
         if link_model and link_item_id:
             result = self.link_models.get(link_model)
@@ -185,22 +183,16 @@ class SqlalchemySelector(Generic[TableModelT]):
                 return None
             table, pk_col, link_col = result
             if table is not None:
-                op = "in_"
-                if isinstance(link_item_id, str) and link_item_id.startswith("!"):
-                    op = "not_in"
-                    link_item_id = link_item_id[1:]
-                    if not link_item_id:
-                        return None
                 link_item_id = list(
                     map(
                         get_python_type_parse(link_col),
                         parser_str_set_list(link_item_id),
                     )
                 )
-                if op == "in_":
-                    return self.pk.in_(select(pk_col).where(link_col.in_(link_item_id)))
-                elif op == "not_in":
+                if op == "not_in":
                     return self.pk.not_in(select(pk_col).where(link_col.in_(link_item_id)))
+                else:
+                    return self.pk.in_(select(pk_col).where(link_col.in_(link_item_id)))
         return None
 
     @staticmethod
@@ -244,11 +236,11 @@ class SqlalchemyCrud(
 ):
     engine: SqlalchemyDatabase = None  # sqlalchemy engine
     create_fields: List[SqlaInsAttr] = []  # Create item data field
-    create_exclude: Optional[Union[SetIntStr, DictIntStrAny]] = None
+    create_exclude: Optional[IncEx] = None
     """create exclude fields, such as: {'id', 'key', 'name'} or {'id': True, 'category': {'id', 'name'}}."""
     update_fields: List[SqlaPropertyField] = []
     """model update fields;support model property and relationship field."""
-    update_exclude: Optional[Union[SetIntStr, DictIntStrAny]] = None
+    update_exclude: Optional[IncEx] = None
     """update exclude fields, such as: {'id', 'key', 'name'} or {'id': True, 'category': {'id', 'name'}}."""
     read_fields: List[SqlaPropertyField] = []
     """Model read fields; used in route_read, note the difference between readonly_fields and read_fields.
@@ -462,7 +454,7 @@ class SqlalchemyCrud(
         """Filter the id of the data that the user has permission to operate on."""
 
         async def depend(
-            item_id: List[str] = Depends(parser_item_id),
+            item_id: ItemIdListDepend,
             stmt: Select = Depends(self._select_maker),
         ):
             filtered_id = await self.db.async_scalars(stmt.where(self.pk.in_(item_id)).with_only_columns(self.pk))

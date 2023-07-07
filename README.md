@@ -227,7 +227,7 @@ site.mount_app(app)
 # create initial database table
 @app.on_event("startup")
 async def startup():
-    await site.db.async_run_sync(SQLModel.metadata.create_all, is_session=False)
+    await site.db.async_run_sync(Base.metadata.create_all, is_session=False)
 
 
 if __name__ == '__main__':
@@ -322,7 +322,8 @@ faa run
   authentication and authorization library.
 - [`FastAPI-Scheduler`](https://github.com/amisadmin/fastapi_scheduler): A simple scheduled task management `FastAPI` extension
   based on `APScheduler`.
-- [`FastAPI-Config`](https://github.com/amisadmin/fastapi-config): A visual dynamic configuration management extension package based on `FastAPI-Amis-Admin`.
+- [`FastAPI-Config`](https://github.com/amisadmin/fastapi-config): A visual dynamic configuration management extension package
+  based on `FastAPI-Amis-Admin`.
 - [`FastAPI-Amis-Admin-Demo`](https://github.com/amisadmin/fastapi_amis_admin_demo): An example `FastAPI-Amis-Admin` application.
 - [`FastAPI-User-Auth-Demo`](https://github.com/amisadmin/fastapi_user_auth_demo): An example `FastAPI-User-Auth` application.
 

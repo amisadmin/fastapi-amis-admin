@@ -227,7 +227,7 @@ site.mount_app(app)
 # create initial database table
 @app.on_event("startup")
 async def startup():
-    await site.db.async_run_sync(SQLModel.metadata.create_all, is_session=False)
+    await site.db.async_run_sync(Base.metadata.create_all, is_session=False)
 
 
 if __name__ == '__main__':

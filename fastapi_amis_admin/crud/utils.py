@@ -1,14 +1,16 @@
+import warnings
 from enum import Enum
-from typing import Any, Dict, Iterable, List, Set, Type, Union
+from typing import Iterable, List, Set, Type, Union
 
-from fastapi.params import Path
+from fastapi import Depends, Path, Query
 from fastapi.utils import create_cloned_field
 from pydantic import BaseConfig, BaseModel, Extra
 from pydantic.fields import ModelField
-from pydantic.main import ModelMetaclass
+from pydantic.main import create_model
 from sqlalchemy.engine import Engine
 from sqlalchemy.ext.asyncio import AsyncEngine
 from sqlalchemy_database import AsyncDatabase, Database
+from typing_extensions import Annotated
 
 from .schema import BaseApiSchema
 
@@ -51,32 +53,43 @@ def schema_create_by_modelfield(
     modelfields: Iterable[ModelField],
     *,
     set_none: bool = False,
-    namespaces: Dict[str, Any] = None,
     extra: Extra = Extra.ignore,
     **kwargs,
 ) -> Type[BaseModel]:
-    namespaces = namespaces or {}
-    namespaces["Config"] = type("Config", (BaseApiSchema.Config,), {"extra": extra, **kwargs})
-    namespaces.update({"__fields__": {}, "__annotations__": {}})
-    for modelfield in modelfields:
+    __config__ = type("Config", (BaseApiSchema.Config,), {"extra": extra, **kwargs})
+    model = create_model(schema_name, __config__=__config__)  # type: ignore
+    for f in modelfields:
         if set_none:
-            modelfield.required = False
-            modelfield.allow_none = True
-            if not modelfield.pre_validators:
-                modelfield.pre_validators = [validator_skip_blank]
+            f.required = False
+            f.allow_none = True
+            if not f.pre_validators:
+                f.pre_validators = [validator_skip_blank]
             else:
-                modelfield.pre_validators.insert(0, validator_skip_blank)
-        namespaces["__fields__"][modelfield.name] = modelfield
-        namespaces["__annotations__"][modelfield.name] = modelfield.type_
-    return ModelMetaclass(schema_name, (BaseApiSchema,), namespaces)
+                f.pre_validators.insert(0, validator_skip_blank)
+        model.__fields__[f.name] = f
+        model.__annotations__[f.name] = f.type_
+    return model
 
 
-def parser_str_set_list(set_str: Union[int, str]) -> List[str]:
-    if isinstance(set_str, int):
-        return [str(set_str)]
-    elif not isinstance(set_str, str):
+IdStrQuery = Annotated[
+    str,
+    Query(
+        title="ids",
+        example="1,2,3",
+        description="Primary key or list of primary keys",
+    ),
+]
+
+
+def parser_str_set_list(item_id: Union[int, str]) -> List[str]:
+    if isinstance(item_id, int):
+        return [str(item_id)]
+    elif not isinstance(item_id, str):
         return []
-    return list(set(set_str.split(",")))
+    return list(set(item_id.split(",")))
+
+
+ItemIdListDepend = Annotated[List[str], Depends(parser_str_set_list)]
 
 
 def parser_item_id(
@@ -88,7 +101,13 @@ def parser_item_id(
         description="Primary key or list of primary keys",
     )
 ) -> List[str]:
-    return parser_str_set_list(set_str=item_id)
+    """Deprecated, use ItemIdListDepend and parser_str_set_list instead"""
+    warnings.warn(
+        "Deprecated, use ItemIdListDepend and parser_str_set_list instead",
+        DeprecationWarning,
+        stacklevel=2,
+    )
+    return parser_str_set_list(item_id)
 
 
 def get_engine_db(engine: SqlalchemyDatabase) -> Union[Database, AsyncDatabase]:

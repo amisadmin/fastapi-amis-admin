@@ -18,7 +18,7 @@ from typing import (
     Union,
 )
 
-from fastapi import Body, Depends, FastAPI, HTTPException, Query, Request
+from fastapi import Body, Depends, FastAPI, HTTPException, Request
 from pydantic import BaseModel
 from pydantic.fields import ModelField
 from pydantic.utils import deep_update
@@ -74,6 +74,7 @@ from fastapi_amis_admin.crud.parser import (
 )
 from fastapi_amis_admin.crud.schema import BaseApiOut, CrudEnum, Paginator
 from fastapi_amis_admin.crud.utils import (
+    IdStrQuery,
     SqlalchemyDatabase,
     get_engine_db,
     parser_str_set_list,
@@ -139,14 +140,8 @@ class LinkModelForm:
     def route_delete(self):
         async def route(
             request: Request,
+            link_id: IdStrQuery,
             item_id: List[str] = Depends(self.pk_admin.filtered_item_id),
-            link_id: str = Query(
-                ...,
-                min_length=1,
-                title="link_id",
-                example="1,2,3",
-                description="link model Primary key or list of link model primary keys",
-            ),
         ):
             if not await self.pk_admin.has_update_permission(request, item_id, None):
                 return self.pk_admin.error_no_router_permission(request)
@@ -164,14 +159,8 @@ class LinkModelForm:
     def route_create(self):
         async def route(
             request: Request,
+            link_id: IdStrQuery,
             item_id: List[str] = Depends(self.pk_admin.filtered_item_id),
-            link_id: str = Query(
-                ...,
-                min_length=1,
-                title="link_id",
-                example="1,2,3",
-                description="link model Primary key or list of link model primary keys",
-            ),
         ):
             if not await self.pk_admin.has_update_permission(request, item_id, None):
                 return self.pk_admin.error_no_router_permission(request)
@@ -179,10 +168,7 @@ class LinkModelForm:
             for item in map(get_python_type_parse(self.item_col), item_id):
                 values.extend(
                     {self.link_col.key: link, self.item_col.key: item}
-                    for link in map(
-                        get_python_type_parse(self.link_col),
-                        parser_str_set_list(link_id),
-                    )
+                    for link in map(get_python_type_parse(self.link_col), parser_str_set_list(link_id))
                 )
             stmt = insert(self.link_model).values(values)
             try:
@@ -208,7 +194,8 @@ class LinkModelForm:
             source={
                 "method": "post",
                 "data": "${body.api.data}",
-                "url": "${body.api.url}&link_model=" + self.pk_admin.model.__table__.name + "&link_item_id=${api.qsOptions.id}",
+                "url": "${body.api.url}&link_model=" + self.pk_admin.model.__table__.name + "&op=in_&link_item_id=${"
+                "api.qsOptions.id}",
             },
         )
         adaptor = None
@@ -243,9 +230,9 @@ class LinkModelForm:
                             cache=300000,
                             responseData={
                                 "&": "${body}",
-                                "api.url": "${body.api.url}&link_model="
+                                "api.url": "${body.api.url}&op=not_in&link_model="
                                 + self.pk_admin.model.__table__.name
-                                + "&link_item_id=!${api.qsOptions.id}",
+                                + "&link_item_id=${api.qsOptions.id}",
                             },
                             qsOptions={"id": f"${self.pk_admin.pk_name}"},
                             adaptor=adaptor,
@@ -1235,15 +1222,10 @@ class ModelAction(FormAction):
 
         async def route(
             request: Request,
+            item_id: List[str] = Depends(self.admin.filtered_item_id),
             data: schema = Body(default=default),  # type:ignore
-            item_id: str = Query(
-                None,
-                title="item_id",
-                example="1,2,3",
-                description="Primary key or list of primary keys",
-            ),
         ):
-            return await self.handle(request, parser_str_set_list(set_str=item_id), data)
+            return await self.handle(request, item_id, data)
 
         return route
 

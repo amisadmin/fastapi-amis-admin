@@ -228,6 +228,10 @@ class TableModelParser:
         return modelfields
 
 
+SQLModelFieldParser = TableModelParser
+"""Deprecated, use TableModelParser instead."""
+
+
 @lru_cache()
 def get_python_type_parse(field: Union[InstrumentedAttribute, Column, Label]) -> Callable:
     try:

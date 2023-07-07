@@ -4,6 +4,7 @@ from typing import Union
 
 from fastapi import FastAPI
 from fastapi.exceptions import RequestValidationError
+from fastapi.utils import is_body_allowed_for_status_code
 from pydantic import ValidationError
 from starlette.exceptions import HTTPException
 from starlette.requests import ClientDisconnect, Request
@@ -15,17 +16,6 @@ from starlette.status import (
 )
 
 from fastapi_amis_admin.crud import BaseApiOut
-
-try:
-    from fastapi.utils import is_body_allowed_for_status_code
-except ImportError:  # fastapi < 0.83.0
-
-    def is_body_allowed_for_status_code(status_code: Union[int, str, None]) -> bool:
-        if status_code is None:
-            return True
-        current_status_code = int(status_code)
-        return not (current_status_code < 200 or current_status_code in {204, 304})
-
 
 try:
     import ujson

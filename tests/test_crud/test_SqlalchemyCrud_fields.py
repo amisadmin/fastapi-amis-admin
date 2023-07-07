@@ -372,7 +372,7 @@ async def test_read_fields_and_schema_read_is_none(app: FastAPI, async_client: F
     assert ins.schema_read is None
 
     with pytest.raises(NoMatchFound):
-        ins.router.url_path_for(name="read")
+        ins.router.url_path_for("read")
 
     # test schemas
     openapi = app.openapi()

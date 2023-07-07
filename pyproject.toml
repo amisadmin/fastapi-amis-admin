@@ -36,7 +36,8 @@ classifiers = [
     "Programming Language :: Python :: 3.11",
 ]
 dependencies = [
-    "fastapi>=0.68.0",
+    "fastapi>=0.100.0",
+    "pydantic>1.7.4,<2.0.0",
     "sqlalchemy>=1.4.0",
     "python-multipart>=0.0.5",
     "sqlalchemy-database>=0.1.0,<0.2.0",
