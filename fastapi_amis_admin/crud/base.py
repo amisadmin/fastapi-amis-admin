@@ -7,8 +7,8 @@ from starlette import status
 from starlette.exceptions import HTTPException
 from starlette.requests import Request
 
+from ..utils.pydantic import create_model_by_model
 from .schema import BaseApiOut, CrudEnum, ItemListSchema, Paginator
-from .utils import schema_create_by_schema
 
 SchemaModelT = TypeVar("SchemaModelT", bound=BaseModel)
 SchemaListT = TypeVar("SchemaListT", bound=BaseModel)
@@ -132,13 +132,13 @@ class BaseCrud(RouterMixin, Generic[SchemaModelT, SchemaListT, SchemaFilterT, Sc
         return self.schema_model
 
     def _create_schema_filter(self) -> Type[SchemaFilterT]:
-        return schema_create_by_schema(self.schema_list, f"{self.schema_name_prefix}Filter", set_none=True)
+        return create_model_by_model(self.schema_list, f"{self.schema_name_prefix}Filter", set_none=True)
 
     def _create_schema_read(self) -> Optional[Type[SchemaReadT]]:
         return None
 
     def _create_schema_update(self) -> Type[SchemaUpdateT]:
-        return schema_create_by_schema(
+        return create_model_by_model(
             self.schema_model,
             f"{self.schema_name_prefix}Update",
             exclude={self.pk_name},
@@ -146,7 +146,7 @@ class BaseCrud(RouterMixin, Generic[SchemaModelT, SchemaListT, SchemaFilterT, Sc
         )
 
     def _create_schema_create(self) -> Type[SchemaCreateT]:
-        return schema_create_by_schema(
+        return create_model_by_model(
             self.schema_model,
             f"{self.schema_name_prefix}Create",
             exclude={self.pk_name},

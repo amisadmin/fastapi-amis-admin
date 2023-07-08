@@ -86,6 +86,7 @@ async def test_route_read(async_client: AsyncClient, fake_users):
     assert user["attach"] == {"attach_1": "attach_1", "attach_2": "attach_2"}
     # read bulk
     res = await async_client.get("/User/item/1,2,4")
+    print(res.json())
     users = res.json()["data"]
     assert len(users) == 3
     assert users[0]["username"] == "User_1"

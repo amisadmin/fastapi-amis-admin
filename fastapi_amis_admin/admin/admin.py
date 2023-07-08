@@ -20,7 +20,6 @@ from typing import (
 
 from fastapi import Body, Depends, FastAPI, HTTPException, Request
 from pydantic import BaseModel
-from pydantic.fields import ModelField
 from pydantic.utils import deep_update
 from sqlalchemy import Column, Table, delete, insert
 from sqlalchemy.orm import InstrumentedAttribute, RelationshipProperty
@@ -78,9 +77,9 @@ from fastapi_amis_admin.crud.utils import (
     SqlalchemyDatabase,
     get_engine_db,
     parser_str_set_list,
-    schema_create_by_schema,
 )
 from fastapi_amis_admin.utils.functools import cached_property
+from fastapi_amis_admin.utils.pydantic import ModelField, create_model_by_model, model_fields
 from fastapi_amis_admin.utils.translation import i18n as _
 
 BaseAdminT = TypeVar("BaseAdminT", bound="BaseAdmin")
@@ -553,7 +552,7 @@ class FormAdmin(BaseActionAdmin, Generic[SchemaUpdateT]):
             form.actions = actions
         form.body = []
         if self.schema:
-            for modelfield in self.schema.__fields__.values():
+            for modelfield in model_fields(self.schema).values():
                 formitem = await self.get_form_item(request, modelfield)
                 if formitem:
                     form.body.append(formitem)
@@ -569,7 +568,7 @@ class FormAdmin(BaseActionAdmin, Generic[SchemaUpdateT]):
             dependencies=[Depends(self.page_permission_depend)],
         )
         if self.form_init:
-            self.schema_init_out = self.schema_init_out or schema_create_by_schema(
+            self.schema_init_out = self.schema_init_out or create_model_by_model(
                 self.schema, f"{self.__class__.__name__}InitOut", set_none=True
             )
             self.router.add_api_route(
@@ -651,10 +650,10 @@ class ModelAdmin(SqlalchemyCrud, BaseActionAdmin):
         return self.link_model_forms
 
     async def get_list_display(self, request: Request) -> List[Union[SqlaField, TableColumn]]:
-        return self.list_display or list(self.schema_list.__fields__.values())
+        return self.list_display or list(model_fields(self.schema_list).values())
 
     async def get_list_filter(self, request: Request) -> List[Union[SqlaField, FormItem]]:
-        return self.list_filter or list(self.schema_filter.__fields__.values())
+        return self.list_filter or list(model_fields(self.schema_filter).values())
 
     async def get_column_quick_edit(self, request: Request, modelfield: ModelField) -> Optional[Dict[str, Any]]:
         item = await self.get_form_item(request, modelfield, action=CrudEnum.update)
@@ -669,9 +668,8 @@ class ModelAdmin(SqlalchemyCrud, BaseActionAdmin):
 
     async def get_list_column(self, request: Request, modelfield: ModelField) -> TableColumn:
         column = self.amis_parser.as_table_column(modelfield)
-        if (
-            await self.has_update_permission(request, None, None)  # type: ignore
-            and modelfield.name in self.schema_update.__fields__
+        if await self.has_update_permission(request, None, None) and modelfield.name in model_fields(  # type: ignore
+            self.schema_update
         ):
             column.quickEdit = await self.get_column_quick_edit(request, modelfield)
         return column
@@ -848,7 +846,7 @@ class ModelAdmin(SqlalchemyCrud, BaseActionAdmin):
         )
 
     async def get_create_form(self, request: Request, bulk: bool = False) -> Form:
-        fields = [field for field in self.schema_create.__fields__.values() if field.name != self.pk_name]
+        fields = [field for field in model_fields(self.schema_create).values() if field.name != self.pk_name]
         if not bulk:
             return Form(
                 api=f"post:{self.router_path}/item",
@@ -887,7 +885,7 @@ class ModelAdmin(SqlalchemyCrud, BaseActionAdmin):
         extra = {}
         if not bulk:
             api = f"put:{self.router_path}/item/${self.pk_name}"
-            fields = self.schema_update.__fields__.values()
+            fields = model_fields(self.schema_update).values()
             if self.schema_read:
                 extra["initApi"] = f"get:{self.router_path}/item/${self.pk_name}"
         else:
@@ -906,7 +904,7 @@ class ModelAdmin(SqlalchemyCrud, BaseActionAdmin):
         return Form(
             initApi=f"get:{self.router_path}/item/${self.pk_name}",
             name=CrudEnum.read,
-            body=await self._conv_modelfields_to_formitems(request, self.schema_read.__fields__.values(), CrudEnum.read),
+            body=await self._conv_modelfields_to_formitems(request, model_fields(self.schema_read).values(), CrudEnum.read),
             submitText=None,
             static=True,
         )

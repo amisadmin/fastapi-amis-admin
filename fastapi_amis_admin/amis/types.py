@@ -1,23 +1,15 @@
 from typing import Any, Dict, List, Union
 
-from pydantic import BaseModel, Extra
-
-try:
-    import ujson as json
-except ImportError:
-    import json
+from fastapi_amis_admin.utils.pydantic import AllowExtraModelMixin
 
 Expression = str
-Template = Union[str, "Tpl"]
-SchemaNode = Union[Template, "AmisNode", List["AmisNode"], Dict[str, Any], List[Dict[str, Any]]]
+
+
 OptionsNode = Union[List[Dict[str, Any]], List[str]]
 
 
-class BaseAmisModel(BaseModel):
-    class Config:
-        extra = Extra.allow
-        json_loads = json.loads
-        json_dumps = json.dumps
+class BaseAmisModel(AllowExtraModelMixin):
+    """Base model for amis"""
 
     def amis_json(self):
         return self.json(exclude_none=True, by_alias=True)
@@ -57,8 +49,11 @@ class AmisNode(BaseAmisModel):
     events: Dict[str, Any] = None  # Specifies the amis behavior triggered by the component
 
 
+SchemaNode = Union[str, AmisNode, List[AmisNode], Dict[str, Any], List[Dict[str, Any]]]
+
+
 class AmisAPI(BaseAmisModel):
-    url: Template  # Current interface API address
+    url: str  # Current interface API address
     method: str = None  # 'GET' # Request method: get, post, put, delete
     data: Union[str, dict] = None  # The requested data body, supports data mapping
     dataType: str = None  # The default is json and can be configured as form or form-data.
@@ -96,6 +91,9 @@ class Tpl(AmisNode):
     type: str = "tpl"  # Specify as Tpl component
     tpl: str  # configuration template
     className: str = None  # The class name of the outer Dom
+
+
+Template = Union[str, Tpl]
 
 
 class Event(BaseAmisModel):

@@ -3,10 +3,9 @@ from functools import lru_cache
 from typing import Any, Callable, Dict, Iterable, List, Optional, Tuple, Type, TypeVar, Union
 
 import sqlalchemy
-from fastapi.utils import create_cloned_field
+from fastapi.utils import create_cloned_field, create_response_field
 from pydantic import BaseConfig, BaseModel
-from pydantic.datetime_parse import parse_date, parse_datetime
-from pydantic.fields import Field, FieldInfo, ModelField
+from pydantic.fields import Field, FieldInfo
 from sqlalchemy import Column, String, Table
 from sqlalchemy.engine import Row
 from sqlalchemy.orm import ColumnProperty, DeclarativeMeta, InstrumentedAttribute, RelationshipProperty
@@ -14,7 +13,15 @@ from sqlalchemy.sql import Select
 from sqlalchemy.sql.elements import Label
 
 from fastapi_amis_admin.crud.base import SchemaModelT
-from fastapi_amis_admin.crud.utils import schema_create_by_modelfield
+from fastapi_amis_admin.utils.pydantic import (
+    PYDANTIC_V2,
+    ModelField,
+    create_model_by_fields,
+    model_config_attr,
+    model_fields,
+    parse_date,
+    parse_datetime,
+)
 
 SqlaInsAttr = Union[str, InstrumentedAttribute]
 SqlaField = Union[SqlaInsAttr, Label]
@@ -46,7 +53,7 @@ class ModelFieldProxy:
         self.__dict__["_update"] = update or {}
 
     def __getattr__(self, item):
-        if item == "new_model_field":
+        if item == "cloned_field":
             return self.__dict__[item]
         return self.__dict__["_update"].get(item, getattr(self.__dict__["_modelfield"], item))
 
@@ -55,6 +62,16 @@ class ModelFieldProxy:
 
     def cloned_field(self):
         modelfield = create_cloned_field(self.__dict__["_modelfield"])
+        if PYDANTIC_V2:
+            kwargs = self.__dict__["_update"]
+            name = kwargs.get("name", modelfield.name)
+            alias = kwargs.get("alias", None)
+            if alias:
+                kwargs.setdefault("validation_alias", alias)
+                kwargs.setdefault("serialization_alias", alias)
+            field_info = FieldInfo.merge_field_infos(modelfield.field_info, **kwargs)
+            field_info.annotation = modelfield.field_info.annotation
+            return ModelField(field_info=field_info, name=name, mode=modelfield.mode)
         for k, v in self.__dict__["_update"].items():
             setattr(modelfield, k, v)
         return modelfield
@@ -78,10 +95,10 @@ class TableModelParser:
     @staticmethod
     def get_table_model_fields(table_model: Type[TableModelT]) -> Dict[str, ModelField]:
         """Get pydantic ModelField from sqlalchemy InspecTable."""
-        if hasattr(table_model, "__fields__"):
-            return table_model.__fields__
-        elif hasattr(table_model, "__schema__") and issubclass(table_model.__schema__, BaseModel):
-            return table_model.__schema__.__fields__
+        if issubclass(table_model, BaseModel):
+            return model_fields(table_model)
+        elif hasattr(table_model, "__pydantic_model__") and issubclass(table_model.__pydantic_model__, BaseModel):
+            return model_fields(table_model.__pydantic_model__)
         return {}
 
     @staticmethod
@@ -90,20 +107,15 @@ class TableModelParser:
 
         if issubclass(table_model, BaseModel):
             return table_model
-        elif hasattr(table_model, "__schema__") and issubclass(table_model.__schema__, BaseModel):
-            return table_model.__schema__
-        elif hasattr(table_model, "__fields__"):
-            table_model.__schema__ = schema_create_by_modelfield(
-                table_model.__name__, table_model.__fields__.values(), orm_mode=True
-            )
-            return table_model.__schema__
+        elif hasattr(table_model, "__pydantic_model__") and issubclass(table_model.__pydantic_model__, BaseModel):
+            return table_model.__pydantic_model__
         insfields = TableModelParser.get_table_model_insfields(table_model)
         if not insfields:
             return None
         modelfields = [insfield_to_modelfield(insfield) for insfield in insfields.values()]
         modelfields = list(filter(None, modelfields))
-        table_model.__schema__ = schema_create_by_modelfield(table_model.__name__, modelfields, orm_mode=True)
-        return table_model.__schema__
+        table_model.__pydantic_model__ = create_model_by_fields(table_model.__name__, modelfields, orm_mode=True)
+        return table_model.__pydantic_model__
 
     def get_modelfield(self, field: Union[ModelField, SqlaInsAttr, Label], clone: bool = False) -> Optional[ModelFieldType]:
         """Get pydantic ModelField from sqlmodel field.
@@ -119,7 +131,7 @@ class TableModelParser:
             modelfield = self.get_table_model_fields(field.class_).get(field.key, None)
             if not modelfield:  # Maybe it's a declared_attr or column_property.
                 return None
-            if field.class_.__table__ is not self.__fields__:
+            if field.class_.__table__ is not self.__table__:
                 update = {
                     "name": self.get_name(field),
                     "alias": self.get_alias(field),
@@ -249,23 +261,23 @@ def _get_label_modelfield(label: Label) -> ModelField:
     modelfield = getattr(label, "__ModelField__", None)
     if modelfield is None:
         try:
-            python_type = label.expression.type.python_type
+            type_ = label.expression.type.python_type
         except NotImplementedError:
-            python_type = str
-        modelfield = ModelField(
+            type_ = str
+        modelfield = create_response_field(
             name=label.key,
-            type_=python_type,
-            class_validators={},
-            model_config=BaseConfig,
+            type_=type_,
         )
         label.__ModelField__ = modelfield
     return modelfield
 
 
-def LabelField(label: Label, field: FieldInfo) -> Label:
+def LabelField(label: Label, field: FieldInfo, type_: type = str) -> Label:
     """Use for adding FieldInfo to sqlalchemy Label type"""
     modelfield = _get_label_modelfield(label)
     field.alias = label.key
+    if PYDANTIC_V2:
+        field.annotation = type_
     modelfield.field_info = field
     label.__ModelField__ = modelfield
     return label
@@ -283,9 +295,15 @@ class PropertyField(ModelField):
         field_info: Optional[FieldInfo] = None,
         **kwargs: Any,
     ) -> None:
-        kwargs.setdefault("class_validators", {})
-        kwargs.setdefault("model_config", BaseConfig)
-        super().__init__(name=name, type_=type_, required=required, field_info=field_info, **kwargs)
+        if PYDANTIC_V2:
+            field_info = field_info or FieldInfo(default=None)
+            field_info.annotation = type_
+        else:
+            kwargs.setdefault("type_", type_)
+            kwargs.setdefault("required", required)
+            kwargs.setdefault("class_validators", {})
+            kwargs.setdefault("model_config", BaseConfig)
+        super().__init__(name=name, field_info=field_info, **kwargs)
 
 
 def get_insfield_by_key(table_model: Type[TableModelT], key: str) -> Optional[InstrumentedAttribute]:
@@ -307,7 +325,8 @@ def get_modelfield_by_alias(table_model: Type[TableModelT], alias: str) -> Optio
 
 def parse_obj_to_schema(obj: SchemaModelT, schema: Type[SchemaT]) -> SchemaT:
     """parse obj to schema"""
-    parse = schema.from_orm if getattr(schema.Config, "orm_mode", False) else schema.parse_obj
+    orm_mode = model_config_attr(schema, "orm_mode", False) or model_config_attr(schema, "from_attributes", False)
+    parse = schema.from_orm if orm_mode else schema.parse_obj
     return parse(obj)
 
 
@@ -332,14 +351,17 @@ def insfield_to_modelfield(insfield: InstrumentedAttribute) -> Optional[ModelFie
         field_info_kwargs["max_length"] = expression.type.length
     if "default_factory" not in field_info_kwargs:
         field_info_kwargs["default"] = default
-    return ModelField(
-        name=insfield.key,
-        type_=expression.type.python_type,
-        required=required,
-        class_validators={},
-        model_config=BaseConfig,
-        field_info=Field(
-            title=expression.comment,
-            **field_info_kwargs,
-        ),
+    type_ = expression.type.python_type
+    if PYDANTIC_V2:
+        field_info_kwargs["annotation"] = type_
+    return create_response_field(
+        name=insfield.key, type_=type_, required=required, field_info=Field(title=expression.comment, **field_info_kwargs)
     )
+
+
+def register_model(schema: Type[SchemaT]):
+    def decorator(model: Type[TableModelT]) -> Type[TableModelT]:
+        model.__pydantic_model__ = schema
+        return model
+
+    return decorator

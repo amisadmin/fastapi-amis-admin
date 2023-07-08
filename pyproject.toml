@@ -37,7 +37,7 @@ classifiers = [
 ]
 dependencies = [
     "fastapi>=0.100.0",
-    "pydantic>1.7.4,<2.0.0",
+    "pydantic>1.7.4",
     "sqlalchemy>=1.4.0",
     "python-multipart>=0.0.5",
     "sqlalchemy-database>=0.1.0,<0.2.0",
@@ -67,6 +67,7 @@ test = [
     "jinja2 >=2.11.2,<4.0.0",
     "ujson>=4.0.1",
     "requests>=2.28.1",
+    "sqlmodel>=0.0.7",
 ]
 dev = [
     "pre-commit>=2.20.0",

@@ -11,7 +11,7 @@ from tests.models.schemas import (
     ArticleTagLinkSchema,
     CategorySchema,
     TagSchema,
-    UserSchema,
+    UserSchemaBase,
 )
 
 
@@ -31,7 +31,7 @@ class CreateTimeModelMixin(Base):
 
 class User(PkModelMixin, CreateTimeModelMixin):
     __tablename__ = "user"
-    __schema__ = UserSchema
+    __pydantic_model__ = UserSchemaBase
 
     username: Mapped[str] = mapped_column(String(100), unique=True, index=True, nullable=False)
     password: Mapped[str] = mapped_column(String(100), default="")
@@ -42,7 +42,7 @@ class User(PkModelMixin, CreateTimeModelMixin):
 
 class Category(PkModelMixin, CreateTimeModelMixin):
     __tablename__ = "category"
-    __schema__ = CategorySchema
+    __pydantic_model__ = CategorySchema
 
     name: Mapped[str] = mapped_column(String(100), unique=True, index=True, nullable=False)
     description: Mapped[str] = mapped_column(String(100), default="")
@@ -51,7 +51,7 @@ class Category(PkModelMixin, CreateTimeModelMixin):
 
 class ArticleTagLink(Base):
     __tablename__ = "article_tag_link"
-    __schema__ = ArticleTagLinkSchema
+    __pydantic_model__ = ArticleTagLinkSchema
 
     tag_id: Mapped[int] = mapped_column(Integer, ForeignKey("tag.id"), primary_key=True, default=None)
     article_id: Mapped[int] = mapped_column(Integer, ForeignKey("article.id"), primary_key=True, default=None)
@@ -59,7 +59,7 @@ class ArticleTagLink(Base):
 
 class Tag(PkModelMixin, CreateTimeModelMixin):
     __tablename__ = "tag"
-    __schema__ = TagSchema
+    __pydantic_model__ = TagSchema
 
     name: Mapped[str] = mapped_column(String(255), unique=True, index=True, nullable=False)
     articles: Mapped[List["Article"]] = relationship(
@@ -74,7 +74,7 @@ class Tag(PkModelMixin, CreateTimeModelMixin):
 
 class ArticleContent(PkModelMixin):
     __tablename__ = "article_content"
-    __schema__ = ArticleContentSchema
+    __pydantic_model__ = ArticleContentSchema
 
     content: Mapped[str] = mapped_column(String(100))
     article: Mapped["Article"] = relationship("Article", back_populates="content")
@@ -82,7 +82,7 @@ class ArticleContent(PkModelMixin):
 
 class Article(PkModelMixin, CreateTimeModelMixin):
     __tablename__ = "article"
-    __schema__ = ArticleSchema
+    __pydantic_model__ = ArticleSchema
 
     title: Mapped[str] = mapped_column(String(100), unique=True, index=True, nullable=False)
     description: Mapped[str] = mapped_column(String(100))

@@ -1,42 +1,29 @@
-from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, Generic, List, Optional, TypeVar, Union
 
-from pydantic import BaseModel, Extra
-from pydantic.generics import GenericModel
-
-try:
-    import ujson as json
-except ImportError:
-    import json
+from fastapi_amis_admin.utils.pydantic import AllowExtraModelMixin, GenericModel
 
 _T = TypeVar("_T")
 
 
-class BaseApiSchema(BaseModel):
-    class Config:
-        extra = Extra.allow
-        json_loads = json.loads
-        json_dumps = json.dumps
-        json_encoders = {
-            datetime: lambda v: v.strftime("%Y-%m-%d %H:%M:%S"),
-        }
+class BaseApiSchema(AllowExtraModelMixin):
+    pass
 
 
-class BaseApiOut(GenericModel, Generic[_T], BaseApiSchema):
+class BaseApiOut(BaseApiSchema, GenericModel, Generic[_T]):
     status: int = 0
     msg: str = "success"
     data: Optional[_T] = None
-    code: int = None
+    code: Optional[int] = None
 
 
-class ItemListSchema(GenericModel, Generic[_T], BaseApiSchema):
+class ItemListSchema(BaseApiSchema, GenericModel, Generic[_T]):
     """Data list query return format."""
 
     items: List[_T] = []  # Data list
-    total: int = None  # Data total
-    query: Dict[str, Any] = None
-    filter: Dict[str, Any] = None
+    total: Optional[int] = None  # Data total
+    query: Optional[Dict[str, Any]] = None
+    filter: Optional[Dict[str, Any]] = None
 
 
 class CrudEnum(str, Enum):

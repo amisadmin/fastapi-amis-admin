@@ -151,7 +151,7 @@ Base = declarative_base()
 class Category(Base):
     __tablename__ = 'category'
     # Specify the Schema class corresponding to the model. It is recommended to specify it. If omitted, it can be automatically generated.
-    __schema__ = CategorySchema
+    __pydantic_model__ = CategorySchema
 
     id = Column(Integer, primary_key=True, nullable=False)
     name = Column(String(100), unique=True, index=True, nullable=False)
@@ -173,7 +173,7 @@ class Base(DeclarativeBase):
 class Category(Base):
     __tablename__ = "category"
     # Specify the Schema class corresponding to the model. It is recommended to specify it. If omitted, it can be automatically generated.
-    __schema__ = CategorySchema
+    __pydantic_model__ = CategorySchema
 
     id: Mapped[int] = mapped_column(primary_key=True, nullable=False)
     name: Mapped[str] = mapped_column(String(100), unique=True, index=True, nullable=False)

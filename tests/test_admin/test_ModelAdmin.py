@@ -7,6 +7,7 @@ from starlette.requests import Request
 from fastapi_amis_admin import admin
 from fastapi_amis_admin.admin import AdminSite
 from fastapi_amis_admin.crud.parser import LabelField
+from fastapi_amis_admin.utils.pydantic import model_fields
 
 
 async def test_register_router(site: AdminSite, models):
@@ -76,7 +77,7 @@ async def test_list_display_join(site: AdminSite, async_client: AsyncClient, mod
     assert "description" in ins.schema_list.__fields__
     assert "nickname" in ins.schema_list.__fields__
     assert "pwd" in ins.schema_list.__fields__
-    assert ins.schema_list.__fields__["pwd"].field_info.title == "pwd_title"
+    assert model_fields(ins.schema_list)["pwd"].field_info.title == "pwd_title"
 
     assert "user_username" in ins.schema_filter.__fields__
     assert "nickname" in ins.schema_filter.__fields__

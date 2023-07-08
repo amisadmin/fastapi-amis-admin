@@ -147,7 +147,7 @@ Base = declarative_base()
 # 创建SQLAlchemy模型,详细请参考: https://docs.sqlalchemy.org/en/14/orm/tutorial.html
 class Category(Base):
     __tablename__ = 'category'
-    __schema__ = CategorySchema  # 指定模型对应的Schema类.省略可自动生成,但是建议指定.
+    __pydantic_model__ = CategorySchema  # 指定模型对应的Schema类.省略可自动生成,但是建议指定.
 
     id = Column(Integer, primary_key=True, nullable=False)
     name = Column(String(100), unique=True, index=True, nullable=False)
@@ -168,7 +168,7 @@ class Base(DeclarativeBase):
 # 创建SQLAlchemy 2.0模型,详细请参考: https://docs.sqlalchemy.org/en/20/orm/quickstart.html
 class Category(Base):
     __tablename__ = "category"
-    __schema__ = CategorySchema  # 指定模型对应的Schema类.省略可自动生成,但是建议指定.
+    __pydantic_model__ = CategorySchema  # 指定模型对应的Schema类.省略可自动生成,但是建议指定.
 
     id: Mapped[int] = mapped_column(primary_key=True, nullable=False)
     name: Mapped[str] = mapped_column(String(100), unique=True, index=True, nullable=False)

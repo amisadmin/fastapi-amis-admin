@@ -622,7 +622,6 @@ class FormItem(AmisNode):
     name: str = None  # Field name, specifying the key when the form item is submitted
     label: Template = None  # form item label template or false
     labelAlign: str = None  # "right" # Form item label alignment, default right alignment, only effective when mode is
-    value: Union[int, str] = None  # field value
     labelRemark: RemarkT = None  # Form item label description
     description: Template = None  # Form item description
     placeholder: str = None  # Form item description
@@ -1555,7 +1554,7 @@ class Steps(AmisNode):
     steps: List[StepItem] = None  # default [], List of Steps
     source: API = None  # Data source, you can obtain current variables through data mapping, or configure API objects
     name: str = None  # Associated context variable
-    value: Union[int, str] = None  # default -, Set the default value, expressions are not supported
+    value: Union[int, str, None] = None  # default -, Set the default value, expressions are not supported
     status: Union[StepStatusEnum, dict] = None  # default -, State of the steps
     className: str = None  # Custom CSS class name
     mode: Literal["vertical", "horizontal"] = "horizontal"  # Specifies the step bar direction.
@@ -2708,19 +2707,19 @@ class Spinner(AmisNode):
 class TableCRUD(CRUD, Table):
     """Form Table CRUD"""
 
-    mode = "table"
+    mode: str = "table"
 
 
 class CardCRUD(CRUD, Cards):
     """Form Card CRUD"""
 
-    mode = "cards"
+    mode: str = "cards"
 
 
 class ListCRUD(CRUD, ListDisplay):
     """Form Card CRUD"""
 
-    mode = "list"
+    mode: str = "list"
 
 
 class Avatar(AmisNode):

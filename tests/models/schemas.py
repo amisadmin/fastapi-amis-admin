@@ -1,14 +1,13 @@
 from datetime import datetime
-from typing import List
+from typing import List, Optional
 
 from pydantic import BaseModel, Field
 
+from fastapi_amis_admin.utils.pydantic import ORMModelMixin, model_update_forward_refs
 
-class PkSchemaMixin(BaseModel):
+
+class PkSchemaMixin(ORMModelMixin):
     id: int = Field(default=None, primary_key=True, nullable=False)
-
-    class Config:
-        orm_mode = True
 
 
 class CreateTimeSchemaMixin(BaseModel):
@@ -18,11 +17,11 @@ class CreateTimeSchemaMixin(BaseModel):
 class UserSchemaBase(PkSchemaMixin, CreateTimeSchemaMixin):
     username: str = Field(title="Username")
     password: str = Field(default="", title="Password")
-    address: List[str] = Field(
+    address: Optional[List[str]] = Field(
         None,
         title="Address",
     )
-    attach: dict = Field(None, title="Attach")
+    attach: Optional[dict] = Field(None, title="Attach")
 
 
 class UserSchema(UserSchemaBase):
@@ -71,4 +70,4 @@ class ArticleSchema(PkSchemaMixin, CreateTimeSchemaMixin):
     content_text: str = None
 
 
-UserSchema.update_forward_refs()
+model_update_forward_refs(UserSchema)

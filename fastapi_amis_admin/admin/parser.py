@@ -2,10 +2,9 @@ import datetime
 from enum import Enum
 from typing import Any, Generator, Iterable, Type, TypeVar, Union
 
+from fastapi._compat import Undefined, field_annotation_is_scalar_sequence, field_annotation_is_sequence
 from pydantic import BaseModel, Json
-from pydantic.fields import ModelField
 from pydantic.utils import deep_update, smart_deepcopy
-from typing_extensions import get_origin
 
 from fastapi_amis_admin import amis
 from fastapi_amis_admin.amis import AmisNode
@@ -19,6 +18,17 @@ from fastapi_amis_admin.amis.components import (
 )
 from fastapi_amis_admin.amis.constants import LabelEnum
 from fastapi_amis_admin.models.enums import Choices
+from fastapi_amis_admin.utils.pydantic import (
+    PYDANTIC_V2,
+    ModelField,
+    annotation_outer_type,
+    field_allow_none,
+    field_json_schema_extra,
+    field_outer_type,
+    model_config_attr,
+    model_fields,
+    scalar_sequence_inner_type,
+)
 from fastapi_amis_admin.utils.translation import i18n as _
 
 _T = TypeVar("_T")
@@ -104,10 +114,10 @@ class AmisParser:
         Returns:
             amis.Form
         """
-        form = amis.Form(title=getattr(model.Config, "title", None), size="lg")  # type: ignore
+        form = amis.Form(title=model_config_attr(model, "title", None), size="lg")  # type: ignore
         form.body = [
             self.as_form_item(modelfield, set_default=set_default, is_filter=is_filter)
-            for modelfield in model.__fields__.values()
+            for modelfield in model_fields(model).values()
         ]
         # InputSubForm
         return form
@@ -122,12 +132,14 @@ class AmisParser:
         """Set common attributes for FormItem and TableColumn."""
         field_info = modelfield.field_info
         if not is_filter:
-            if field_info.max_length:
-                item.maxLength = field_info.max_length
-            if field_info.min_length:
-                item.minLength = field_info.min_length
-            item.required = modelfield.required and not issubclass(modelfield.type_, bool)
-            if set_default:
+            if not PYDANTIC_V2:
+                if field_info.max_length:
+                    item.maxLength = field_info.max_length
+                if field_info.min_length:
+                    item.minLength = field_info.min_length
+            type_ = annotation_outer_type(modelfield.type_)
+            item.required = modelfield.required and not issubclass(type_, bool)
+            if set_default and modelfield.default is not Undefined:
                 item.value = modelfield.default
         item.name = modelfield.alias
         item.label = _(field_info.title) if field_info.title else _(modelfield.name)  # The use of I18N
@@ -140,15 +152,15 @@ class AmisParser:
     def _get_form_item_from_kwargs(self, modelfield: ModelField, is_filter: bool = False) -> FormItem:
         formitem = self.get_field_amis_extra(modelfield, ["amis_form_item", "amis_filter_item"][is_filter])
         # List type parse to InputArray
-        if issubclass(modelfield.type_, (list, set)) or (
-            modelfield.outer_type_ and get_origin(modelfield.outer_type_) in {list, set}
-        ):
+        outer_type = field_outer_type(modelfield) or modelfield.type_
+        if field_annotation_is_sequence(outer_type):
             if not isinstance(formitem, FormItem):
                 formitem = InputArray(**formitem)
             elif not isinstance(formitem, InputArray):
                 return formitem
             # Parse the internal type of the list.
-            kwargs = self.get_field_amis_form_item_type(type_=modelfield.type_, is_filter=is_filter)
+            type_ = scalar_sequence_inner_type(outer_type)
+            kwargs = self.get_field_amis_form_item_type(type_=type_, is_filter=is_filter)
             update = formitem.items.amis_dict() if formitem.items else {}
             if update:
                 kwargs = deep_update(kwargs, update)
@@ -159,7 +171,7 @@ class AmisParser:
         kwargs = self.get_field_amis_form_item_type(
             type_=modelfield.type_,
             is_filter=is_filter,
-            required=modelfield.required and not modelfield.allow_none,
+            required=modelfield.required and not field_allow_none(modelfield),
         )
         return FormItem(**kwargs).update_from_dict(formitem)
 
@@ -173,6 +185,7 @@ class AmisParser:
     def get_field_amis_table_column_type(self, type_: Type) -> dict:
         """Get amis table column type from pydantic model field type."""
         kwargs = {}
+        type_ = annotation_outer_type(type_)
         if type_ in {str, Any}:
             pass
         elif issubclass(type_, bool):
@@ -199,7 +212,7 @@ class AmisParser:
             }
         elif issubclass(type_, (dict, Json)):
             kwargs["type"] = "json"
-        elif issubclass(type_, (list, set)):
+        elif field_annotation_is_scalar_sequence(type_):
             kwargs["type"] = "each"
             kwargs["items"] = {
                 "type": "tpl",
@@ -210,6 +223,7 @@ class AmisParser:
     def get_field_amis_form_item_type(self, type_: Any, is_filter: bool, required: bool = False) -> dict:
         """Get amis form item type from pydantic model field type."""
         kwargs = {}
+        type_ = annotation_outer_type(type_)
         if type_ in {str, Any}:
             kwargs["type"] = "input-text"
         elif issubclass(type_, Enum):
@@ -263,7 +277,7 @@ class AmisParser:
             # pydantic model parse to InputSubForm
             kwargs["type"] = "input-sub-form"
             kwargs["labelField"] = get_model_label_field_name(type_)
-            kwargs["btnLabel"] = getattr(type_.Config, "title", None)
+            kwargs["btnLabel"] = model_config_attr(type_, "title", None)
             kwargs["form"] = self.as_amis_form(type_, is_filter=is_filter).amis_dict()
         else:
             kwargs["type"] = "input-text"
@@ -277,7 +291,7 @@ class AmisParser:
         """Get amis extra from pydantic model field.
         You can pass amis configuration through the extra parameter of the pydantic model field.
         """
-        extra = modelfield.field_info.extra.get(name, {})
+        extra = field_json_schema_extra(modelfield).get(name, {})
         if not extra:
             return {}
         if callable(extra):
@@ -299,10 +313,10 @@ def cyclic_generator(iterable: Iterable[_T]) -> Generator[_T, None, None]:
 
 def get_model_label_field_name(model: Type[BaseModel]) -> str:
     """Get model label field name. The label field is used to display the model name in the form."""
-    label_field_name = getattr(model.Config, "label_field_name", None)
+    label_field_name = model_config_attr(model, "label_field_name", None)
     if label_field_name:
         return label_field_name
-    for filed in model.__fields__.values():
+    for filed in model_fields(model).values():
         if filed.alias in ["name", "title", "label"]:
             return filed.alias
     return "id"

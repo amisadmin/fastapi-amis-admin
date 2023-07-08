@@ -10,6 +10,7 @@ from starlette.routing import NoMatchFound
 
 from fastapi_amis_admin.crud import SqlalchemyCrud
 from fastapi_amis_admin.crud.parser import LabelField, PropertyField
+from fastapi_amis_admin.utils.pydantic import model_fields
 from tests.conftest import async_db as db
 from tests.models.schemas import ArticleContentSchema, CategorySchema, TagSchema
 
@@ -37,7 +38,7 @@ async def test_pk_name(app: FastAPI, async_client: AsyncClient, fake_users, mode
     assert users[2]["username"] == "User_4"
 
 
-async def test_readonly_fields(app: FastAPI, async_client: AsyncClient, fake_users, models):
+async def test_update_exclude(app: FastAPI, async_client: AsyncClient, fake_users, models):
     class UserCrud(SqlalchemyCrud):
         router_prefix = "/user"
         update_exclude = {"username"}
@@ -132,7 +133,7 @@ async def test_create_fields(app: FastAPI, async_client: AsyncClient, models):
     assert "username" in schemas["UserCrudCreate"]["properties"]
     assert "password" not in schemas["UserCrudCreate"]["properties"]
     # test api
-    body = {"username": "User", "password": "password"}
+    body = {"username": "User", "password": "password", "address": [], "attach": {}}
     res = await async_client.post("/user/item", json=body)
     data = res.json().get("data")
     assert data["id"] > 0
@@ -166,13 +167,14 @@ async def test_list_filter_relationship(app: FastAPI, async_client: AsyncClient,
     assert "user_username" in ins.schema_filter.__fields__
     assert "pwd" in ins.schema_filter.__fields__
     assert "pwd2" in ins.schema_filter.__fields__
-    assert ins.schema_filter.__fields__["pwd2"].field_info.title == "pwd_title"
+    assert model_fields(ins.schema_filter)["pwd2"].field_info.title == "pwd_title"
     assert "description" not in ins.schema_filter.__fields__
     # test openapi
     openapi = app.openapi()
     schemas = openapi["components"]["schemas"]
 
     assert "title" in schemas["ArticleCrudFilter"]["properties"]
+
     assert "user__username" in schemas["ArticleCrudFilter"]["properties"]
     assert "pwd" in schemas["ArticleCrudFilter"]["properties"]
     assert "description" not in schemas["ArticleCrudFilter"]["properties"]
@@ -231,13 +233,14 @@ async def test_fields(app: FastAPI, async_client: AsyncClient, fake_articles, mo
     assert "user_username" in ins.schema_filter.__fields__
     assert "pwd" in ins.schema_filter.__fields__
     assert "pwd2" in ins.schema_filter.__fields__
-    assert ins.schema_filter.__fields__["pwd2"].field_info.title == "pwd_title"
+    assert model_fields(ins.schema_filter)["pwd2"].field_info.title == "pwd_title"
     assert "description" not in ins.schema_filter.__fields__
     # test openapi
     openapi = app.openapi()
     schemas = openapi["components"]["schemas"]
 
     assert "title" in schemas["ArticleCrudFilter"]["properties"]
+
     assert "user__username" in schemas["ArticleCrudFilter"]["properties"]
     assert "pwd" in schemas["ArticleCrudFilter"]["properties"]
     assert "pwd2" in schemas["ArticleCrudFilter"]["properties"]
@@ -346,10 +349,6 @@ async def test_update_fields_relationship(app: FastAPI, async_client: AsyncClien
         },
     )
     assert res.json()["data"] == 1
-    # ret=await async_client.get(
-    #     "/article/item/1",
-    # )
-    # print(ret.json())
 
     article = await async_session.get(models.Article, 1)
     await async_session.refresh(article)
@@ -362,7 +361,7 @@ async def test_update_fields_relationship(app: FastAPI, async_client: AsyncClien
     assert content.content == "new_content"
 
 
-async def test_read_fields_and_schema_read_is_none(app: FastAPI, async_client: FastAPI, models):
+async def test_read_fields_and_schema_read_is_none(app: FastAPI, models):
     class ArticleCrud(SqlalchemyCrud):
         router_prefix = "/article"
 

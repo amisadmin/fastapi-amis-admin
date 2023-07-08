@@ -10,7 +10,7 @@ from tests.models.schemas import (
     ArticleTagLinkSchema,
     CategorySchema,
     TagSchema,
-    UserSchema,
+    UserSchemaBase,
 )
 
 Base = declarative_base()
@@ -28,7 +28,7 @@ class CreateTimeModelMixin(Base):
 
 class User(PkModelMixin, CreateTimeModelMixin):
     __tablename__ = "user"
-    __schema__ = UserSchema
+    __pydantic_model__ = UserSchemaBase
 
     username = Column(String(100), unique=True, index=True, nullable=False)
     password = Column(String(100), default="")
@@ -39,7 +39,7 @@ class User(PkModelMixin, CreateTimeModelMixin):
 
 class Category(PkModelMixin, CreateTimeModelMixin):
     __tablename__ = "category"
-    __schema__ = CategorySchema
+    __pydantic_model__ = CategorySchema
 
     name = Column(String(100), unique=True, index=True, nullable=False)
     description = Column(String(100), default="")
@@ -48,7 +48,7 @@ class Category(PkModelMixin, CreateTimeModelMixin):
 
 class ArticleTagLink(Base):
     __tablename__ = "article_tag_link"
-    __schema__ = ArticleTagLinkSchema
+    __pydantic_model__ = ArticleTagLinkSchema
 
     tag_id = Column(Integer, ForeignKey("tag.id"), primary_key=True, default=None)
     article_id = Column(Integer, ForeignKey("article.id"), primary_key=True, default=None)
@@ -56,7 +56,7 @@ class ArticleTagLink(Base):
 
 class Tag(PkModelMixin, CreateTimeModelMixin):
     __tablename__ = "tag"
-    __schema__ = TagSchema
+    __pydantic_model__ = TagSchema
 
     name = Column(String(255), unique=True, index=True, nullable=False)
     articles = relationship(
@@ -71,7 +71,7 @@ class Tag(PkModelMixin, CreateTimeModelMixin):
 
 class ArticleContent(PkModelMixin):
     __tablename__ = "article_content"
-    __schema__ = ArticleContentSchema
+    __pydantic_model__ = ArticleContentSchema
 
     content = Column(String(100))
     article = relationship("Article", back_populates="content")
@@ -79,7 +79,7 @@ class ArticleContent(PkModelMixin):
 
 class Article(PkModelMixin, CreateTimeModelMixin):
     __tablename__ = "article"
-    __schema__ = ArticleSchema
+    __pydantic_model__ = ArticleSchema
 
     title = Column(String(100), unique=True, index=True, nullable=False)
     description = Column(String(100))

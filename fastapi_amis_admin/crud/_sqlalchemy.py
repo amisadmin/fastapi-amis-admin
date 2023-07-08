@@ -1,4 +1,3 @@
-import datetime
 import re
 from enum import Enum
 from typing import (
@@ -14,13 +13,11 @@ from typing import (
     Type,
     Union,
 )
-from uuid import UUID
 
 from fastapi import APIRouter, Body, Depends
+from fastapi._compat import field_annotation_is_scalar
 from fastapi.types import IncEx
-from pydantic import EmailStr, Extra, IPvAnyAddress, Json
-from pydantic.fields import ModelField
-from pydantic.utils import ValueItems
+from pydantic import Extra
 from sqlalchemy import Column, Table, func
 from sqlalchemy.engine import Result
 from sqlalchemy.future import select
@@ -29,6 +26,16 @@ from sqlalchemy.sql import Select
 from sqlalchemy.sql.elements import BinaryExpression, Label, UnaryExpression
 from starlette.requests import Request
 from typing_extensions import Literal
+
+from fastapi_amis_admin.utils.pydantic import (
+    PYDANTIC_V2,
+    ModelField,
+    ValueItems,
+    annotation_outer_type,
+    create_model_by_fields,
+    field_allow_none,
+    model_fields,
+)
 
 try:
     from functools import cached_property
@@ -61,7 +68,6 @@ from .utils import (
     SqlalchemyDatabase,
     get_engine_db,
     parser_str_set_list,
-    schema_create_by_modelfield,
 )
 
 sql_operator_pattern: Pattern = re.compile(r"^\[(=|<=|<|>|>=|!|!=|<>|\*|!\*|~|!~|-)]")
@@ -279,9 +285,9 @@ class SqlalchemyCrud(
             ),
         )
         # Create the schema using the model fields
-        return schema_create_by_modelfield(
-            schema_name=f"{self.schema_name_prefix}List",
-            modelfields=modelfields,
+        return create_model_by_fields(
+            name=f"{self.schema_name_prefix}List",
+            fields=modelfields,
             set_none=True,
             extra=Extra.allow,
         )
@@ -293,17 +299,19 @@ class SqlalchemyCrud(
         modelfields = self.parser.filter_modelfield(list_filter, save_class=(Label,))
         # Modify the modelfields if necessary
         for modelfield in modelfields:
-            if not issubclass(modelfield.type_, (Enum, bool)) and issubclass(
-                modelfield.type_,
-                (int, float, datetime.datetime, datetime.date, datetime.time, Json, EmailStr, IPvAnyAddress, UUID),
-            ):
+            type_ = annotation_outer_type(modelfield.type_)
+            if field_annotation_is_scalar(modelfield.type_) and issubclass(type_, (Enum, bool, str)):
+                continue
+            if PYDANTIC_V2:
+                modelfield.field_info.annotation = str
+            else:
                 modelfield.type_ = str
                 modelfield.outer_type_ = str
                 modelfield.validators = []
         # Create the schema using the model fields
-        return schema_create_by_modelfield(
-            schema_name=f"{self.schema_name_prefix}Filter",
-            modelfields=modelfields,
+        return create_model_by_fields(
+            name=f"{self.schema_name_prefix}Filter",
+            fields=modelfields,
             set_none=True,
         )
 
@@ -313,9 +321,9 @@ class SqlalchemyCrud(
         # Filter out any non-model fields from the read fields
         modelfields = self.parser.filter_modelfield(self.read_fields)
         # Create the schema using the model fields
-        return schema_create_by_modelfield(
-            f"{self.schema_name_prefix}Read",
-            modelfields,
+        return create_model_by_fields(
+            name=f"{self.schema_name_prefix}Read",
+            fields=modelfields,
             orm_mode=True,
         )
 
@@ -329,9 +337,9 @@ class SqlalchemyCrud(
         # Filter out any non-model fields from the update fields
         modelfields = self.parser.filter_modelfield(self.update_fields, exclude=exclude)
         # Create the schema using the model fields
-        return schema_create_by_modelfield(
-            f"{self.schema_name_prefix}Update",
-            modelfields,
+        return create_model_by_fields(
+            name=f"{self.schema_name_prefix}Update",
+            fields=modelfields,
             set_none=True,
         )
 
@@ -345,9 +353,9 @@ class SqlalchemyCrud(
         # Filter out any non-model fields from the create fields
         modelfields = self.parser.filter_modelfield(self.create_fields, exclude=exclude)
         # Create the schema using the model fields
-        return schema_create_by_modelfield(
-            f"{self.schema_name_prefix}Create",
-            modelfields,
+        return create_model_by_fields(
+            name=f"{self.schema_name_prefix}Create",
+            fields=modelfields,
         )
 
     def create_item(self, item: Dict[str, Any]) -> TableModelT:
@@ -437,7 +445,7 @@ class SqlalchemyCrud(
         **kwargs,
     ) -> Dict[str, Any]:
         data = obj.dict(exclude=self.update_exclude, exclude_unset=True, by_alias=True)
-        data = {key: val for key, val in data.items() if val is not None or self.model.__fields__[key].allow_none}
+        data = {key: val for key, val in data.items() if val is not None or field_allow_none(model_fields(self.model)[key])}
         return data
 
     async def on_filter_pre(self, request: Request, obj: SchemaFilterT, **kwargs) -> Dict[str, Any]:

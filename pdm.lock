@@ -106,15 +106,7 @@ dependencies = [
     "requests>=2.23.0",
 ]
 
-[[package]]
-name = "fastapi"
-version = "0.92.0"
-requires_python = ">=3.7"
-summary = "FastAPI framework, high performance, easy to learn, fast to code, ready for production"
-dependencies = [
-    "pydantic!=1.7,!=1.7.1,!=1.7.2,!=1.7.3,!=1.8,!=1.8.1,<2.0.0,>=1.6.2",
-    "starlette<0.26.0,>=0.25.0",
-]
+
 
 [[package]]
 name = "fastapi-amis-admin-cli"
@@ -538,10 +530,6 @@ content_hash = "sha256:d1022eda044de39ba308bd9c5c90f0ea9935eb34f9d53af4ba63d4605
 "cookiecutter 2.1.1" = [
     {url = "https://pypi.tuna.tsinghua.edu.cn/packages/64/4f/66a92457a729104db896321135e05b0cf94a9034fd5345f30d4d8386b957/cookiecutter-2.1.1-py2.py3-none-any.whl", hash = "sha256:9f3ab027cec4f70916e28f03470bdb41e637a3ad354b4d65c765d93aad160022"},
     {url = "https://pypi.tuna.tsinghua.edu.cn/packages/96/43/65a3dad94dceaaaa12807ce4d4eff1064db6e91a8c6fb6945e3e61e63552/cookiecutter-2.1.1.tar.gz", hash = "sha256:f3982be8d9c53dac1261864013fdec7f83afd2e42ede6f6dd069c5e149c540d5"},
-]
-"fastapi 0.92.0" = [
-    {url = "https://pypi.tuna.tsinghua.edu.cn/packages/11/92/6577adcb71d85378700765b5298929ac0fcafaa47a7c39bdc205289d9c74/fastapi-0.92.0.tar.gz", hash = "sha256:023a0f5bd2c8b2609014d3bba1e14a1d7df96c6abea0a73070621c9862b9a4de"},
-    {url = "https://pypi.tuna.tsinghua.edu.cn/packages/cd/ec/878318da126d6c83641d23644899ca94838b839490bcdbcddad6814fe07a/fastapi-0.92.0-py3-none-any.whl", hash = "sha256:ae7b97c778e2f2ec3fb3cb4fb14162129411d99907fb71920f6d69a524340ebf"},
 ]
 "fastapi-amis-admin-cli 0.1.3" = [
     {url = "https://pypi.tuna.tsinghua.edu.cn/packages/7d/4d/35396fc698ae8bc874823cbd0ed7d8d45317eeb354e96a6afed505ce84ac/fastapi_amis_admin_cli-0.1.3.tar.gz", hash = "sha256:d5b628476441e7cc567850e34ba806c63a522d8898868c33a65f510645cd3c79"},
