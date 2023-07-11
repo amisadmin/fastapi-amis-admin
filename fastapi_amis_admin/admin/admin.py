@@ -30,7 +30,7 @@ from starlette import status
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import HTMLResponse, JSONResponse, Response
 from starlette.templating import Jinja2Templates
-from typing_extensions import Literal
+from typing_extensions import Annotated, Literal
 
 import fastapi_amis_admin
 from fastapi_amis_admin.admin.handlers import register_exception_handlers
@@ -140,7 +140,7 @@ class LinkModelForm:
         async def route(
             request: Request,
             link_id: IdStrQuery,
-            item_id: List[str] = Depends(self.pk_admin.filtered_item_id),
+            item_id: self.pk_admin.AnnotatedItemIdList,  # type: ignore
         ):
             if not await self.pk_admin.has_update_permission(request, item_id, None):
                 return self.pk_admin.error_no_router_permission(request)
@@ -159,7 +159,7 @@ class LinkModelForm:
         async def route(
             request: Request,
             link_id: IdStrQuery,
-            item_id: List[str] = Depends(self.pk_admin.filtered_item_id),
+            item_id: self.pk_admin.AnnotatedItemIdList,  # type: ignore
         ):
             if not await self.pk_admin.has_update_permission(request, item_id, None):
                 return self.pk_admin.error_no_router_permission(request)
@@ -457,8 +457,16 @@ class PageAdmin(PageSchemaAdmin, RouterAdmin):
         return self
 
     @property
+    def AnnotatedPage(self):
+        """Annotated Page, for fastapi dependency injection"""
+        return Annotated[Page, Depends(self.get_page)]
+
+    @property
     def route_page(self) -> Callable:
-        async def route(request: Request, page: Page = Depends(self.get_page)):
+        async def route(
+            request: Request,
+            page: self.AnnotatedPage,  # type:ignore
+        ):
             return await self.page_parser(request, page)
 
         return route
@@ -1215,13 +1223,14 @@ class ModelAction(FormAction):
 
     @property
     def route_submit(self):
-        default = ... if self.schema else None
-        schema = self.schema or Any
+        AnnotatedDataT = Any
+        if self.schema:
+            AnnotatedDataT = Annotated[self.schema, Body()]
 
         async def route(
             request: Request,
-            item_id: List[str] = Depends(self.admin.filtered_item_id),
-            data: schema = Body(default=default),  # type:ignore
+            item_id: self.admin.AnnotatedItemIdList,  # type:ignore
+            data: AnnotatedDataT = None,  # type:ignore
         ):
             return await self.handle(request, item_id, data)
 

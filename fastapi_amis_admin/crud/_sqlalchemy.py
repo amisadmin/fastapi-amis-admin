@@ -25,7 +25,7 @@ from sqlalchemy.orm import InstrumentedAttribute, Session, object_session
 from sqlalchemy.sql import Select
 from sqlalchemy.sql.elements import BinaryExpression, Label, UnaryExpression
 from starlette.requests import Request
-from typing_extensions import Literal
+from typing_extensions import Annotated, Literal
 
 from fastapi_amis_admin.utils.pydantic import (
     PYDANTIC_V2,
@@ -165,12 +165,12 @@ class SqlalchemySelector(Generic[TableModelT]):
         if self.link_models:
 
             def select_maker(
-                stmt: Select = Depends(self.get_select),
-                link_clause=Depends(self.get_link_clause),
+                sel: Annotated[Select, Depends(self.get_select)],  # type: ignore
+                link_clause: Annotated[Optional[Any], Depends(self.get_link_clause)] = None,  # type: ignore
             ) -> Select:
                 if link_clause is not None:
-                    stmt = stmt.where(link_clause)
-                return stmt
+                    sel = sel.where(link_clause)
+                return sel
 
         else:
             select_maker = self.get_select
@@ -390,8 +390,8 @@ class SqlalchemyCrud(
         return self.schema_list.parse_obj(values)
 
     def _fetch_item_scalars(self, session: Session, item_id: Iterable[str]) -> List[TableModelT]:
-        stmt = select(self.model).where(self.pk.in_(list(map(get_python_type_parse(self.pk), item_id))))
-        return session.scalars(stmt).all()
+        sel = select(self.model).where(self.pk.in_(list(map(get_python_type_parse(self.pk), item_id))))
+        return session.scalars(sel).all()
 
     async def fetch_items(self, *item_id: str) -> List[TableModelT]:
         """Fetch the database data by id."""
@@ -448,7 +448,7 @@ class SqlalchemyCrud(
         data = {key: val for key, val in data.items() if val is not None or field_allow_none(model_fields(self.model)[key])}
         return data
 
-    async def on_filter_pre(self, request: Request, obj: SchemaFilterT, **kwargs) -> Dict[str, Any]:
+    async def on_filter_pre(self, request: Request, obj: Optional[SchemaFilterT], **kwargs) -> Dict[str, Any]:
         return obj and {k: v for k, v in obj.dict(exclude_unset=True, by_alias=True).items() if v is not None}
 
     async def on_list_after(self, request: Request, result: Result, data: ItemListSchema, **kwargs) -> ItemListSchema:
@@ -458,14 +458,26 @@ class SqlalchemyCrud(
         return data
 
     @property
+    def AnnotatedSelect(self):
+        """Annotated Select, used to automatically perform fastapi dependency injection"""
+        return Annotated[Select, Depends(self._select_maker)]
+
+    @property
+    def AnnotatedItemIdList(self):
+        """Annotated Item ID List, used to filter the id of the data that the user has permission to operate on.
+        And automatically perform fastapi dependency injection
+        """
+        return Annotated[List[str], Depends(self.filtered_item_id)]
+
+    @property
     def filtered_item_id(self) -> Callable:
         """Filter the id of the data that the user has permission to operate on."""
 
         async def depend(
             item_id: ItemIdListDepend,
-            stmt: Select = Depends(self._select_maker),
+            sel: self.AnnotatedSelect,  # type: ignore
         ):
-            filtered_id = await self.db.async_scalars(stmt.where(self.pk.in_(item_id)).with_only_columns(self.pk))
+            filtered_id = await self.db.async_scalars(sel.where(self.pk.in_(item_id)).with_only_columns(self.pk))
             return filtered_id.all()
 
         return depend
@@ -474,9 +486,9 @@ class SqlalchemyCrud(
     def route_list(self) -> Callable:
         async def route(
             request: Request,
-            paginator: self.paginator = Depends(),  # type: ignore
-            filters: self.schema_filter = Body(None),  # type: ignore
-            stmt: Select = Depends(self._select_maker),
+            sel: self.AnnotatedSelect,  # type: ignore
+            paginator: Annotated[self.paginator, Depends()],  # type: ignore
+            filters: Annotated[self.schema_filter, Body()] = None,  # type: ignore
         ):
             if not await self.has_list_permission(request, paginator, filters):
                 return self.error_no_router_permission(request)
@@ -484,16 +496,16 @@ class SqlalchemyCrud(
             data.query = request.query_params
             data.filters = await self.on_filter_pre(request, filters)
             if data.filters:
-                stmt = stmt.filter(*self.calc_filter_clause(data.filters))
+                sel = sel.filter(*self.calc_filter_clause(data.filters))
             if paginator.show_total:
                 data.total = await self.db.async_scalar(
-                    select(func.count("*")).select_from(stmt.with_only_columns(self.pk).subquery())
+                    select(func.count("*")).select_from(sel.with_only_columns(self.pk).subquery())
                 )
             orderBy = self._calc_ordering(paginator.orderBy, paginator.orderDir)
             if orderBy:
-                stmt = stmt.order_by(*orderBy)
-            stmt = stmt.limit(paginator.perPage).offset((paginator.page - 1) * paginator.perPage)
-            result = await self.db.async_execute(stmt)
+                sel = sel.order_by(*orderBy)
+            sel = sel.limit(paginator.perPage).offset((paginator.page - 1) * paginator.perPage)
+            result = await self.db.async_execute(sel)
             return BaseApiOut(data=await self.on_list_after(request, result, data))
 
         return route
@@ -502,7 +514,7 @@ class SqlalchemyCrud(
     def route_create(self) -> Callable:
         async def route(
             request: Request,
-            data: Union[List[self.schema_create], self.schema_create] = Body(...),  # type: ignore
+            data: Annotated[Union[List[self.schema_create], self.schema_create], Body()],  # type: ignore
         ) -> BaseApiOut[Union[int, self.schema_model]]:  # type: ignore
             if not await self.has_create_permission(request, data):
                 return self.error_no_router_permission(request)
@@ -523,7 +535,7 @@ class SqlalchemyCrud(
     def route_read(self) -> Callable:
         async def route(
             request: Request,
-            item_id: List[str] = Depends(self.filtered_item_id),
+            item_id: self.AnnotatedItemIdList,  # type: ignore
         ):
             if not await self.has_read_permission(request, item_id):
                 return self.error_no_router_permission(request)
@@ -538,8 +550,8 @@ class SqlalchemyCrud(
     def route_update(self) -> Callable:
         async def route(
             request: Request,
-            item_id: List[str] = Depends(self.filtered_item_id),
-            data: self.schema_update = Body(...),  # type: ignore
+            item_id: self.AnnotatedItemIdList,  # type: ignore
+            data: Annotated[self.schema_update, Body()],  # type: ignore
         ):
             if not await self.has_update_permission(request, item_id, data):
                 return self.error_no_router_permission(request)
@@ -556,7 +568,7 @@ class SqlalchemyCrud(
     def route_delete(self) -> Callable:
         async def route(
             request: Request,
-            item_id: List[str] = Depends(self.filtered_item_id),
+            item_id: self.AnnotatedItemIdList,  # type: ignore
         ):
             if not await self.has_delete_permission(request, item_id):
                 return self.error_no_router_permission(request)
