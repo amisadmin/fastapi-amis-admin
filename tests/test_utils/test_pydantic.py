@@ -1,6 +1,6 @@
 from datetime import date, datetime
 from enum import Enum
-from typing import Any, Dict, List, Optional, Set, Union, get_origin
+from typing import Any, Dict, List, Optional, Set, Union
 
 from fastapi._compat import (
     field_annotation_is_complex,
@@ -9,7 +9,7 @@ from fastapi._compat import (
     field_annotation_is_sequence,
 )
 from pydantic import BaseModel
-from typing_extensions import Annotated, Literal
+from typing_extensions import Annotated, Literal, get_origin
 
 from fastapi_amis_admin.models import IntegerChoices
 from fastapi_amis_admin.utils.pydantic import annotation_outer_type, scalar_sequence_inner_type, validator_skip_blank
