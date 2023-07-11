@@ -14,7 +14,7 @@ IdStrQuery = Annotated[
     str,
     Query(
         title="ids",
-        example="1,2,3",
+        examples=["1", "1,2,3"],
         description="Primary key or list of primary keys",
     ),
 ]
@@ -36,7 +36,7 @@ def parser_item_id(
         ...,
         min_length=1,
         title="pk",
-        example="1,2,3",
+        examples=["1", "1,2,3"],
         description="Primary key or list of primary keys",
     )
 ) -> List[str]:
