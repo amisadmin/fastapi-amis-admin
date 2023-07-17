@@ -102,6 +102,7 @@ class AmisParser:
             )
             column.quickEdit.update({"saveImmediately": True})
             if column.quickEdit.get("type") == "switch":
+                column.disabled = False
                 column.quickEdit.update({"mode": "inline"})
         return column
 
@@ -190,6 +191,7 @@ class AmisParser:
             pass
         elif issubclass(type_, bool):
             kwargs["type"] = "switch"
+            kwargs["disabled"] = True
             kwargs["filterable"] = {
                 "options": [
                     {"label": _("YES"), "value": True},
@@ -281,6 +283,9 @@ class AmisParser:
             kwargs["form"] = self.as_amis_form(type_, is_filter=is_filter).amis_dict()
         else:
             kwargs["type"] = "input-text"
+        if kwargs.get("type") == "input-text":
+            kwargs["clearable"] = True
+            kwargs["clearValueOnEmpty"] = True
         return kwargs
 
     def get_field_amis_extra(
