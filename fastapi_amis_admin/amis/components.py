@@ -2541,7 +2541,7 @@ class Pagination(AmisNode):
     disabled: bool = None  # default False, is pagination disabled
 
 
-class MatrixCheckboxes(AmisNode):
+class MatrixCheckboxes(FormItem):
     """Matrix type input box."""
 
     class RowItem(AmisNode):

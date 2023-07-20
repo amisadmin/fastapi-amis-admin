@@ -625,6 +625,7 @@ class ModelAdmin(SqlalchemyCrud, BaseActionAdmin):
     page_path: str = ""
     bind_model: bool = True
     admin_action_maker: List[Callable[["ModelAdmin"], "AdminAction"]] = []  # Actions
+    display_item_action_as_column: bool = False  # Whether to display the item operation as a column
 
     def __init__(self, app: "AdminApp"):
         assert self.model, "model is None"
@@ -693,18 +694,10 @@ class ModelAdmin(SqlalchemyCrud, BaseActionAdmin):
                 modelfield = self.parser.get_modelfield(field)
                 if modelfield:
                     columns.append(await self.get_list_column(request, modelfield))
-        # Append operation column
-        actions = await self.get_actions(request, flag="column") or []
-        for action in actions:
-            columns.append(
-                ColumnOperation(
-                    fixed="right",
-                    label=getattr(action, "label", _("Operation")),
-                    breakpoint="*",
-                    buttons=[action],
-                )
-            )
-        # Append inline link model column
+        return columns
+
+    async def _get_list_columns_for_link_model(self, request) -> List[ColumnOperation]:
+        columns = []
         for link_form in self.link_model_forms:
             form = await link_form.get_form_item(request)
             if not form:
@@ -715,6 +708,23 @@ class ModelAdmin(SqlalchemyCrud, BaseActionAdmin):
                     label=link_form.display_admin.page_schema.label,
                     breakpoint="*",
                     buttons=[form],
+                )
+            )
+        return columns
+
+    async def _get_list_columns_for_actions(self, request) -> List[ColumnOperation]:
+        columns = []
+        actions = await self.get_actions(request, flag="column") or []
+        action_names = {action.name for action in actions}
+        if self.display_item_action_as_column:
+            item_actions = await self.get_actions(request, flag="item") or []
+            actions.extend(action for action in item_actions if action.name not in action_names)
+        if actions:
+            columns.append(
+                ColumnOperation(
+                    fixed="right",
+                    label=_("Operation"),
+                    buttons=actions,
                 )
             )
         return columns
@@ -754,6 +764,9 @@ class ModelAdmin(SqlalchemyCrud, BaseActionAdmin):
             },
         ]
         headerToolbar.extend(await self.get_actions(request, flag="toolbar"))
+        itemActions = []
+        if not self.display_item_action_as_column:
+            itemActions = await self.get_actions(request, flag="item")
         table = TableCRUD(
             api=await self.get_list_table_api(request),
             autoFillHeight=True,
@@ -764,7 +777,7 @@ class ModelAdmin(SqlalchemyCrud, BaseActionAdmin):
             syncLocation=False,
             keepItemSelectionOnPageChange=True,
             perPage=self.list_per_page,
-            itemActions=await self.get_actions(request, flag="item"),
+            itemActions=itemActions,
             bulkActions=await self.get_actions(request, flag="bulk"),
             footerToolbar=[
                 "statistics",
@@ -779,7 +792,13 @@ class ModelAdmin(SqlalchemyCrud, BaseActionAdmin):
             quickSaveItemApi=f"put:{self.router_path}/item/${self.pk_name}",
             defaultParams={k: v for k, v in request.query_params.items() if v},
         )
-        if self.link_model_forms:
+        # Append operation column
+        action_columns = await self._get_list_columns_for_actions(request)
+        table.columns.extend(action_columns)
+        # Append inline link model column
+        link_model_columns = await self._get_list_columns_for_link_model(request)
+        if link_model_columns:
+            table.columns.extend(link_model_columns)
             table.footable = True
         return table
 
@@ -925,7 +944,6 @@ class ModelAdmin(SqlalchemyCrud, BaseActionAdmin):
         return ActionType.Dialog(
             icon="fa fa-eye",
             tooltip=_("View"),
-            level=LevelEnum.primary,
             dialog=Dialog(
                 title=_("View") + " - " + _(self.page_schema.label),
                 size=SizeEnum.lg,
