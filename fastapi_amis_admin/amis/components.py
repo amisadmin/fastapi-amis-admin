@@ -620,7 +620,7 @@ class FormItem(AmisNode):
     inputClassName: str = None  # Form controller class name
     labelClassName: str = None  # class name of label
     name: str = None  # Field name, specifying the key when the form item is submitted
-    label: Template = None  # form item label template or false
+    label: Union[bool, Template] = None  # form item label template or false
     labelAlign: str = None  # "right" # Form item label alignment, default right alignment, only effective when mode is
     labelRemark: RemarkT = None  # Form item label description
     description: Template = None  # Form item description
@@ -1261,17 +1261,17 @@ class InputTable(FormItem):
     addApi: API = None  # API submitted when adding
     updateApi: API = None  # API submitted when modified
     deleteApi: API = None  # API submitted when deleting
-    addBtnLabel: str = None  # Add button name
+    addBtnLabel: Union[bool, Template] = None  # Add button name
     addBtnIcon: str = None  # "plus" # Add button icon
-    copyBtnLabel: str = None  # Copy button text
+    copyBtnLabel: Union[bool, Template] = None  # Copy button text
     copyBtnIcon: str = None  # "copy" # Copy button icon
-    editBtnLabel: str = None  # "" # Edit button name
+    editBtnLabel: Union[bool, Template] = None  # "" # Edit button name
     editBtnIcon: str = None  # "pencil" # edit button icon
-    deleteBtnLabel: str = None  # "" # delete button name
+    deleteBtnLabel: Union[bool, Template] = None  # "" # delete button name
     deleteBtnIcon: str = None  # "minus" # delete button icon
-    confirmBtnLabel: str = None  # "" # Confirm edit button name
+    confirmBtnLabel: Union[bool, Template] = None  # "" # Confirm edit button name
     confirmBtnIcon: str = None  # "check" # Confirm edit button icon
-    cancelBtnLabel: str = None  # "" # Cancel edit button name
+    cancelBtnLabel: Union[bool, Template] = None  # "" # Cancel edit button name
     cancelBtnIcon: str = None  # "times" # Cancel edit button icon
     needConfirm: bool = None  # True # whether to confirm the operation, it can be used to control the operation
     # interaction of the control table
@@ -2551,7 +2551,6 @@ class MatrixCheckboxes(FormItem):
         label: str
 
     type: str = "matrix-checkboxes"
-    label: str = None
     columns: List[ColumnItem] = None  # list of column items
     rows: List[RowItem] = None  # list of row items
     rowLabel: str = None  # row header description
