@@ -688,12 +688,15 @@ class ModelAdmin(SqlalchemyCrud, BaseActionAdmin):
     async def get_list_columns(self, request: Request) -> List[TableColumn]:
         columns = []
         for field in await self.get_list_display(request):
+            column = None
             if isinstance(field, BaseAmisModel):
-                columns.append(field)
+                column = field
             else:
                 modelfield = self.parser.get_modelfield(field)
                 if modelfield:
-                    columns.append(await self.get_list_column(request, modelfield))
+                    column = await self.get_list_column(request, modelfield)
+            if column:
+                columns.append(column)
         return columns
 
     async def _get_list_columns_for_link_model(self, request) -> List[ColumnOperation]:
