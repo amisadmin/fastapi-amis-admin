@@ -418,11 +418,11 @@ class SqlalchemyCrud(
             self.update_item(item, values)
         return len(items)
 
-    def _delete_items(self, session: Session, item_id: List[str]) -> int:
+    def _delete_items(self, session: Session, item_id: List[str]) -> List[TableModelT]:
         items = self._fetch_item_scalars(session, item_id)
         for item in items:
             self.delete_item(item)
-        return len(items)
+        return items
 
     @property
     def schema_name_prefix(self):
@@ -455,6 +455,9 @@ class SqlalchemyCrud(
         data.items = self.parser.conv_row_to_dict(result.all())
         data.items = [self.list_item(item) for item in data.items]
         return data
+
+    async def on_delete_after(self, request: Request, items: List[TableModelT]) -> int:
+        return len(items)
 
     @property
     def AnnotatedSelect(self):
@@ -571,7 +574,8 @@ class SqlalchemyCrud(
         ):
             if not await self.has_delete_permission(request, item_id):
                 return self.error_no_router_permission(request)
-            result = await self.db.async_run_sync(self._delete_items, item_id)
-            return BaseApiOut(data=result)
+            items = await self.db.async_run_sync(self._delete_items, item_id)
+            data = await self.on_delete_after(request, items)
+            return BaseApiOut(data=data)
 
         return route
