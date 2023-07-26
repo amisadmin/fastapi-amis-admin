@@ -559,11 +559,10 @@ class FormAdmin(BaseActionAdmin, Generic[SchemaUpdateT]):
         if actions:
             form.actions = actions
         form.body = []
-        if self.schema:
-            for modelfield in model_fields(self.schema).values():
-                formitem = await self.get_form_item(request, modelfield)
-                if formitem:
-                    form.body.append(formitem)
+        for modelfield in model_fields(self.schema).values():
+            formitem = await self.get_form_item(request, modelfield)
+            if formitem:
+                form.body.append(formitem)
         return form
 
     def register_router(self):
@@ -1143,7 +1142,7 @@ class ModelAdmin(SqlalchemyCrud, BaseActionAdmin):
 
 class AdminAction:
     admin: BaseActionAdmin
-    action: Action = None
+    action: Action = Action()
 
     def __init__(
         self,
@@ -1158,7 +1157,7 @@ class AdminAction:
     ):
         self.admin = admin
         assert self.admin, "admin is None"
-        self.action = action or self.action or Action()
+        self.action = action or self.action.copy()
         self.action = self.action.update_from_dict(kwargs)
         self.name = name or self.action.id or self.action.name
         assert self.name, "name is None"
@@ -1195,13 +1194,14 @@ class FormAction(AdminAction, FormAdmin):
     ):
         AdminAction.__init__(self, admin, action=action, flags=flags, getter=getter, **kwargs)
         self.router = self.admin.router
+        self.schema = self.schema or BaseModel
         FormAdmin.__init__(self, self.admin.app)
 
     async def get_action(self, request: Request, **kwargs) -> Action:
         action = self.action and self.action.copy() or ActionType.Dialog(label=_("Custom form actions"), dialog=Dialog())
         node: AmisNode = getattr(action, action.actionType, None)
         if node:
-            node.title = node.title or action.label  # only override if not set
+            node.title = node.title or action.label or action.tooltip  # only override if not set
             node.size = node.size or SizeEnum.xl
             node.body = Service(
                 schemaApi=AmisAPI(
@@ -1246,14 +1246,10 @@ class ModelAction(FormAction):
 
     @property
     def route_submit(self):
-        AnnotatedDataT = Any
-        if self.schema:
-            AnnotatedDataT = Annotated[self.schema, Body()]
-
         async def route(
             request: Request,
             item_id: self.admin.AnnotatedItemIdList,  # type:ignore
-            data: AnnotatedDataT = None,  # type:ignore
+            data: Annotated[self.schema, Body()] = None,  # type:ignore
         ):
             return await self.handle(request, item_id, data)
 
