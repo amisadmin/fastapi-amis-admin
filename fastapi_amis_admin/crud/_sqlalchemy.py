@@ -17,7 +17,6 @@ from typing import (
 from fastapi import APIRouter, Body, Depends
 from fastapi._compat import field_annotation_is_scalar
 from fastapi.types import IncEx
-from pydantic import Extra
 from sqlalchemy import Column, Table, func
 from sqlalchemy.engine import Result
 from sqlalchemy.future import select
@@ -289,7 +288,7 @@ class SqlalchemyCrud(
             name=f"{self.schema_name_prefix}List",
             fields=modelfields,
             set_none=True,
-            extra=Extra.allow,
+            extra="allow",
         )
 
     def _create_schema_filter(self) -> Type[SchemaFilterT]:

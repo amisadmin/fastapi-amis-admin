@@ -64,7 +64,7 @@ class ModelFieldProxy:
         modelfield = create_cloned_field(self.__dict__["_modelfield"])
         if PYDANTIC_V2:
             kwargs = self.__dict__["_update"]
-            name = kwargs.get("name", modelfield.name)
+            name = kwargs.pop("name", modelfield.name)
             alias = kwargs.get("alias", None)
             if alias:
                 kwargs.setdefault("validation_alias", alias)

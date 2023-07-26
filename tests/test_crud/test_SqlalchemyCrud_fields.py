@@ -92,8 +92,8 @@ async def test_list_filter(app: FastAPI, async_client: AsyncClient, fake_users, 
 
     app.include_router(ins.router)
 
-    assert "username" in ins.schema_filter.__fields__
-    assert "password" not in ins.schema_filter.__fields__
+    assert "username" in model_fields(ins.schema_filter)
+    assert "password" not in model_fields(ins.schema_filter)
 
     # test schemas
     openapi = app.openapi()
@@ -124,8 +124,8 @@ async def test_create_fields(app: FastAPI, async_client: AsyncClient, models):
 
     app.include_router(ins.router)
 
-    assert "username" in ins.schema_create.__fields__
-    assert "password" not in ins.schema_create.__fields__
+    assert "username" in model_fields(ins.schema_create)
+    assert "password" not in model_fields(ins.schema_create)
 
     # test schemas
     openapi = app.openapi()
@@ -163,12 +163,12 @@ async def test_list_filter_relationship(app: FastAPI, async_client: AsyncClient,
 
     app.include_router(ins.router)
     # test schemas
-    assert "title" in ins.schema_filter.__fields__
-    assert "user_username" in ins.schema_filter.__fields__
-    assert "pwd" in ins.schema_filter.__fields__
-    assert "pwd2" in ins.schema_filter.__fields__
+    assert "title" in model_fields(ins.schema_filter)
+    assert "user_username" in model_fields(ins.schema_filter)
+    assert "pwd" in model_fields(ins.schema_filter)
+    assert "pwd2" in model_fields(ins.schema_filter)
     assert model_fields(ins.schema_filter)["pwd2"].field_info.title == "pwd_title"
-    assert "description" not in ins.schema_filter.__fields__
+    assert "description" not in model_fields(ins.schema_filter)
     # test openapi
     openapi = app.openapi()
     schemas = openapi["components"]["schemas"]
@@ -222,19 +222,19 @@ async def test_fields(app: FastAPI, async_client: AsyncClient, fake_articles, mo
     app.include_router(ins.router)
 
     # test schemas
-    assert "id" in ins.schema_list.__fields__
-    assert "title" in ins.schema_list.__fields__
-    assert "user_username" in ins.schema_list.__fields__
-    assert "pwd" in ins.schema_list.__fields__
-    assert "pwd2" in ins.schema_list.__fields__
-    assert "description" not in ins.schema_list.__fields__
+    assert "id" in model_fields(ins.schema_list)
+    assert "title" in model_fields(ins.schema_list)
+    assert "user_username" in model_fields(ins.schema_list)
+    assert "pwd" in model_fields(ins.schema_list)
+    assert "pwd2" in model_fields(ins.schema_list)
+    assert "description" not in model_fields(ins.schema_list)
     # test schema_filter
-    assert "title" in ins.schema_filter.__fields__
-    assert "user_username" in ins.schema_filter.__fields__
-    assert "pwd" in ins.schema_filter.__fields__
-    assert "pwd2" in ins.schema_filter.__fields__
+    assert "title" in model_fields(ins.schema_filter)
+    assert "user_username" in model_fields(ins.schema_filter)
+    assert "pwd" in model_fields(ins.schema_filter)
+    assert "pwd2" in model_fields(ins.schema_filter)
     assert model_fields(ins.schema_filter)["pwd2"].field_info.title == "pwd_title"
-    assert "description" not in ins.schema_filter.__fields__
+    assert "description" not in model_fields(ins.schema_filter)
     # test openapi
     openapi = app.openapi()
     schemas = openapi["components"]["schemas"]
@@ -269,9 +269,9 @@ async def test_read_fields(app: FastAPI, async_client: AsyncClient, fake_article
     app.include_router(ins.router)
 
     # test schemas
-    assert "id" not in ins.schema_read.__fields__
-    assert "title" in ins.schema_read.__fields__
-    assert "description" in ins.schema_read.__fields__
+    assert "id" not in model_fields(ins.schema_read)
+    assert "title" in model_fields(ins.schema_read)
+    assert "description" in model_fields(ins.schema_read)
     # test api
     res = await async_client.get("/article/item/1")
     items = res.json()["data"]
@@ -297,11 +297,11 @@ async def test_read_fields_relationship(app: FastAPI, async_client: AsyncClient,
     app.include_router(ins.router)
 
     # test schemas
-    assert "id" not in ins.schema_read.__fields__
-    assert "title" in ins.schema_read.__fields__
-    assert "description" in ins.schema_read.__fields__
-    assert "category" in ins.schema_read.__fields__
-    assert "tags" in ins.schema_read.__fields__
+    assert "id" not in model_fields(ins.schema_read)
+    assert "title" in model_fields(ins.schema_read)
+    assert "description" in model_fields(ins.schema_read)
+    assert "category" in model_fields(ins.schema_read)
+    assert "tags" in model_fields(ins.schema_read)
     # test api
     res = await async_client.get("/article/item/1")
     items = res.json()["data"]
@@ -331,10 +331,10 @@ async def test_update_fields_relationship(app: FastAPI, async_client: AsyncClien
     app.include_router(ins.router)
 
     # test schemas
-    assert "id" not in ins.schema_update.__fields__
-    assert "title" not in ins.schema_update.__fields__
-    assert "description" in ins.schema_update.__fields__
-    assert "content" in ins.schema_update.__fields__
+    assert "id" not in model_fields(ins.schema_update)
+    assert "title" not in model_fields(ins.schema_update)
+    assert "description" in model_fields(ins.schema_update)
+    assert "content" in model_fields(ins.schema_update)
 
     # test api
     res = await async_client.put(

@@ -41,7 +41,7 @@ async def test_list_display(site: AdminSite, async_client: AsyncClient, models):
 
     site.register_router()
     ins = site.get_admin_or_create(UserAdmin)
-    assert "username" in ins.schema_list.__fields__
+    assert "username" in model_fields(ins.schema_list)
 
     # test schemas
     openapi = site.fastapi.openapi()
@@ -72,16 +72,16 @@ async def test_list_display_join(site: AdminSite, async_client: AsyncClient, mod
 
     ins = site.get_admin_or_create(ArticleAdmin)
     # test schemas
-    assert "id" in ins.schema_list.__fields__
-    assert "user_username" in ins.schema_list.__fields__
-    assert "description" in ins.schema_list.__fields__
-    assert "nickname" in ins.schema_list.__fields__
-    assert "pwd" in ins.schema_list.__fields__
+    assert "id" in model_fields(ins.schema_list)
+    assert "user_username" in model_fields(ins.schema_list)
+    assert "description" in model_fields(ins.schema_list)
+    assert "nickname" in model_fields(ins.schema_list)
+    assert "pwd" in model_fields(ins.schema_list)
     assert model_fields(ins.schema_list)["pwd"].field_info.title == "pwd_title"
 
-    assert "user_username" in ins.schema_filter.__fields__
-    assert "nickname" in ins.schema_filter.__fields__
-    assert "pwd" in ins.schema_filter.__fields__
+    assert "user_username" in model_fields(ins.schema_filter)
+    assert "nickname" in model_fields(ins.schema_filter)
+    assert "pwd" in model_fields(ins.schema_filter)
 
     # test openapi
     site.fastapi.openapi_schema = None
@@ -102,7 +102,7 @@ async def test_list_filter(site: AdminSite, async_client: AsyncClient, models):
 
     site.register_router()
     ins = site.get_admin_or_create(UserAdmin)
-    assert "username" in ins.schema_filter.__fields__
+    assert "username" in model_fields(ins.schema_filter)
 
     # test schemas
     openapi = site.fastapi.openapi()
@@ -120,7 +120,7 @@ async def test_list_filter_default(site: AdminSite, async_client: AsyncClient, m
 
     site.register_router()
     ins = site.get_admin_or_create(UserAdmin)
-    assert "username" in ins.schema_filter.__fields__
+    assert "username" in model_fields(ins.schema_filter)
 
     # test schemas
     openapi = site.fastapi.openapi()

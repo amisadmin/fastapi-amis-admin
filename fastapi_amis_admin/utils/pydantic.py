@@ -8,12 +8,12 @@ from fastapi._compat import (  # noqa: F401
     sequence_annotation_to_type,
 )
 from fastapi.utils import create_cloned_field
-from pydantic import BaseModel, ConfigDict, Extra, create_model
+from pydantic import BaseModel, ConfigDict, create_model
 from pydantic.version import VERSION as PYDANTIC_VERSION
 from typing_extensions import Annotated, get_args, get_origin
 
 PYDANTIC_V2 = PYDANTIC_VERSION.startswith("2.")
-
+# todo: Deprecated `dict`,`json`,`from_orm`,`parse_obj` methods in pydantic v2
 if PYDANTIC_V2:
     from pydantic._internal._utils import ValueItems  # noqa: F401
     from pydantic.v1.datetime_parse import parse_date, parse_datetime  # noqa: F401
@@ -35,7 +35,7 @@ if PYDANTIC_V2:
         fields: Sequence[ModelField],
         *,
         set_none: bool = False,
-        extra: Extra = Extra.ignore,
+        extra: str = "ignore",
         **kwargs,
     ) -> Type[BaseModel]:
         if kwargs.pop("orm_mode", False):
@@ -110,7 +110,7 @@ else:
         fields: Sequence[ModelField],
         *,
         set_none: bool = False,
-        extra: Extra = Extra.ignore,
+        extra: str = "ignore",
         **kwargs,
     ) -> Type[BaseModel]:
         __config__ = marge_model_config(AllowExtraModelMixin, {"extra": extra, **kwargs})

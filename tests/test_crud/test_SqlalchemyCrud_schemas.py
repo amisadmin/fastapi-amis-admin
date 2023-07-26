@@ -6,7 +6,7 @@ from pydantic import BaseModel
 
 from fastapi_amis_admin.crud import SqlalchemyCrud
 from fastapi_amis_admin.crud.parser import TableModelParser
-from fastapi_amis_admin.utils.pydantic import ORMModelMixin
+from fastapi_amis_admin.utils.pydantic import ORMModelMixin, model_fields
 from tests.conftest import async_db as db
 
 
@@ -47,8 +47,8 @@ async def test_schema_create(app: FastAPI, async_client: AsyncClient, models):
 
     app.include_router(ins.router)
 
-    assert "username" in ins.schema_create.__fields__
-    assert "password" not in ins.schema_create.__fields__
+    assert "username" in model_fields(ins.schema_create)
+    assert "password" not in model_fields(ins.schema_create)
 
     # test schemas
     openapi = app.openapi()
