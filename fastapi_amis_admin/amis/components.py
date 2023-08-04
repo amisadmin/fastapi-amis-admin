@@ -2832,6 +2832,14 @@ class Wizard(AmisNode):
     # The current step will not change according to startStep
 
 
+class AmisRender(AmisNode):
+    """Amis render"""
+
+    type: str = "amis"  # Specify as amis renderer
+    schema: SchemaNode = None  # amis schema
+    props: dict = None  # amis props
+
+
 PageSchema.update_forward_refs()
 ActionType.Dialog.update_forward_refs()
 ActionType.Drawer.update_forward_refs()
