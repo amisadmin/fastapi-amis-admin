@@ -2836,7 +2836,7 @@ class AmisRender(AmisNode):
     """Amis render"""
 
     type: str = "amis"  # Specify as amis renderer
-    schema: SchemaNode = None  # amis schema
+    schema_: SchemaNode = Field(None, alias="schema")  # amis schema
     props: dict = None  # amis props
 
 

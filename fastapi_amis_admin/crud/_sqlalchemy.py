@@ -396,33 +396,46 @@ class SqlalchemyCrud(
         """Fetch the database data by id."""
         return await self.db.async_run_sync(self._fetch_item_scalars, item_id)
 
-    def _create_items(self, session: Session, items: List[Dict[str, Any]]) -> Union[int, SchemaModelT]:
-        count = len(items)
-        for item in items:
-            obj = self.create_item(item)
-            session.add(obj)
-            if count > 1:
-                continue
-            session.flush()
-            session.refresh(obj)
-            return parse_obj_to_schema(obj, self.schema_model)
-        return count
+    def _create_items(self, session: Session, items: List[Dict[str, Any]]) -> List[TableModelT]:
+        if not items:
+            return []
+        objs = [self.create_item(item) for item in items]
+        session.add_all(objs)
+        session.flush()
+        return objs
+
+    async def create_items(self, request: Request, items: List[SchemaCreateT]) -> List[TableModelT]:
+        """Create multiple database data."""
+        items = [await self.on_create_pre(request, obj) for obj in items]
+        return await self.db.async_run_sync(self._create_items, items)
 
     def _read_items(self, session: Session, item_id: List[str]) -> List[SchemaReadT]:
         items = self._fetch_item_scalars(session, item_id)
         return [self.read_item(obj) for obj in items]
 
-    def _update_items(self, session: Session, item_id: List[str], values: Dict[str, Any]):
+    async def read_items(self, request: Request, item_id: List[str]) -> List[SchemaReadT]:
+        """Fetch the database data by id."""
+        return await self.db.async_run_sync(self._read_items, item_id)
+
+    def _update_items(self, session: Session, item_id: List[str], values: Dict[str, Any]) -> List[TableModelT]:
         items = self._fetch_item_scalars(session, item_id)
         for item in items:
             self.update_item(item, values)
-        return len(items)
+        return items
+
+    async def update_items(self, request: Request, item_id: List[str], values: Dict[str, Any]) -> List[TableModelT]:
+        """Update the database data by id."""
+        return await self.db.async_run_sync(self._update_items, item_id, values)
 
     def _delete_items(self, session: Session, item_id: List[str]) -> List[TableModelT]:
         items = self._fetch_item_scalars(session, item_id)
         for item in items:
             self.delete_item(item)
         return items
+
+    async def delete_items(self, request: Request, item_id: List[str]) -> List[TableModelT]:
+        """Delete the database data by id."""
+        return await self.db.async_run_sync(self._delete_items, item_id)
 
     @property
     def schema_name_prefix(self):
@@ -456,9 +469,6 @@ class SqlalchemyCrud(
         data.items = [self.list_item(item) for item in data.items]
         return data
 
-    async def on_delete_after(self, request: Request, items: List[TableModelT]) -> int:
-        return len(items)
-
     @property
     def AnnotatedSelect(self):
         """Annotated Select, used to automatically perform fastapi dependency injection"""
@@ -479,6 +489,7 @@ class SqlalchemyCrud(
             item_id: ItemIdListDepend,
             sel: self.AnnotatedSelect,  # type: ignore
         ):
+            item_id = list(map(get_python_type_parse(self.pk), item_id))
             filtered_id = await self.db.async_scalars(sel.where(self.pk.in_(item_id)).with_only_columns(self.pk))
             return filtered_id.all()
 
@@ -522,13 +533,13 @@ class SqlalchemyCrud(
                 return self.error_no_router_permission(request)
             if not isinstance(data, list):
                 data = [data]
-            items = [await self.on_create_pre(request, obj) for obj in data]
-            if not items:
-                return self.error_data_handle(request)
             try:
-                result = await self.db.async_run_sync(self._create_items, items=items)
+                items = await self.create_items(request, data)
             except Exception as error:
                 return self.error_execute_sql(request=request, error=error)
+            result = len(items)
+            if result == 1:  # if only one item, return the first item
+                result = await self.db.async_run_sync(lambda _: parse_obj_to_schema(items[0], self.schema_model, refresh=True))
             return BaseApiOut(data=result)
 
         return route
@@ -541,10 +552,8 @@ class SqlalchemyCrud(
         ):
             if not await self.has_read_permission(request, item_id):
                 return self.error_no_router_permission(request)
-            items = await self.db.async_run_sync(self._read_items, item_id)
-            if len(items) == 1:
-                items = items[0]
-            return BaseApiOut(data=items)
+            items = await self.read_items(request, item_id)
+            return BaseApiOut(data=items if len(items) > 1 else items[0])
 
         return route
 
@@ -557,12 +566,11 @@ class SqlalchemyCrud(
         ):
             if not await self.has_update_permission(request, item_id, data):
                 return self.error_no_router_permission(request)
-            item_id = list(map(get_python_type_parse(self.pk), item_id))
             values = await self.on_update_pre(request, data, item_id=item_id)
             if not values:
                 return self.error_data_handle(request)
-            result = await self.db.async_run_sync(self._update_items, item_id, values)
-            return BaseApiOut(data=result)
+            items = await self.update_items(request, item_id, values)
+            return BaseApiOut(data=len(items))
 
         return route
 
@@ -574,8 +582,7 @@ class SqlalchemyCrud(
         ):
             if not await self.has_delete_permission(request, item_id):
                 return self.error_no_router_permission(request)
-            items = await self.db.async_run_sync(self._delete_items, item_id)
-            data = await self.on_delete_after(request, items)
-            return BaseApiOut(data=data)
+            items = await self.delete_items(request, item_id)
+            return BaseApiOut(data=len(items))
 
         return route

@@ -8,11 +8,10 @@ from pydantic import BaseConfig, BaseModel
 from pydantic.fields import Field, FieldInfo
 from sqlalchemy import Column, String, Table
 from sqlalchemy.engine import Row
-from sqlalchemy.orm import ColumnProperty, DeclarativeMeta, InstrumentedAttribute, RelationshipProperty
+from sqlalchemy.orm import ColumnProperty, DeclarativeMeta, InstrumentedAttribute, RelationshipProperty, object_session
 from sqlalchemy.sql import Select
 from sqlalchemy.sql.elements import Label
 
-from fastapi_amis_admin.crud.base import SchemaModelT
 from fastapi_amis_admin.utils.pydantic import (
     PYDANTIC_V2,
     ModelField,
@@ -323,8 +322,10 @@ def get_modelfield_by_alias(table_model: Type[TableModelT], alias: str) -> Optio
     return None
 
 
-def parse_obj_to_schema(obj: SchemaModelT, schema: Type[SchemaT]) -> SchemaT:
+def parse_obj_to_schema(obj: TableModelT, schema: Type[SchemaT], refresh: bool = False) -> SchemaT:
     """parse obj to schema"""
+    if refresh:
+        object_session(obj).refresh(obj)
     orm_mode = model_config_attr(schema, "orm_mode", False) or model_config_attr(schema, "from_attributes", False)
     parse = schema.from_orm if orm_mode else schema.parse_obj
     return parse(obj)
