@@ -181,6 +181,14 @@ class BaseCrud(RouterMixin, Generic[SchemaModelT, SchemaListT, SchemaFilterT, Sc
     ) -> bool:
         return True
 
+    async def has_filter_permission(
+        self,
+        request: Request,
+        filters: Optional[SchemaFilterT],
+        **kwargs,
+    ) -> bool:
+        return True
+
     async def has_create_permission(self, request: Request, obj: Optional[SchemaCreateT], **kwargs) -> bool:
         return True
 

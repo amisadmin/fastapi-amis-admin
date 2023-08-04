@@ -732,23 +732,25 @@ class ModelAdmin(SqlalchemyCrud, BaseActionAdmin):
         return columns
 
     async def get_list_table_api(self, request: Request) -> AmisAPI:
-        data = {"&": "$$"}
+        api = AmisAPI(
+            method="POST",
+            url=f"{self.router_path}/list?" + "page=${page}&perPage=${perPage}&orderBy=${orderBy}&orderDir=${orderDir}",
+            data={"&": "$$"},
+        )
+        if not await self.has_filter_permission(request, None):
+            return api
         for field in self.search_fields:
             alias = self.parser.get_alias(field)
             if alias:
-                data[alias] = f"[~]${alias}"
+                api.data[alias] = f"[~]${alias}"
         for field in await self.get_list_filter(request):
             if isinstance(field, FormItem):
-                data[field.name] = f"${field.name}"
+                api.data[field.name] = f"${field.name}"
             else:
                 modelfield = self.parser.get_modelfield(field)
                 if modelfield and issubclass(modelfield.type_, (datetime.datetime, datetime.date, datetime.time)):
-                    data[modelfield.alias] = f"[-]${modelfield.alias}"
-        return AmisAPI(
-            method="POST",
-            url=f"{self.router_path}/list?" + "page=${page}&perPage=${perPage}&orderBy=${orderBy}&orderDir=${orderDir}",
-            data=data,
-        )
+                    api.data[modelfield.alias] = f"[-]${modelfield.alias}"
+        return api
 
     async def get_list_table(self, request: Request) -> TableCRUD:
         headerToolbar = [
@@ -769,13 +771,16 @@ class ModelAdmin(SqlalchemyCrud, BaseActionAdmin):
         itemActions = []
         if not self.display_item_action_as_column:
             itemActions = await self.get_actions(request, flag="item")
+        filter_form = None
+        if await self.has_filter_permission(request, None):
+            filter_form = await self.get_list_filter_form(request)
         table = TableCRUD(
             api=await self.get_list_table_api(request),
             autoFillHeight=True,
             headerToolbar=headerToolbar,
             filterTogglable=True,
             filterDefaultVisible=False,
-            filter=await self.get_list_filter_form(request),
+            filter=filter_form,
             syncLocation=False,
             keepItemSelectionOnPageChange=True,
             perPage=self.list_per_page,
@@ -846,18 +851,18 @@ class ModelAdmin(SqlalchemyCrud, BaseActionAdmin):
     async def get_form_item(
         self, request: Request, modelfield: ModelField, action: CrudEnum
     ) -> Union[FormItem, SchemaNode, None]:
-        is_filter = action == CrudEnum.list
+        is_filter = True if action in [CrudEnum.filter, CrudEnum.list] else False
         set_default = action == CrudEnum.create
         return await self.get_form_item_on_foreign_key(request, modelfield, is_filter=is_filter) or self.amis_parser.as_form_item(
             modelfield, is_filter=is_filter, set_default=set_default
         )
 
     async def get_list_filter_form(self, request: Request) -> Form:
-        body = await self._conv_modelfields_to_formitems(request, await self.get_list_filter(request), CrudEnum.list)
+        body = await self._conv_modelfields_to_formitems(request, await self.get_list_filter(request), CrudEnum.filter)
         return Form(
             type="",
             title=_("Filter"),
-            name=CrudEnum.list,
+            name=CrudEnum.filter,
             body=body,
             mode=DisplayModeEnum.inline,
             actions=[
@@ -1106,6 +1111,14 @@ class ModelAdmin(SqlalchemyCrud, BaseActionAdmin):
         **kwargs,
     ) -> bool:
         return await self.has_page_permission(request, action=CrudEnum.list)
+
+    async def has_filter_permission(
+        self,
+        request: Request,
+        filters: Optional[SchemaFilterT],
+        **kwargs,
+    ) -> bool:
+        return await self.has_page_permission(request, action=CrudEnum.filter)
 
     async def has_create_permission(self, request: Request, data: SchemaCreateT, **kwargs) -> bool:  # type self.schema_create
         return await self.has_page_permission(request, action=CrudEnum.create)

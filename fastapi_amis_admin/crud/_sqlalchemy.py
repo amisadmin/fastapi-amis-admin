@@ -444,10 +444,10 @@ class SqlalchemyCrud(
         return super().schema_name_prefix
 
     async def on_create_pre(self, request: Request, obj: SchemaCreateT, **kwargs) -> Dict[str, Any]:
-        data_dict = obj.dict(by_alias=True)  # exclude=set(self.pk)
-        if self.pk_name in data_dict and not data_dict.get(self.pk_name):
-            del data_dict[self.pk_name]
-        return data_dict
+        data = obj.dict(by_alias=True)  # exclude=set(self.pk)
+        if self.pk_name in data and not data.get(self.pk_name):
+            del data[self.pk_name]
+        return data
 
     async def on_update_pre(
         self,
@@ -507,9 +507,10 @@ class SqlalchemyCrud(
                 return self.error_no_router_permission(request)
             data = ItemListSchema(items=[])
             data.query = request.query_params
-            data.filters = await self.on_filter_pre(request, filters)
-            if data.filters:
-                sel = sel.filter(*self.calc_filter_clause(data.filters))
+            if await self.has_filter_permission(request, filters):
+                data.filters = await self.on_filter_pre(request, filters)
+                if data.filters:
+                    sel = sel.filter(*self.calc_filter_clause(data.filters))
             if paginator.show_total:
                 data.total = await self.db.async_scalar(
                     select(func.count("*")).select_from(sel.with_only_columns(self.pk).subquery())

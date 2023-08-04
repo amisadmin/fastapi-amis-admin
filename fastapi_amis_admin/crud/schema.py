@@ -28,6 +28,7 @@ class ItemListSchema(BaseApiSchema, GenericModel, Generic[_T]):
 
 class CrudEnum(str, Enum):
     list = "list"
+    filter = "filter"
     create = "create"
     read = "read"
     update = "update"
