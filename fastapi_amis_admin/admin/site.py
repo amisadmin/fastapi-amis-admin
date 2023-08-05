@@ -92,6 +92,7 @@ class FileAdmin(admin.RouterAdmin):
     def __init__(self, app: "AdminApp"):
         super().__init__(app)
         self.file_directory = self.file_directory or self.file_path
+        os.makedirs(self.file_directory, exist_ok=True)
         self.static_path = self.mount_staticfile()
 
     def get_filename(self, file: UploadFile):
@@ -99,7 +100,6 @@ class FileAdmin(admin.RouterAdmin):
         return Path().joinpath(time.strftime("%Y%m"), filename).as_posix()
 
     def mount_staticfile(self) -> str:
-        os.path.exists(self.file_directory) or os.makedirs(self.file_directory)
         self.site.fastapi.mount(
             self.file_path,
             StaticFiles(directory=self.file_directory),
@@ -111,9 +111,7 @@ class FileAdmin(admin.RouterAdmin):
         @self.router.post(self.file_path, response_model=BaseApiOut[self.UploadOutSchema])
         async def file_upload(file: UploadFile = File(...)):
             filename = self.get_filename(file)
-            file_path = os.path.join(self.file_directory, filename)
-            file_dir = os.path.dirname(file_path)
-            os.path.exists(file_dir) or os.makedirs(file_dir)
+            file_path = Path(self.file_directory) / filename
             try:
                 res = await file.read()
                 if self.file_max_size and len(res) > self.file_max_size:
