@@ -1432,6 +1432,7 @@ class BaseAdminSite(AdminApp):
     def __init__(
         self,
         settings: Settings,
+        *,
         fastapi: FastAPI = None,
         engine: SqlalchemyDatabase = None,
     ):
