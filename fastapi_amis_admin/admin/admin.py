@@ -1334,17 +1334,46 @@ class AdminApp(PageAdmin, AdminGroup):
     def router_prefix(self):
         return f"/{self.__class__.__name__}"
 
-    def get_admin_or_create(self, admin_cls: Type[BaseAdminT], register: bool = True) -> Optional[BaseAdminT]:
-        if admin_cls not in self._registered and (not register or self.__register_lock):
-            return None
-        admin = self._registered.get(admin_cls)
+    def get_admin_or_create(
+        self,
+        admin_cls: Type[BaseAdminT],
+        *,
+        register: bool = True,
+        nested: bool = True,
+    ) -> Optional[BaseAdminT]:
+        """Get or create admin instance"""
+        admin = None
+        if admin_cls not in self._registered:
+            if nested:
+                admin = self._get_admin_or_create_nested(admin_cls)
+            if not register or self.__register_lock:
+                return None
+        else:
+            admin = self._registered.get(admin_cls)
         if admin:
             return admin
+        # create admin instance
         admin = admin_cls(self)
         self._registered[admin_cls] = admin
         if isinstance(admin, PageSchemaAdmin):
             self.append_child(admin)
         return admin
+
+    def _get_admin_or_create_nested(
+        self,
+        admin_cls: Type[BaseAdminT],
+    ) -> Optional[BaseAdminT]:
+        """Get or create admin instance in nested app"""
+        if admin_cls in self._registered:
+            return self.get_admin_or_create(admin_cls, register=False, nested=False)
+        for app_cls, app in self._registered.items():
+            if not issubclass(app_cls, AdminApp):
+                continue
+            app = self.get_admin_or_create(app_cls, register=False, nested=False)
+            admin = app._get_admin_or_create_nested(admin_cls)
+            if admin:
+                return admin
+        return None
 
     def _create_admin_instance_all(self) -> None:
         [self.get_admin_or_create(admin_cls) for admin_cls in self._registered.keys()]
@@ -1370,7 +1399,9 @@ class AdminApp(PageAdmin, AdminGroup):
     @lru_cache()  # noqa: B019
     def get_model_admin(self, table_name: str) -> Optional[ModelAdmin]:
         for admin_cls, admin in self._registered.items():
-            admin = admin or self.get_admin_or_create(admin_cls)
+            if not issubclass(admin_cls, (ModelAdmin, AdminApp)):
+                continue
+            admin = self.get_admin_or_create(admin_cls, register=False)
             if issubclass(admin_cls, ModelAdmin) and admin.bind_model and admin.model.__table__.name == table_name:
                 return admin
             elif isinstance(admin, AdminApp) and self.engine is admin.engine:
@@ -1384,7 +1415,7 @@ class AdminApp(PageAdmin, AdminGroup):
         return admin_cls[0]
 
     def unregister_admin(self, *admin_cls: Type[BaseAdmin]):
-        [self._registered.pop(cls) for cls in admin_cls if cls]
+        [self._registered.pop(cls) for cls in admin_cls if cls in self._registered]
 
     def get_page_schema(self) -> Optional[PageSchema]:
         if super().get_page_schema():
