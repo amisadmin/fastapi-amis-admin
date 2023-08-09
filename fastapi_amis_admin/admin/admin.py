@@ -1479,7 +1479,19 @@ class BaseAdminSite(AdminApp):
             image_receiver=self.settings.amis_image_receiver,
             file_receiver=self.settings.amis_file_receiver,
         )
-        self.fastapi = fastapi or FastAPI(debug=settings.debug, reload=settings.debug)
+        kwargs = (
+            {
+                "debug": True,
+            }
+            if settings.debug
+            else {
+                "openapi_url": None,
+                "docs_url": None,
+                "redoc_url": None,
+            }
+        )
+
+        self.fastapi = fastapi or FastAPI(**kwargs)
         register_exception_handlers(self.fastapi, self.settings.logger)
         self.router = self.fastapi.router
         if engine:
