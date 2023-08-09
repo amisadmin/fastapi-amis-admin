@@ -1,7 +1,7 @@
 import pytest
 from sqlalchemy_database import AsyncDatabase, Database
 
-from fastapi_amis_admin import g
+from fastapi_amis_admin import globals as g
 from tests.conftest import sync_db
 
 
@@ -34,5 +34,4 @@ def test_sites(site):
     assert g.sync_db == sync_db
     assert isinstance(g.sync_db, Database)
     # 重复设置db
-    with pytest.raises(ValueError):
-        g.set_db(sync_db)
+    assert g.set_db(sync_db) is False

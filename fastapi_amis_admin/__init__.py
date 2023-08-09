@@ -1,4 +1,4 @@
-__version__ = "0.6.4a1"
+__version__ = "0.6.4a3"
 __url__ = "https://github.com/amisadmin/fastapi_amis_admin"
 
 import gettext
@@ -22,7 +22,3 @@ i18n.load_translations(
         ),
     }
 )
-
-from . import globals as g  # noqa: E402
-
-__all__ = ["__version__", "__url__", "g", "i18n"]

@@ -42,7 +42,6 @@ dependencies = [
     "python-multipart>=0.0.5",
     "sqlalchemy-database>=0.1.0,<0.2.0",
     "aiofiles>=0.17.0",
-    "lazy-object-proxy>=1.9.0",
 ]
 
 

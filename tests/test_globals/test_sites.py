@@ -1,6 +1,6 @@
 import pytest
 
-from fastapi_amis_admin import g
+from fastapi_amis_admin import globals as g
 from fastapi_amis_admin.admin import AdminSite
 
 
@@ -23,5 +23,4 @@ def test_sites(site):
     assert g.site == site
     assert isinstance(g.site, AdminSite)
     # 重复设置站点
-    with pytest.raises(ValueError):
-        g.set_site(site)
+    assert g.set_site(site) is False
