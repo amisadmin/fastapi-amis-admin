@@ -629,7 +629,7 @@ class FormItem(AmisNode):
     submitOnChange: bool = None  # whether to submit the current form when the value of the form item changes.
     disabled: bool = None  # whether the current form item is disabled
     disabledOn: Expression = None  # The condition for whether the current form item is disabled
-    visible: Expression = None  # whether the current form item is disabled or not
+    visible: bool = None  # whether the current form item is disabled or not
     visibleOn: Expression = None  # The condition for whether the current form item is disabled
     required: bool = None  # whether it is required.
     requiredOn: Expression = None  # Use an expression to configure whether the current form item is required.
@@ -639,6 +639,7 @@ class FormItem(AmisNode):
     copyable: Union[bool, dict] = None  # whether to copy boolean or {icon: string, content:string}
     autoFill: AutoFill = None  # Data entry configuration, automatic filling or reference entry
     static: bool = None  # 2.4.0 Whether the current form item is static display,
+    staticOn: Expression = None  # 2.4.0 The condition for whether the current form item is static display
     # the current support static display of the form item
     staticClassName: str = None  # 2.4.0 The class name for static display
     staticLabelClassName: str = None  # 2.4.0 The class name of the Label for static display
@@ -789,8 +790,9 @@ class InputSubForm(FormItem):
 class Button(FormItem):
     """Button"""
 
+    type = "button"
     className: str = None  # Specify the add button class name
-    href: str = None  # Click the jump address, specify the behavior of this attribute button is consistent with the
+    url: str = None  # Click the jump address, specify the behavior of this attribute button is consistent with the
     # a link
     size: str = None  # Set button size 'xs'|'sm'|'md'|'lg'
     actionType: str = None  # Set the button type 'button'|'reset'|'submit'| 'clear'| 'url'
@@ -987,6 +989,8 @@ class Combo(FormItem):
     # for combo can be synchronized. Input format: ["os"]
     nullable: bool = False  # Allow null, if the validator is configured in the sub-form item, and it is a single
     # mode. You can allow the user to choose to clear (do not fill).
+    subFormHorizontal: dict = None  # The horizontal configuration of the sub-form item, which is the same as the
+    # horizontal configuration of the form item.
 
 
 class ConditionBuilder(FormItem):
@@ -1262,13 +1266,13 @@ class InputTable(FormItem):
     updateApi: API = None  # API submitted when modified
     deleteApi: API = None  # API submitted when deleting
     addBtnLabel: Union[bool, Template] = None  # Add button name
-    addBtnIcon: str = None  # "plus" # Add button icon
+    addBtnIcon: Union[bool, str] = None  # "plus" # Add button icon
     copyBtnLabel: Union[bool, Template] = None  # Copy button text
-    copyBtnIcon: str = None  # "copy" # Copy button icon
+    copyBtnIcon: Union[bool, str] = None  # "copy" # Copy button icon
     editBtnLabel: Union[bool, Template] = None  # "" # Edit button name
-    editBtnIcon: str = None  # "pencil" # edit button icon
+    editBtnIcon: Union[bool, str] = None  # "pencil" # edit button icon
     deleteBtnLabel: Union[bool, Template] = None  # "" # delete button name
-    deleteBtnIcon: str = None  # "minus" # delete button icon
+    deleteBtnIcon: Union[bool, str] = None  # "minus" # delete button icon
     confirmBtnLabel: Union[bool, Template] = None  # "" # Confirm edit button name
     confirmBtnIcon: str = None  # "check" # Confirm edit button icon
     cancelBtnLabel: Union[bool, Template] = None  # "" # Cancel edit button name
@@ -1940,6 +1944,8 @@ class InputKV(FormItem):
     valuePlaceholder: str = None  # value placeholder information
     draggable: bool = None  # Default True, Whether to drag and drop to sort is allowed
     defaultValue: Union[str, int, dict] = None  # default ''
+    keySchema: SchemaNode = None  # key field schema
+    valueSchema: SchemaNode = None  # value field schema
 
 
 class InputKVS(FormItem):
