@@ -949,7 +949,7 @@ class ModelAdmin(SqlalchemyCrud, BaseActionAdmin):
         if not self.schema_read:
             return None
         return ActionType.Dialog(
-            icon="fa fa-eye",
+            icon="fas fa-eye",
             tooltip=_("View"),
             dialog=Dialog(
                 title=_("View") + " - " + _(self.page_schema.label),
