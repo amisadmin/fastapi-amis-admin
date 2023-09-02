@@ -943,6 +943,7 @@ class ModelAdmin(SqlalchemyCrud, BaseActionAdmin):
             body=await self._conv_modelfields_to_formitems(request, model_fields(self.schema_read).values(), CrudEnum.read),
             submitText=None,
             static=True,
+            disabled=True,
         )
 
     async def get_read_action(self, request: Request) -> Optional[Action]:
