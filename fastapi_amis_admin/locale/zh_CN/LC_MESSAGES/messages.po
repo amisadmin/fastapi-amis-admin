@@ -78,10 +78,6 @@ msgstr "更新"
 msgid "Bulk Update"
 msgstr "批量更新"
 
-#: amis_admin/admin.py:484
-msgid "Bulk Delete"
-msgstr "批量删除"
-
 #: admin/admin.py:1036
 msgid "Delete"
 msgstr "删除"
@@ -90,6 +86,10 @@ msgstr "删除"
 #, python-format
 msgid "Are you sure you want to delete row ${%s}?"
 msgstr "你确定要删除行${%s}?"
+
+#: admin/admin.py:1046
+msgid "Bulk Delete"
+msgstr "批量删除"
 
 #: admin/admin.py:1047
 msgid "Are you sure you want to delete the selected rows?"
@@ -110,3 +110,7 @@ msgstr "否"
 #: admin/site.py:50
 msgid "Home"
 msgstr "首页"
+
+msgid "Request parameter validation error"
+msgstr "请求参数验证错误"
+

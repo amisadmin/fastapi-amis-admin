@@ -1,21 +1,15 @@
-import logging
-import traceback
-from typing import Union
-
 from fastapi import FastAPI
 from fastapi.exceptions import RequestValidationError
 from fastapi.utils import is_body_allowed_for_status_code
-from pydantic import ValidationError
 from starlette.exceptions import HTTPException
-from starlette.requests import ClientDisconnect, Request
+from starlette.requests import Request
 from starlette.responses import Response
 from starlette.status import (
-    HTTP_417_EXPECTATION_FAILED,
     HTTP_422_UNPROCESSABLE_ENTITY,
-    HTTP_500_INTERNAL_SERVER_ERROR,
 )
 
 from fastapi_amis_admin.crud import BaseApiOut
+from fastapi_amis_admin.utils.translation import i18n as _
 
 try:
     import ujson
@@ -25,40 +19,10 @@ except ImportError:
     from fastapi.responses import JSONResponse
 
 
-def register_exception_handlers(app: FastAPI, logger: logging.Logger = None):
+def register_exception_handlers(app: FastAPI, **kwargs):
     """global exception catch"""
-    app.add_exception_handler(
-        ValidationError,
-        handler=log_exception(logging.ERROR, logger)(inner_validation_exception_handler),
-    )
-    app.add_exception_handler(
-        RequestValidationError,
-        handler=log_exception(logging.WARNING, logger)(request_validation_exception_handler),
-    )
+    app.add_exception_handler(RequestValidationError, handler=request_validation_exception_handler)
     app.add_exception_handler(HTTPException, handler=http_exception_handler)
-    app.add_exception_handler(Exception, handler=log_exception(logging.ERROR, logger)(all_exception_handler))
-
-
-def log_exception(level: Union[int, str] = logging.ERROR, logger: logging.Logger = None):
-    """The decorator outputs exception information to the log"""
-    logger = logger or logging.getLogger("fastapi_amis_admin")
-
-    def wrapper(func):
-        async def function(request: Request, exc: Exception):
-            if isinstance(
-                exc,
-                (
-                    ClientDisconnect,
-                    Warning,
-                ),
-            ):  # Ignore client disconnection; ignore warnings for now
-                return None
-            logger.log(level, f"Error: {exc}\nTraceback: {traceback.format_exc()}")
-            return await func(request, exc)
-
-        return function
-
-    return wrapper
 
 
 def make_error_response(status: int, msg="", **extra):
@@ -80,16 +44,7 @@ async def request_validation_exception_handler(request: Request, exc: RequestVal
     """Request parameter validation exception"""
     return make_error_response(
         status=HTTP_422_UNPROCESSABLE_ENTITY,
+        msg=_("Request parameter validation error"),
         body=exc.body,
         errors=exc.errors(),
     )
-
-
-async def inner_validation_exception_handler(request: Request, exc: ValidationError):
-    """Internal parameter validation exception"""
-    return make_error_response(status=HTTP_417_EXPECTATION_FAILED, errors=exc.errors())
-
-
-async def all_exception_handler(request: Request, exc: Exception):
-    """All exceptions"""
-    return Response(status_code=HTTP_500_INTERNAL_SERVER_ERROR)

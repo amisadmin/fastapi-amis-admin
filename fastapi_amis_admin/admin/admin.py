@@ -27,7 +27,6 @@ from sqlalchemy.sql.elements import Label
 from sqlalchemy.util import md5_hex
 from sqlalchemy_database import AsyncDatabase, Database
 from starlette import status
-from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import HTMLResponse, JSONResponse, Response
 from starlette.templating import Jinja2Templates
 from typing_extensions import Annotated, Literal
@@ -1493,7 +1492,6 @@ class BaseAdminSite(AdminApp):
         )
 
         self.fastapi = fastapi or FastAPI(**kwargs)
-        register_exception_handlers(self.fastapi, self.settings.logger)
         self.router = self.fastapi.router
         if engine:
             self.engine = engine
@@ -1507,14 +1505,31 @@ class BaseAdminSite(AdminApp):
     def router_path(self) -> str:
         return self.settings.site_url + self.settings.site_path + self.router.prefix
 
-    def mount_app(self, fastapi: FastAPI, name: str = "admin") -> None:
-        """mount app to fastapi, the path is: site.settings.site_path.
-        once mount, the site will create all registered admin instance and register router.
+    def mount_app(
+        self,
+        fastapi: FastAPI,
+        *,
+        name: str = "admin",
+        enable_exception_handlers: bool = True,
+        enable_db_middleware: bool = True,
+    ) -> None:
+        """
+        Mount app to fastapi, the path is: site.settings.site_path.
+        Once mount, the site will create all registered admin instance and register router.
+        If the middleware is not enabled, please register the site.db database middleware in the appropriate location outside.
+        Args:
+            fastapi (FastAPI): The FastAPI instance to mount the admin app on.
+            name (str, optional): The name of the app. Defaults to "admin".
+            enable_exception_handlers (bool, optional): Whether to enable exception handlers. Defaults to True.
+            enable_db_middleware (bool, optional): Whether to enable database middleware. Defaults to True.
         """
         self.application = fastapi
         self.register_router()
         fastapi.mount(self.settings.site_path, self.fastapi, name=name)
-        fastapi.add_middleware(BaseHTTPMiddleware, dispatch=self.db.asgi_dispatch)
+        if enable_exception_handlers:
+            register_exception_handlers(self.fastapi)
+        if enable_db_middleware:
+            self.db.attach_middleware(fastapi)
         """Add SQLAlchemy Session middleware to the main application, and the session object will be bound to each request.
         Note:
         1. The session will be automatically closed when the request ends, so you don't need to close it manually.

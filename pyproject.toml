@@ -40,7 +40,7 @@ dependencies = [
     "pydantic>1.7.4",
     "sqlalchemy>=1.4.0",
     "python-multipart>=0.0.5",
-    "sqlalchemy-database>=0.1.0,<0.2.0",
+    "sqlalchemy-database>=0.1.1,<0.2.0",
     "aiofiles>=0.17.0",
 ]
 
