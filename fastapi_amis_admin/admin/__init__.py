@@ -15,6 +15,22 @@ from .admin import (
     RouterAdmin,
     TemplateAdmin,
 )
+from .extensions.admin import (
+    AutoTimeModelAdmin,
+    BaseAuthFieldModelAdmin,
+    BaseAuthSelectModelAdmin,
+    FootableModelAdmin,
+    ReadOnlyModelAdmin,
+    SoftDeleteModelAdmin,
+)
+from .extensions.schemas import (
+    FieldPermEnum,
+    FilterSelectPerm,
+    RecentTimeSelectPerm,
+    SelectPerm,
+    SimpleSelectPerm,
+    UserSelectPerm,
+)
 from .parser import AmisParser
 from .settings import Settings
 from .site import AdminSite, DocsAdmin, FileAdmin, HomeAdmin, ReDocsAdmin
