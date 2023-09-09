@@ -537,6 +537,7 @@ class SqlalchemyCrud(
             try:
                 items = await self.create_items(request, data)
             except Exception as error:
+                await self.db.async_rollback()
                 return self.error_execute_sql(request=request, error=error)
             result = len(items)
             if result == 1:  # if only one item, return the first item

@@ -172,6 +172,7 @@ class LinkModelForm:
             try:
                 result = await self.pk_admin.db.async_execute(stmt)
             except Exception as error:
+                await self.pk_admin.db.async_rollback()
                 return self.pk_admin.error_execute_sql(request=request, error=error)
             return BaseApiOut(data=result.rowcount)  # type: ignore
 
