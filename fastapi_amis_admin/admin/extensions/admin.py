@@ -1,6 +1,5 @@
 import asyncio
 from datetime import datetime
-from functools import cached_property
 from typing import Any, Dict, List, Optional, Sequence, Set, Union
 
 from sqlalchemy.engine import Result
@@ -14,6 +13,7 @@ from fastapi_amis_admin.amis import FormItem, SchemaNode, TableColumn, TableCRUD
 from fastapi_amis_admin.crud.base import ItemListSchema, SchemaCreateT, SchemaFilterT, SchemaModelT, SchemaReadT, SchemaUpdateT
 from fastapi_amis_admin.crud.parser import TableModelT
 from fastapi_amis_admin.crud.schema import CrudEnum
+from fastapi_amis_admin.utils.functools import cached_property
 from fastapi_amis_admin.utils.pydantic import ModelField
 
 
