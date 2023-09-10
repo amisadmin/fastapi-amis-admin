@@ -114,3 +114,8 @@ msgstr "Home"
 msgid "Request parameter validation error"
 msgstr "Fehler bei der Validierung der Anfrageparameter"
 
+msgid "Internal data validation exception"
+msgstr "Interne Datenvalidierungsausnahme"
+
+msgid "Internal server exception"
+msgstr "Interne Serverausnahme"

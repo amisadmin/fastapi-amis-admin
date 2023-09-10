@@ -111,6 +111,11 @@ msgstr "否"
 msgid "Home"
 msgstr "首页"
 
-msgid "Request parameter validation error"
+msgid "Request parameter validation exception"
 msgstr "请求参数验证错误"
 
+msgid "Internal data validation exception"
+msgstr "内部数据验证异常"
+
+msgid "Internal server exception"
+msgstr "内部服务器异常"
