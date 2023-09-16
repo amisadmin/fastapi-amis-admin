@@ -112,6 +112,7 @@ class FileAdmin(admin.RouterAdmin):
         async def file_upload(file: UploadFile = File(...)):
             filename = self.get_filename(file)
             file_path = Path(self.file_directory) / filename
+            os.makedirs(file_path.parent, exist_ok=True)
             try:
                 res = await file.read()
                 if self.file_max_size and len(res) > self.file_max_size:
