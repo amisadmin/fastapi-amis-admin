@@ -112,6 +112,8 @@ class BaseAuthFieldModelAdmin(ModelAdmin):
     #todo 优化
     """
 
+    perm_fields: Dict[Union[FieldPermEnum, int], Sequence[str]] = None
+    """指定的字段,进行权限验证."""
     perm_fields_exclude: Dict[Union[FieldPermEnum, int], Sequence[str]] = None
     """exclude指定的字段,不进行权限验证."""
 
@@ -120,8 +122,6 @@ class BaseAuthFieldModelAdmin(ModelAdmin):
 
     def get_permission_fields(self, action: str) -> Dict[str, str]:
         """获取权限字段"""
-        if not self.perm_fields_exclude:
-            return {}
         info = {
             "list": (self.schema_list, "列表展示-", FieldPermEnum.LIST),
             "filter": (self.schema_filter, "列表筛选-", FieldPermEnum.FILTER),
@@ -132,11 +132,17 @@ class BaseAuthFieldModelAdmin(ModelAdmin):
         if action not in info:
             return {}
         schema, prefix, perm = info[action]
-        exlude = set()
-        for k, fileds in self.perm_fields_exclude.items():
+        perm_fields_exclude = self.perm_fields_exclude or {}
+        perm_fields = self.perm_fields or {}
+        exclude = set()
+        for k, fields in perm_fields_exclude.items():
             if (k & perm) == perm:
-                exlude.update(set(fileds))
-        return get_schema_fields_name_label(schema, prefix=prefix, exclude_required=True, exclude=exlude)
+                exclude.update(set(fields))
+        include = set()
+        for k, fields in perm_fields.items():
+            if (k & perm) == perm:
+                include.update(set(fields))
+        return get_schema_fields_name_label(schema, prefix=prefix, exclude_required=True, exclude=exclude, include=include)
 
     @cached_property
     def create_permission_fields(self) -> Dict[str, str]:
