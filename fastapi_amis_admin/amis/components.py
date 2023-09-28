@@ -790,7 +790,7 @@ class InputSubForm(FormItem):
 class Button(FormItem):
     """Button"""
 
-    type = "button"
+    type: str = "button"
     className: str = None  # Specify the add button class name
     url: str = None  # Click the jump address, specify the behavior of this attribute button is consistent with the
     # a link
