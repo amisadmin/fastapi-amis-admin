@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2023-03-03 08:56+0800\n"
+"POT-Creation-Date: 2023-11-23 15:37+0800\n"
 "PO-Revision-Date: 2023-03-03 08:57+0800\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: zh_Hans_CN\n"
@@ -18,104 +18,124 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.12.1\n"
 
-#: admin/admin.py:235 admin/admin.py:252 admin/admin.py:255
+#: admin/admin.py:204 admin/admin.py:219 admin/admin.py:222
 msgid "Add Association"
 msgstr "添加关联"
 
-#: admin/admin.py:237
+#: admin/admin.py:206
 msgid "Are you sure you want to add the association?"
 msgstr "你确定要添加关联吗?"
 
-#: admin/admin.py:278
+#: admin/admin.py:245
 msgid "Remove Association"
 msgstr "移除关联"
 
-#: admin/admin.py:280
+#: admin/admin.py:247
 msgid "Are you sure you want to remove the association?"
 msgstr "你确定要移除关联吗?"
 
-#: admin/admin.py:401
+#: admin/admin.py:728
 msgid "Operation"
 msgstr "操作"
 
-#: admin/admin.py:449
+#: admin/admin.py:765
 msgid "SHOWING ${items|count} OF ${total} RESULT(S)"
 msgstr "显示${total}条结果中的${items|count}条"
 
-#: admin/admin.py:535
+#: admin/admin.py:864
 msgid "Filter"
 msgstr "数据筛选"
 
-#: admin/admin.py:542
+#: admin/admin.py:871
 msgid "Clear"
 msgstr "清空"
 
-#: admin/admin.py:547
+#: admin/admin.py:876
 msgid "Reset"
 msgstr "重置"
 
-#: admin/admin.py:550
+#: admin/admin.py:879
 msgid "Search"
 msgstr "搜索"
 
-#: admin/admin.py:623 admin/admin.py:626 admin/admin.py:1065
+#: admin/admin.py:954 admin/admin.py:956 admin/admin.py:1078
 msgid "View"
 msgstr "查看"
 
-#: admin/admin.py:636 admin/admin.py:639 admin/admin.py:1020
+#: admin/admin.py:966 admin/admin.py:969 admin/admin.py:1033
+#: admin/extensions/admin.py:129
 msgid "Create"
 msgstr "新增"
 
-#: admin/admin.py:646 admin/admin.py:649 admin/admin.py:1057
+#: admin/admin.py:976 admin/admin.py:979 admin/admin.py:1070
 msgid "Bulk Create"
 msgstr "批量新增"
 
-#: admin/admin.py:659 admin/admin.py:661 admin/admin.py:1027
+#: admin/admin.py:989 admin/admin.py:991 admin/admin.py:1040
+#: admin/extensions/admin.py:131
 msgid "Update"
 msgstr "更新"
 
-#: admin/admin.py:668 admin/admin.py:670 admin/admin.py:1073
+#: admin/admin.py:998 admin/admin.py:1000 admin/admin.py:1086
 msgid "Bulk Update"
 msgstr "批量更新"
 
-#: admin/admin.py:1036
+#: admin/admin.py:1049
 msgid "Delete"
 msgstr "删除"
 
-#: admin/admin.py:1037
+#: admin/admin.py:1050
 #, python-format
 msgid "Are you sure you want to delete row ${%s}?"
 msgstr "你确定要删除行${%s}?"
 
-#: admin/admin.py:1046
+#: admin/admin.py:1059
 msgid "Bulk Delete"
 msgstr "批量删除"
 
-#: admin/admin.py:1047
+#: admin/admin.py:1060
 msgid "Are you sure you want to delete the selected rows?"
 msgstr "你确定要批量删除选中行吗?"
 
-#: admin/admin.py:1194
+#: admin/admin.py:1215
 msgid "Custom form actions"
 msgstr "自定义表单动作"
 
-#: admin/parser.py:183
-msgid "YES"
-msgstr "是"
-
-#: admin/parser.py:184
-msgid "NO"
-msgstr "否"
-
-#: admin/site.py:50
-msgid "Home"
-msgstr "首页"
-
+#: admin/handlers.py:76
 msgid "Request parameter validation exception"
 msgstr "请求参数验证错误"
 
+#: admin/handlers.py:86
 msgid "Internal data validation exception"
 msgstr "内部数据验证异常"
 
+#: admin/handlers.py:96
 msgid "Internal server exception"
 msgstr "内部服务器异常"
+
+#: admin/parser.py:197
+msgid "YES"
+msgstr "是"
+
+#: admin/parser.py:198
+msgid "NO"
+msgstr "否"
+
+#: admin/site.py:51
+msgid "Home"
+msgstr "首页"
+
+#: admin/extensions/admin.py:127
+msgid "List display"
+msgstr "列表展示"
+
+#: admin/extensions/admin.py:128
+#, fuzzy
+msgid "List filter"
+msgstr "数据筛选"
+
+#: admin/extensions/admin.py:130
+#, fuzzy
+msgid "Read"
+msgstr "新增"
+
