@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2023-03-03 08:56+0800\n"
+"POT-Creation-Date: 2023-11-23 15:37+0800\n"
 "PO-Revision-Date: 2022-10-09 22:12+0800\n"
 "Last-Translator: Stefan Welcker <stefan@u2d.ai>\n"
 "Language: de_DE\n"
@@ -18,104 +18,125 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.12.1\n"
 
-#: admin/admin.py:235 admin/admin.py:252 admin/admin.py:255
+#: admin/admin.py:204 admin/admin.py:219 admin/admin.py:222
 msgid "Add Association"
 msgstr "Assoziation hinzufügen"
 
-#: admin/admin.py:237
+#: admin/admin.py:206
 msgid "Are you sure you want to add the association?"
 msgstr "Sind Sie sicher, dass Sie die Assoziation hinzufügen wollen?"
 
-#: admin/admin.py:278
+#: admin/admin.py:245
 msgid "Remove Association"
 msgstr "Assoziation entfernen"
 
-#: admin/admin.py:280
+#: admin/admin.py:247
 msgid "Are you sure you want to remove the association?"
 msgstr "Sind Sie sicher, dass Sie die Assoziation entfernen wollen?"
 
-#: admin/admin.py:401
+#: admin/admin.py:728
 msgid "Operation"
 msgstr ""
 
-#: admin/admin.py:449
+#: admin/admin.py:765
 msgid "SHOWING ${items|count} OF ${total} RESULT(S)"
 msgstr "Zeige ${items|count} von ${total} Resultate"
 
-#: admin/admin.py:535
+#: admin/admin.py:864
 msgid "Filter"
 msgstr "Filter"
 
-#: admin/admin.py:542
+#: admin/admin.py:871
 msgid "Clear"
 msgstr "Löschen"
 
-#: admin/admin.py:547
+#: admin/admin.py:876
 msgid "Reset"
 msgstr "Zurücksetzen"
 
-#: admin/admin.py:550
+#: admin/admin.py:879
 msgid "Search"
 msgstr "Suchen"
 
-#: admin/admin.py:623 admin/admin.py:626 admin/admin.py:1065
+#: admin/admin.py:954 admin/admin.py:956 admin/admin.py:1078
 msgid "View"
 msgstr "Anzeigen"
 
-#: admin/admin.py:636 admin/admin.py:639 admin/admin.py:1020
+#: admin/admin.py:966 admin/admin.py:969 admin/admin.py:1033
+#: admin/extensions/admin.py:129
 msgid "Create"
 msgstr "Erstellen"
 
-#: admin/admin.py:646 admin/admin.py:649 admin/admin.py:1057
+#: admin/admin.py:976 admin/admin.py:979 admin/admin.py:1070
 msgid "Bulk Create"
 msgstr "Massenhaft erstellen"
 
-#: admin/admin.py:659 admin/admin.py:661 admin/admin.py:1027
+#: admin/admin.py:989 admin/admin.py:991 admin/admin.py:1040
+#: admin/extensions/admin.py:131
 msgid "Update"
 msgstr "Aktualisieren"
 
-#: admin/admin.py:668 admin/admin.py:670 admin/admin.py:1073
+#: admin/admin.py:998 admin/admin.py:1000 admin/admin.py:1086
 msgid "Bulk Update"
 msgstr "Massenhaft aktualisieren"
 
-#: admin/admin.py:1036
+#: admin/admin.py:1049
 msgid "Delete"
 msgstr "Löschen"
 
-#: admin/admin.py:1037
+#: admin/admin.py:1050
 #, python-format
 msgid "Are you sure you want to delete row ${%s}?"
 msgstr "Sind Sie sicher, dass Sie die Zeile ${%s} löschen wollen?"
 
-#: admin/admin.py:1046
+#: admin/admin.py:1059
 msgid "Bulk Delete"
 msgstr "Massenhaft löschen"
 
-#: admin/admin.py:1047
+#: admin/admin.py:1060
 msgid "Are you sure you want to delete the selected rows?"
 msgstr "Sind Sie sicher, dass Sie die ausgewählten Zeilen löschen wollen?"
 
-#: admin/admin.py:1194
+#: admin/admin.py:1215
 msgid "Custom form actions"
 msgstr "Benutzerdefinierte Formular-Aktionen"
 
-#: admin/parser.py:183
-msgid "YES"
-msgstr "JA"
-
-#: admin/parser.py:184
-msgid "NO"
-msgstr "NEIN"
-
-#: admin/site.py:50
-msgid "Home"
-msgstr "Home"
-
-msgid "Request parameter validation error"
+#: admin/handlers.py:76
+#, fuzzy
+msgid "Request parameter validation exception"
 msgstr "Fehler bei der Validierung der Anfrageparameter"
 
+#: admin/handlers.py:86
 msgid "Internal data validation exception"
 msgstr "Interne Datenvalidierungsausnahme"
 
+#: admin/handlers.py:96
 msgid "Internal server exception"
 msgstr "Interne Serverausnahme"
+
+#: admin/parser.py:197
+msgid "YES"
+msgstr "JA"
+
+#: admin/parser.py:198
+msgid "NO"
+msgstr "NEIN"
+
+#: admin/site.py:51
+msgid "Home"
+msgstr "Home"
+
+#: admin/extensions/admin.py:127
+msgid "List display"
+msgstr "Show"
+
+#: admin/extensions/admin.py:128
+#, fuzzy
+msgid "List filter"
+msgstr "Filter"
+
+#: admin/extensions/admin.py:130
+#, fuzzy
+msgid "Read"
+msgstr "Erstellen"
+
