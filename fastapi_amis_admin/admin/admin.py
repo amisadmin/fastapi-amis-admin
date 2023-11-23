@@ -1343,16 +1343,13 @@ class AdminApp(PageAdmin, AdminGroup):
         nested: bool = True,
     ) -> Optional[BaseAdminT]:
         """Get or create admin instance"""
-        admin = None
-        if admin_cls not in self._registered:
-            if nested:
-                admin = self._get_admin_or_create_nested(admin_cls)
-            if not register or self.__register_lock:
-                return None
-        else:
-            admin = self._registered.get(admin_cls)
+        admin = self._registered.get(admin_cls, None)
+        if admin is None and nested:
+            admin = self._get_admin_or_create_nested(admin_cls)
         if admin:
             return admin
+        if not register or self.__register_lock:
+            return None
         # create admin instance
         admin = admin_cls(self)
         self._registered[admin_cls] = admin
@@ -1371,6 +1368,8 @@ class AdminApp(PageAdmin, AdminGroup):
             if not issubclass(app_cls, AdminApp):
                 continue
             app = self.get_admin_or_create(app_cls, register=False, nested=False)
+            if app is None:
+                continue
             admin = app._get_admin_or_create_nested(admin_cls)
             if admin:
                 return admin
