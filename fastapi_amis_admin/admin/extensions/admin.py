@@ -15,6 +15,7 @@ from fastapi_amis_admin.crud.parser import TableModelT
 from fastapi_amis_admin.crud.schema import CrudEnum
 from fastapi_amis_admin.utils.functools import cached_property
 from fastapi_amis_admin.utils.pydantic import ModelField
+from fastapi_amis_admin.utils.translation import i18n as _
 
 
 class ReadOnlyModelAdmin(ModelAdmin):
@@ -123,11 +124,11 @@ class BaseAuthFieldModelAdmin(ModelAdmin):
     def get_permission_fields(self, action: str) -> Dict[str, str]:
         """获取权限字段"""
         info = {
-            "list": (self.schema_list, "列表展示-", FieldPermEnum.LIST),
-            "filter": (self.schema_filter, "列表筛选-", FieldPermEnum.FILTER),
-            "create": (self.schema_create, "新增-", FieldPermEnum.CREATE),
-            "read": (self.schema_read, "查看-", FieldPermEnum.READ),
-            "update": (self.schema_update, "更新-", FieldPermEnum.UPDATE),
+            "list": (self.schema_list, _("List display")+'-', FieldPermEnum.LIST),
+            "filter": (self.schema_filter, _("List filter")+'-', FieldPermEnum.FILTER),
+            "create": (self.schema_create, _("Create")+'-', FieldPermEnum.CREATE),
+            "read": (self.schema_read, _("Read")+'-', FieldPermEnum.READ),
+            "update": (self.schema_update, _("Update")+'-', FieldPermEnum.UPDATE),
         }
         if action not in info:
             return {}
