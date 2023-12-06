@@ -20,13 +20,13 @@ from typing import (
 
 from fastapi import Body, Depends, FastAPI, HTTPException, Request
 from pydantic import BaseModel
-from pydantic.utils import deep_update
 from sqlalchemy import Column, Table, delete, insert
 from sqlalchemy.orm import InstrumentedAttribute, RelationshipProperty
 from sqlalchemy.sql.elements import Label
 from sqlalchemy.util import md5_hex
 from sqlalchemy_database import AsyncDatabase, Database
 from starlette import status
+from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import HTMLResponse, JSONResponse, Response
 from starlette.templating import Jinja2Templates
 from typing_extensions import Annotated, Literal
@@ -78,7 +78,7 @@ from fastapi_amis_admin.crud.utils import (
     parser_str_set_list,
 )
 from fastapi_amis_admin.utils.functools import cached_property
-from fastapi_amis_admin.utils.pydantic import ModelField, create_model_by_model, model_fields
+from fastapi_amis_admin.utils.pydantic import ModelField, annotation_outer_type, create_model_by_model, deep_update, model_fields
 from fastapi_amis_admin.utils.translation import i18n as _
 
 BaseAdminT = TypeVar("BaseAdminT", bound="BaseAdmin")
@@ -748,7 +748,9 @@ class ModelAdmin(SqlalchemyCrud, BaseActionAdmin):
                 api.data[field.name] = f"${field.name}"
             else:
                 modelfield = self.parser.get_modelfield(field)
-                if modelfield and issubclass(modelfield.type_, (datetime.datetime, datetime.date, datetime.time)):
+                if modelfield and issubclass(
+                    annotation_outer_type(modelfield.type_), (datetime.datetime, datetime.date, datetime.time)
+                ):
                     api.data[modelfield.alias] = f"[-]${modelfield.alias}"
         return api
 
@@ -1532,7 +1534,7 @@ class BaseAdminSite(AdminApp):
         if enable_exception_handlers:
             register_exception_handlers(self.fastapi)
         if enable_db_middleware:
-            self.db.attach_middleware(fastapi)
+            fastapi.add_middleware(BaseHTTPMiddleware, dispatch=self.db.asgi_dispatch)
         """Add SQLAlchemy Session middleware to the main application, and the session object will be bound to each request.
         Note:
         1. The session will be automatically closed when the request ends, so you don't need to close it manually.

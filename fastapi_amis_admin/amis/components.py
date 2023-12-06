@@ -454,14 +454,14 @@ class App(Page):
     api: API = None  # The page configuration interface, if you want to pull the page configuration remotely,
     # please configure it. Return to the configuration path json>data>pages, please refer to the pages property for
     # the specific format.
-    brandName: str = None  # app name
+    brandName: Template = None  # app name
     logo: str = None  # Support image address, or svg.
     className: str = None  # css class name
-    header: str = None  # header
-    asideBefore: str = None  # The front area on the page menu.
-    asideAfter: str = None  # The front area under the page menu.
-    footer: str = None  # The page.
-    pages: List[PageSchema] = None  # Array<page configuration> specific page configuration.
+    header: Template = None  # header
+    asideBefore: Template = None  # The front area on the page menu.
+    asideAfter: Template = None  # The front area under the page menu.
+    footer: Template = None  # The page.
+    pages: List[Union[PageSchema, dict]] = None  # Array<page configuration> specific page configuration.
     # Usually in an array, the first layer of the array is a group, generally you only need to configure the label set,
     # if you don't want to group, don't configure it directly, the real page should be configured in the second
     # layer, that is, in the children of the first layer.
@@ -2293,7 +2293,7 @@ class ColumnOperation(TableColumn):
     """Action column"""
 
     type: str = "operation"
-    buttons: List[Union[Action, AmisNode]] = None
+    buttons: List[Union[Action, AmisNode, dict]] = None
 
 
 class ColumnImage(Image, TableColumn):

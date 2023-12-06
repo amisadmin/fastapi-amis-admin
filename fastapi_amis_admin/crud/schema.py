@@ -50,8 +50,10 @@ class Paginator:
         orderBy: str = None,
         orderDir: str = "asc",
     ):
-        self.page = page if page and page > 0 else self.perPageDefault
-        self.perPage = perPage if perPage and perPage > 0 else self.perPageDefault
+        page = int(page or 1)
+        self.page = page if page > 0 else 1
+        perPage = int(perPage or self.perPageDefault)
+        self.perPage = perPage if perPage > 0 else self.perPageDefault
         if self.perPageMax:
             self.perPage = min(self.perPage, self.perPageMax)
         self.show_total = show_total

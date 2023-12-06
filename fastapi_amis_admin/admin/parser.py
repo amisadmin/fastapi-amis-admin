@@ -4,7 +4,6 @@ from typing import Any, Generator, Iterable, Type, TypeVar, Union
 
 from fastapi._compat import Undefined, field_annotation_is_scalar_sequence, field_annotation_is_sequence
 from pydantic import BaseModel, Json
-from pydantic.utils import deep_update, smart_deepcopy
 
 from fastapi_amis_admin import amis
 from fastapi_amis_admin.amis import AmisNode
@@ -22,12 +21,14 @@ from fastapi_amis_admin.utils.pydantic import (
     PYDANTIC_V2,
     ModelField,
     annotation_outer_type,
+    deep_update,
     field_allow_none,
     field_json_schema_extra,
     field_outer_type,
     model_config_attr,
     model_fields,
     scalar_sequence_inner_type,
+    smart_deepcopy,
 )
 from fastapi_amis_admin.utils.translation import i18n as _
 

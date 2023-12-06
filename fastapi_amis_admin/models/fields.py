@@ -1,9 +1,8 @@
-from typing import AbstractSet, Any, Callable, Dict, Mapping, Optional, Sequence, Union
+from typing import AbstractSet, Any, Callable, Dict, Mapping, Optional, Sequence, Type, Union
 
-from pydantic.fields import Undefined, UndefinedType
-from pydantic.typing import NoArgAnyCallable
 from sqlalchemy import Column
-from sqlmodel.main import FieldInfo
+from sqlmodel._compat import Undefined, UndefinedType, post_init_field_info
+from sqlmodel.main import FieldInfo, NoArgAnyCallable
 
 from fastapi_amis_admin.amis import FormItem, TableColumn
 
@@ -23,17 +22,23 @@ def Field(
     lt: Optional[float] = None,
     le: Optional[float] = None,
     multiple_of: Optional[float] = None,
+    max_digits: Optional[int] = None,
+    decimal_places: Optional[int] = None,
     min_items: Optional[int] = None,
     max_items: Optional[int] = None,
+    unique_items: Optional[bool] = None,
     min_length: Optional[int] = None,
     max_length: Optional[int] = None,
     allow_mutation: bool = True,
     regex: Optional[str] = None,
-    primary_key: bool = False,
-    foreign_key: Optional[Any] = None,
-    unique: bool = False,
+    discriminator: Optional[str] = None,
+    repr: bool = True,
+    primary_key: Union[bool, UndefinedType] = Undefined,
+    foreign_key: Any = Undefined,
+    unique: Union[bool, UndefinedType] = Undefined,
     nullable: Union[bool, UndefinedType] = Undefined,
     index: Union[bool, UndefinedType] = Undefined,
+    sa_type: Union[Type[Any], UndefinedType] = Undefined,
     sa_column: Union[Column, UndefinedType] = Undefined,  # type: ignore
     sa_column_args: Union[Sequence[Any], UndefinedType] = Undefined,
     sa_column_kwargs: Union[Mapping[str, Any], UndefinedType] = Undefined,
@@ -63,22 +68,27 @@ def Field(
         lt=lt,
         le=le,
         multiple_of=multiple_of,
+        max_digits=max_digits,
+        decimal_places=decimal_places,
         min_items=min_items,
         max_items=max_items,
+        unique_items=unique_items,
         min_length=min_length,
         max_length=max_length,
         allow_mutation=allow_mutation,
         regex=regex,
+        discriminator=discriminator,
         repr=repr,
         primary_key=primary_key,
         foreign_key=foreign_key,
         unique=unique,
         nullable=nullable,
         index=index,
+        sa_type=sa_type,
         sa_column=sa_column,
         sa_column_args=sa_column_args,
         sa_column_kwargs=sa_column_kwargs,
         **current_schema_extra,
     )
-    field_info._validate()
+    post_init_field_info(field_info)
     return field_info

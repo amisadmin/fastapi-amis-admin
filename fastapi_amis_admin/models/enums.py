@@ -10,7 +10,7 @@ class ChoicesMeta(enum.EnumMeta):
         labels = []
         for key in classdict._member_names:
             value = classdict[key]
-            if isinstance(value, (list, tuple)) and len(value) > 1 and isinstance(value[-1], (Promise, str)):
+            if isinstance(value, (list, tuple)) and len(value) > 1 and isinstance(value[-1], str):
                 *value, label = value
                 value = tuple(value)
             else:
@@ -75,12 +75,3 @@ class TextChoices(str, Choices):
 
     def _generate_next_value_(name, start, count, last_values):
         return name
-
-
-class Promise:
-    """
-    Base class for the proxy class created in the closure of the lazy function.
-    It's used to recognize promises in code.
-    """
-
-    pass

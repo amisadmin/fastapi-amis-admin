@@ -2,7 +2,10 @@ from datetime import datetime
 from typing import List, Optional
 
 from sqlalchemy import JSON, Column, String, Text
-from sqlmodel import Field, Relationship, SQLModel
+from sqlmodel import Field, Relationship
+
+from fastapi_amis_admin.models import SQLModel
+from tests.models.schemas import ArticleStatusChoices
 
 Base = SQLModel
 
@@ -21,8 +24,8 @@ class User(PkModelMixin, CreateTimeModelMixin, table=True):
         sa_column=Column(String(100), unique=True, index=True, nullable=False),
     )
     password: str = Field(default="", title="Password")
-    address: List[str] = Field(None, title="Address", sa_column=Column(JSON))
-    attach: dict = Field(None, title="Attach", sa_column=Column(JSON))
+    address: List[str] = Field([], title="Address", sa_column=Column(JSON))
+    attach: dict = Field({}, title="Attach", sa_column=Column(JSON))
 
     articles: List["Article"] = Relationship(back_populates="user")
 
@@ -60,7 +63,7 @@ class ArticleContent(PkModelMixin, table=True):
 class Article(PkModelMixin, CreateTimeModelMixin, table=True):
     title: str = Field(title="ArticleTitle", max_length=200)
     description: str = Field(default="", title="ArticleDescription", sa_column=Column(Text))
-    status: int = Field(None, title="status")
+    status: ArticleStatusChoices = Field(ArticleStatusChoices.PENDING, title="status")
 
     category_id: Optional[int] = Field(default=None, foreign_key="category.id", title="CategoryId")
     category: Optional[Category] = Relationship(back_populates="articles")

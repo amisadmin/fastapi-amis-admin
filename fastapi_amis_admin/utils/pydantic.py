@@ -17,7 +17,7 @@ PYDANTIC_V2 = PYDANTIC_VERSION.startswith("2.")
 if PYDANTIC_V2:
     from pydantic._internal._utils import ValueItems  # noqa: F401
     from pydantic.v1.datetime_parse import parse_date, parse_datetime  # noqa: F401
-    from pydantic.v1.utils import lenient_issubclass
+    from pydantic.v1.utils import deep_update, lenient_issubclass, smart_deepcopy  # noqa: F401
     from pydantic_settings import BaseSettings  # noqa: F401
 
     GenericModel = BaseModel
@@ -92,9 +92,11 @@ else:
     from pydantic.fields import ModelField
     from pydantic.generics import GenericModel  # noqa: F401
     from pydantic.typing import is_literal_type, is_none_type, is_union
-    from pydantic.utils import (
-        ValueItems,  # noqa: F401
+    from pydantic.utils import (  # noqa: F401
+        ValueItems,
+        deep_update,
         lenient_issubclass,
+        smart_deepcopy,
     )
 
     class AllowExtraModelMixin(BaseModel):

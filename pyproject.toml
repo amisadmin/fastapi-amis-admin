@@ -36,8 +36,8 @@ classifiers = [
     "Programming Language :: Python :: 3.11",
 ]
 dependencies = [
-    "fastapi>=0.100.0",
-    "pydantic>1.7.4",
+    "fastapi>=0.103.2",
+    "pydantic>1.10.0",
     "sqlalchemy>=1.4.0",
     "python-multipart>=0.0.5",
     "sqlalchemy-database>=0.1.1,<0.2.0",
@@ -51,7 +51,7 @@ Source = "https://github.com/amisadmin/fastapi_amis_admin"
 
 [project.optional-dependencies]
 sqlmodel = [
-    "sqlmodel==0.0.8",
+    "sqlmodel==0.0.14",
 ]
 standard = [
     "uvicorn[standard] >=0.19.0,<1.0",
@@ -67,7 +67,7 @@ test = [
     "jinja2 >=2.11.2,<4.0.0",
     "ujson>=4.0.1",
     "requests>=2.28.1",
-    "sqlmodel==0.0.8",
+    "sqlmodel==0.0.14",
 ]
 dev = [
     "pre-commit>=2.20.0",

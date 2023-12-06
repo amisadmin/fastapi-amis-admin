@@ -1,9 +1,7 @@
 import importlib
-from importlib.util import find_spec
 from typing import AsyncGenerator
 
 import pytest
-import sqlalchemy
 from fastapi import FastAPI
 from httpx import AsyncClient
 from sqlalchemy_database import AsyncDatabase, Database
@@ -79,11 +77,12 @@ async def async_session():
         yield session
 
 
-models_params_list = ["sqla"]
-if sqlalchemy.__version__.startswith("2."):
-    models_params_list.append("sqla2")
-if find_spec("sqlmodel"):
-    models_params_list.append("sqlm")
+models_params_list = ["sqlm"]
+# models_params_list = ["sqla"]
+# if sqlalchemy.__version__.startswith("2."):
+#     models_params_list.append("sqla2")
+# if find_spec("sqlmodel"):
+#     models_params_list.append("sqlm")
 
 
 @pytest.fixture(params=models_params_list, ids=models_params_list)

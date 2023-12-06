@@ -3,6 +3,7 @@ from typing import List, Optional
 
 from pydantic import BaseModel, Field
 
+from fastapi_amis_admin.models import IntegerChoices
 from fastapi_amis_admin.utils.pydantic import ORMModelMixin, model_update_forward_refs
 
 
@@ -51,11 +52,16 @@ class ArticleContentSchema(PkSchemaMixin):
     # article: Optional["ArticleSchema"] = None
 
 
+class ArticleStatusChoices(IntegerChoices):
+    PENDING = 0, "待发布"
+    PUBLISHED = 1, "已发布"
+    DELETED = 2, "已删除"
+
+
 class ArticleSchema(PkSchemaMixin, CreateTimeSchemaMixin):
     title: str = Field(title="ArticleTitle", max_length=200)
     description: str = Field(default="", title="ArticleDescription")
-    status: int = Field(default=0, title="ArticleStatus")
-
+    status: ArticleStatusChoices = Field(default=ArticleStatusChoices.PENDING, title="ArticleStatus")
     category_id: int = Field(default=None, title="ArticleCategoryID")
     category: CategorySchema = None
 
