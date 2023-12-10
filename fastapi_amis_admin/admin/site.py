@@ -5,6 +5,8 @@ import uuid
 from pathlib import Path
 
 import aiofiles
+import pydantic
+import sqlalchemy
 from fastapi import FastAPI, File, UploadFile
 from pydantic import BaseModel
 from starlette.requests import Request
@@ -76,6 +78,8 @@ class HomeAdmin(admin.PageAdmin):
                     Property.Item(label="amis-cdn", content=self.site.settings.amis_cdn),
                     Property.Item(label="amis-pkg", content=self.site.settings.amis_pkg),
                     Property.Item(label="amis-theme", content=self.site.settings.amis_theme),
+                    Property.Item(label="sqlalchemy", content=sqlalchemy.__version__),
+                    Property.Item(label="pydantic", content=pydantic.__version__),
                 ],
             ),
         ]

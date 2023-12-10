@@ -27,7 +27,7 @@ from sqlalchemy.util import md5_hex
 from sqlalchemy_database import AsyncDatabase, Database
 from starlette import status
 from starlette.middleware.base import BaseHTTPMiddleware
-from starlette.responses import HTMLResponse, JSONResponse, Response
+from starlette.responses import HTMLResponse, Response
 from starlette.templating import Jinja2Templates
 from typing_extensions import Annotated, Literal
 
@@ -432,7 +432,7 @@ class PageAdmin(PageSchemaAdmin, RouterAdmin):
             if await request.body():
                 data = deep_update(data, (await request.json()).get("_update", {}))
             result = BaseAmisApiOut(data=data)
-            result = JSONResponse(result.dict())
+            result = Response(result.amis_json(), media_type="application/json")
         return result
 
     def register_router(self):

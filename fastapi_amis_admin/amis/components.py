@@ -8,7 +8,7 @@ from typing_extensions import Literal
 try:
     from pydantic import SerializeAsAny
 except ImportError:
-    from typing import Optional as SerializeAsAny
+    from typing import Union as SerializeAsAny
 from .constants import (
     BarcodeEnum,
     DisplayModeEnum,
@@ -356,8 +356,8 @@ class ActionType:
         """Toast light"""
 
         class ToastItem(AmisNode):
-            title: SerializeAsAny[Union[str, SchemaNode]] = None  # Toast Item Title
-            body: SerializeAsAny[Union[str, SchemaNode]] = None  # Toast Item Content
+            title: SerializeAsAny[SchemaNode] = None  # Toast Item Title
+            body: SerializeAsAny[SchemaNode] = None  # Toast Item Content
             level: str = None  # default 'info', Display icon, optional 'info', 'success', 'error', 'warning'
             position: str = None  # default 'top-center', display position,
             # 'top-right', 'top-center', 'top-left', 'bottom-center', 'bottom-left', 'bottom-right', 'center'
@@ -1184,8 +1184,8 @@ class CollapseGroup(AmisNode):
         disabled: bool = None  # default False
         collapsed: bool = None  # default True
         key: Union[int, str] = None  # default -, logo
-        header: SerializeAsAny[Union[str, SchemaNode]] = None  # default -, title
-        body: SerializeAsAny[Union[str, SchemaNode]] = None  # default -, content
+        header: SerializeAsAny[SchemaNode] = None  # default -, title
+        body: SerializeAsAny[SchemaNode] = None  # default -, content
 
     type: str = "collapse-group"
     activeKey: Union[str, int, List[Union[int, str]]] = None  # Initialize the key to activate the panel
@@ -1371,7 +1371,7 @@ class InputImage(FormItem):
     autoFill: Dict[str, str] = None  # After the upload is successful, the value returned by the upload interface can
     # be filled into a form item by configuring autoFill (not supported under non-form)
     initAutoFill: bool = None  # False  # 表单反显时是否执行 autoFill
-    uploadBtnText: SerializeAsAny[Union[str, SchemaNode]] = None  # 上传按钮文案。支持tpl、schema形式配置。
+    uploadBtnText: SerializeAsAny[SchemaNode] = None  # 上传按钮文案。支持tpl、schema形式配置。
     dropCrop: bool = None  # True  # 图片上传后是否进入裁剪模式
     initCrop: bool = None  # False  # 图片选择器初始化后是否立即进入裁剪模式
 
@@ -1416,7 +1416,7 @@ class Picker(FormItem):
     extractValue: bool = None  # False # extract value
     autoFill: dict = None  # autofill
     modalMode: Literal["dialog", "drawer"] = None  # "dialog" # Set dialog or drawer to configure the popup mode.
-    pickerSchema: SerializeAsAny[Union["CRUD", SchemaNode]] = None  # "{mode: 'list', listItem: {title: '${label}'}}"
+    pickerSchema: SerializeAsAny[Union[SchemaNode, "CRUD"]] = None  # "{mode: 'list', listItem: {title: '${label}'}}"
     # That is to use the rendering of the List type to display the list information. More configuration reference CRUD
     embed: bool = None  # False # whether to use embedded mode
 
@@ -1543,7 +1543,7 @@ class Timeline(AmisNode):
 
     class TimelineItem(AmisNode):
         time: str  # Node Time
-        title: Union[str, SchemaNode] = None  # Node Title
+        title: SchemaNode = None  # Node Title
         detail: str = None  # Node detailed description (collapsed)
         detailCollapsedText: str = None  # default 'Expand'
         detailExpandedText: str = None  # default 'Collapse'
@@ -1563,9 +1563,9 @@ class Steps(AmisNode):
     """Steps Bar"""
 
     class StepItem(AmisNode):
-        title: SerializeAsAny[Union[str, SchemaNode]] = None  # Title
-        subTitle: SerializeAsAny[Union[str, SchemaNode]] = None  # Sub Heading
-        description: SerializeAsAny[Union[str, SchemaNode]] = None  # Detail Description
+        title: SerializeAsAny[SchemaNode] = None  # Title
+        subTitle: SerializeAsAny[SchemaNode] = None  # Sub Heading
+        description: SerializeAsAny[SchemaNode] = None  # Detail Description
         value: str = None  # Step Value
         icon: str = None  # Icon name, support fontawesome v4 or use url (priority is higher than color)
         className: str = None  # Custom CSS class name
@@ -1970,8 +1970,8 @@ class InputKVS(FormItem):
     type: str = "input-kvs"
     addButtonText: str = None  # default 'new field', butto text of the add button
     draggable: bool = None  # Default True, Whether to drag and drop to sort is allowed
-    keyItem: SerializeAsAny[Union[str, SchemaNode]] = None  # key field
-    valueItems: SerializeAsAny[List[Union[str, SchemaNode]]] = None  # items for the key
+    keyItem: SerializeAsAny[SchemaNode] = None  # key field
+    valueItems: SerializeAsAny[List[SchemaNode]] = None  # items for the key
 
 
 class InputTimeRange(FormItem):
