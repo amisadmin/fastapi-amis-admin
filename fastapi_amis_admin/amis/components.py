@@ -5,6 +5,10 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 from pydantic import Field
 from typing_extensions import Literal
 
+try:
+    from pydantic import SerializeAsAny
+except ImportError:
+    from typing import Optional as SerializeAsAny
 from .constants import (
     BarcodeEnum,
     DisplayModeEnum,
@@ -85,17 +89,17 @@ class Page(AmisNode):
     __default_template_path__: str = f"{BASE_DIR}/templates/page.html"
 
     type: str = "page"  # Specify as Page component
-    title: SchemaNode = None  # page title
-    subTitle: SchemaNode = None  # Page subtitle
+    title: SerializeAsAny[SchemaNode] = None  # page title
+    subTitle: SerializeAsAny[SchemaNode] = None  # Page subtitle
     remark: RemarkT = None  # A prompt icon will appear near the title, and the content will be prompted when the
     # mouse is placed on it.
-    aside: SchemaNode = None  # Add content to the sidebar area of the page
+    aside: SerializeAsAny[SchemaNode] = None  # Add content to the sidebar area of the page
     asideResizor: bool = None  # whether the width of the sidebar area of the page can be adjusted
     asideMinWidth: int = None  # The minimum width of the sidebar area of the page
     asideMaxWidth: int = None  # The maximum width of the sidebar area of the page
-    toolbar: SchemaNode = None  # Add content to the upper right corner of the page. It should be noted that when
+    toolbar: SerializeAsAny[SchemaNode] = None  # Add content to the upper right corner of the page. It should be noted that when
     # there is a title, the area is in the upper right corner, and when there is no title, the area is at the top
-    body: SchemaNode = None  # Add content to the content area of the page
+    body: SerializeAsAny[SchemaNode] = None  # Add content to the content area of the page
     className: str = None  # Outer dom class name
     cssVars: dict = None  # Custom CSS variables, please refer to styles
     css: str = None  # Custom CSS styles, please refer to used theme styles
@@ -157,7 +161,7 @@ class Flex(AmisNode):
     # "space-evenly"
     alignItems: str = None  # "stretch", "start", "flex-start", "flex-end", "end", "center", "baseline"
     style: dict = None  # custom style
-    items: List[SchemaNode] = None  #
+    items: SerializeAsAny[List[SchemaNode]] = None  #
 
 
 class Grid(AmisNode):
@@ -172,14 +176,14 @@ class Grid(AmisNode):
         md: int = None  # "auto" # Width ratio: 1 - 12
         lg: int = None  # "auto" # Width ratio: 1 - 12
         valign: str = None  # 'top'|'middle'|'bottom'|'between = None # Vertical alignment of the current column content
-        body: List[SchemaNode] = None  #
+        body: SerializeAsAny[List[SchemaNode]] = None  #
 
     type: str = "grid"  # Specify as Grid renderer
     className: str = None  # The class name of the outer Dom
     gap: str = None  # 'xs'|'sm'|'base'|'none'|'md'|'lg = None # Horizontal gap
     valign: str = None  # 'top'|'middle'|'bottom'|'between = None # Vertical alignment
     align: str = None  # 'left'|'right'|'between'|'center = None # Horizontal alignment
-    columns: List[SchemaNode] = None  #
+    columns: SerializeAsAny[List[SchemaNode]] = None  #
 
 
 class Panel(AmisNode):
@@ -191,12 +195,12 @@ class Panel(AmisNode):
     footerClassName: str = None  # "panel-footer bg-light lter wrapper" # The class name of the footer area
     actionsClassName: str = None  # "panel-footer" # The class name of the actions area
     bodyClassName: str = None  # "panel-body" # The class name of the body area
-    title: SchemaNode = None  # title
-    header: SchemaNode = None  # header container
-    body: SchemaNode = None  # Content container
-    footer: SchemaNode = None  # bottom container
+    title: SerializeAsAny[SchemaNode] = None  # title
+    header: SerializeAsAny[SchemaNode] = None  # header container
+    body: SerializeAsAny[SchemaNode] = None  # Content container
+    footer: SerializeAsAny[SchemaNode] = None  # bottom container
     affixFooter: bool = None  # whether to fix the bottom container
-    actions: List["Action"] = None  # Button area
+    actions: SerializeAsAny[List["Action"]] = None  # Button area
 
 
 class Tabs(AmisNode):
@@ -205,7 +209,7 @@ class Tabs(AmisNode):
     class Item(AmisNode):
         title: str = None  # Tab title
         icon: Union[str, Icon] = None  # Icon for Tab
-        tab: SchemaNode = None  # Content area
+        tab: SerializeAsAny[SchemaNode] = None  # Content area
         hash: str = None  # After setting, it will correspond to the hash of the url
         reload: bool = None  # After setting, the content will be re-rendered every time, which is useful for
         # re-pulling crud
@@ -221,9 +225,9 @@ class Tabs(AmisNode):
     mode: str = None  # Display mode, the value can be line, card, radio, vertical, chrome, simple, strong, tiled,
     # sidebar
     tabsClassName: str = None  # Class name of Tabs Dom
-    tabs: List[Item] = None  # tabs content
+    tabs: SerializeAsAny[List[Item]] = None  # tabs content
     source: str = None  # tabs associated data, tabs can be generated repeatedly after association
-    toolbar: SchemaNode = None  # toolbar in tabs
+    toolbar: SerializeAsAny[SchemaNode] = None  # toolbar in tabs
     toolbarClassName: str = None  # The class name of the toolbar in the tabs
     mountOnEnter: bool = None  # False # Render only when the tab is clicked
     unmountOnExit: bool = None  # False # Destroyed when switching tabs
@@ -245,11 +249,11 @@ class Portlet(Tabs):
     """Portal column"""
 
     class Item(Tabs.Item):
-        toolbar: SchemaNode = None  # The toolbar in tabs, which changes with tab switching
+        toolbar: SerializeAsAny[SchemaNode] = None  # The toolbar in tabs, which changes with tab switching
 
     type: str = "portlet"  # specify as portlet renderer
     contentClassName: str = None  # Class name of Tabs content Dom
-    tabs: List[Item] = None  # tabs content
+    tabs: SerializeAsAny[List[Item]] = None  # tabs content
     style: Union[str, dict] = None  # custom style
     description: Template = None  # Information on the right side of the title
     hideHeader: bool = None  # False # hide the header
@@ -310,7 +314,7 @@ class ActionType:
         api: API = None  # Request address, refer to api format description.
         redirect: Template = None  # Specify the path to redirect to after the current request ends, which can be
         # valued by ${xxx}.
-        feedback: "Dialog" = None  # If it is of ajax type, when ajax returns to normal, a dialog can be popped up
+        feedback: SerializeAsAny["Dialog"] = None  # If it is of ajax type, when ajax returns to normal, a dialog can be popped up
         # for other interactions. The returned data can be used in this dialog. For the format, please refer to Dialog
         messages: dict = None  # success: a message will be displayed after the ajax operation is successful. It can
         # be left unspecified. If it is not specified, the api return shall prevail. failed: Ajax operation failure
@@ -318,12 +322,16 @@ class ActionType:
 
     class Dialog(Action):
         actionType: str = "dialog"  # Show a popup when clicked
-        dialog: Union["Dialog", "Service", SchemaNode]  # Specify the content of the pop-up box, the format can refer to Dialog
+        dialog: SerializeAsAny[
+            Union["Dialog", "Service", SchemaNode]
+        ]  # Specify the content of the pop-up box, the format can refer to Dialog
         nextCondition: bool = None  # Can be used to set the condition of the next data, the default is true.
 
     class Drawer(Action):
         actionType: str = "drawer"  # Show a sidebar when clicked
-        drawer: Union["Drawer", "Service", SchemaNode]  # Specify the content of the popup box, the format can refer to Drawer
+        drawer: SerializeAsAny[
+            Union["Drawer", "Service", SchemaNode]
+        ]  # Specify the content of the popup box, the format can refer to Drawer
 
     class Copy(Action):
         actionType: str = "copy"  # Copy a piece of content to the clipboard
@@ -348,8 +356,8 @@ class ActionType:
         """Toast light"""
 
         class ToastItem(AmisNode):
-            title: Union[str, SchemaNode] = None  # Toast Item Title
-            body: Union[str, SchemaNode] = None  # Toast Item Content
+            title: SerializeAsAny[Union[str, SchemaNode]] = None  # Toast Item Title
+            body: SerializeAsAny[Union[str, SchemaNode]] = None  # Toast Item Content
             level: str = None  # default 'info', Display icon, optional 'info', 'success', 'error', 'warning'
             position: str = None  # default 'top-center', display position,
             # 'top-right', 'top-center', 'top-left', 'bottom-center', 'bottom-left', 'bottom-right', 'center'
@@ -358,7 +366,7 @@ class ActionType:
             timeout: int = None  # default 5000
 
         actionType: str = "toast"  # Single page jump
-        items: List[ToastItem] = None  # List of ToastItems
+        items: SerializeAsAny[List[ToastItem]] = None  # List of ToastItems
         position: str = None  # display position,
         # available 'top-right', 'top-center', 'top-left', 'bottom-center', 'bottom-left', 'bottom-right', 'center'
         closeButton: bool = None  # default False, whether to display the close button, not in mobile
@@ -377,7 +385,9 @@ class PageSchema(AmisNode):
     # and pageA is configured at this time, then this page will be hit only when the page address is /folder/pageA.
     # When the path starts with / such as: /crud/list, the parent path will not be spliced. In addition, routes with
     # parameters such as /crud/view/:id are supported. This value can be obtained from the page through ${params.id}.
-    schema_: Union[Page, "Iframe"] = Field(None, alias="schema")  # The configuration of the page, please go to the
+    schema_: SerializeAsAny[Union[Page, "Iframe"]] = Field(
+        None, alias="schema"
+    )  # The configuration of the page, please go to the
     # page page for specific configuration
     schemaApi: API = None  # If you want to pull through the interface, please configure. The return path is
     # json>data. Only one of schema and schemaApi can be selected.
@@ -389,7 +399,7 @@ class PageSchema(AmisNode):
     visible: Union[bool, str] = None  # Some pages may not want to appear in the menu, you can configure it to false, and the
     # route with parameters does not need to be configured, it is directly invisible.
     className: str = None  # Menu class name.
-    children: List["PageSchema"] = None  # Submenu
+    children: SerializeAsAny[List["PageSchema"]] = None  # Submenu
     sort: int = None  # Unofficial attribute. sort
     tabsMode: TabsModeEnum = None  # Unofficial attribute. Display mode, the value can be line, card, radio, vertical,
 
@@ -461,7 +471,7 @@ class App(Page):
     asideBefore: Template = None  # The front area on the page menu.
     asideAfter: Template = None  # The front area under the page menu.
     footer: Template = None  # The page.
-    pages: List[Union[PageSchema, dict]] = None  # Array<page configuration> specific page configuration.
+    pages: SerializeAsAny[List[Union[PageSchema, dict]]] = None  # Array<page configuration> specific page configuration.
     # Usually in an array, the first layer of the array is a group, generally you only need to configure the label set,
     # if you don't want to group, don't configure it directly, the real page should be configured in the second
     # layer, that is, in the children of the first layer.
@@ -471,7 +481,7 @@ class ButtonGroup(AmisNode):
     """Button group"""
 
     type: str = "button-group"
-    buttons: List[Action]  # Behavior button group
+    buttons: SerializeAsAny[List[Action]]  # Behavior button group
     className: str = None  # The class name of the outer Dom
     vertical: bool = None  # whether to use vertical mode
     tiled: bool = None  # whether to use tile mode
@@ -500,7 +510,7 @@ class Service(AmisNode):
     name: str = None  # node name
     data: dict = None  #
     className: str = None  # The class name of the outer Dom
-    body: SchemaNode = None  # Content container
+    body: SerializeAsAny[SchemaNode] = None  # Content container
     api: API = None  # Initialize data domain interface address
     ws: str = None  # WebScocket address
     dataProvider: str = None  # Data acquisition function
@@ -524,7 +534,7 @@ class Nav(AmisNode):
         to: Template = None  # Link address
         target: str = None  # "Link relationship" #
         icon: str = None  # icon
-        children: List["Link"] = None  # child links
+        children: SerializeAsAny[List["Link"]] = None  # child links
         unfolded: bool = None  # whether to unfold initially
         active: bool = None  # whether to highlight
         activeOn: Expression = None  # whether to highlight the condition, leaving it blank will automatically
@@ -538,7 +548,7 @@ class Nav(AmisNode):
     source: API = None  # Navigation can be created dynamically via variable or API interface
     deferApi: API = None  # The interface used to delay loading option details. It can be left unconfigured,
     # and the public source interface cannot be configured.
-    itemActions: SchemaNode = None  # More operations related configuration
+    itemActions: SerializeAsAny[SchemaNode] = None  # More operations related configuration
     draggable: bool = None  # whether to support drag and drop sorting
     dragOnSameLevel: bool = None  # Only allow dragging within the same level
     saveOrderApi: API = None  # save order api
@@ -553,7 +563,7 @@ class AnchorNav(AmisNode):
         label: str = None  # name
         title: str = None  # area title
         href: str = None  # Region ID
-        body: SchemaNode = None  # area content area
+        body: SerializeAsAny[SchemaNode] = None  # area content area
         className: str = None  # "bg-white bl br bb wrapper-md" # Area member style
 
     type: str = "anchor-nav"  # Specify as AnchorNav renderer
@@ -570,7 +580,7 @@ class ButtonToolbar(AmisNode):
     """Button Toolbar"""
 
     type: str = "button-toolbar"
-    buttons: List[Action]  # Behavior button group
+    buttons: SerializeAsAny[List[Action]]  # Behavior button group
 
 
 class Validation(BaseAmisModel):
@@ -604,7 +614,9 @@ class FormItem(AmisNode):
         showSuggestion: bool = None  # true refers to input, false automatically fills
         api: API = None  # Automatically populate the interface/filter the CRUD request configuration with reference to entry
         silent: bool = None  # Whether to display a data format error message. The default value is true
-        fillMappinng: SchemaNode = None  # Auto-fill/reference input data mapping configuration, key-value pair form,
+        fillMappinng: SerializeAsAny[
+            SchemaNode
+        ] = None  # Auto-fill/reference input data mapping configuration, key-value pair form,
         # value support variable acquisition and expression
         trigger: str = None  # ShowSuggestion to true, the reference input support way of trigger,
         # currently supports change "value change" | focus "form focus"
@@ -612,8 +624,8 @@ class FormItem(AmisNode):
         labelField: str = None  # When showSuggestion is true, set the popup dialog,drawer,popOver picker's labelField
         position: str = None  # If showSuggestion is true, set the popOver location as shown in the input mode Popover
         size: str = None  # If showSuggestion is true, set the value as shown in dialog mode
-        columns: List["TableColumn"] = None  # When showSuggestion is true, the data display column configuration
-        filter: SchemaNode = None  # When showSuggestion is true, data query filter condition
+        columns: SerializeAsAny[List["TableColumn"]] = None  # When showSuggestion is true, the data display column configuration
+        filter: SerializeAsAny[SchemaNode] = None  # When showSuggestion is true, data query filter condition
 
     type: str = "input-text"  # Specify the form item type
     className: str = None  # The outermost class name of the form
@@ -633,7 +645,9 @@ class FormItem(AmisNode):
     visibleOn: Expression = None  # The condition for whether the current form item is disabled
     required: bool = None  # whether it is required.
     requiredOn: Expression = None  # Use an expression to configure whether the current form item is required.
-    validations: Union[Validation, Expression] = None  # Validation of the form item value format, multiple settings
+    validations: SerializeAsAny[
+        Union[Validation, Expression]
+    ] = None  # Validation of the form item value format, multiple settings
     # are supported, and multiple rules are separated by commas.
     validateApi: API = None  # Form validation interface
     copyable: Union[bool, dict] = None  # whether to copy boolean or {icon: string, content:string}
@@ -698,10 +712,12 @@ class Form(AmisNode):
     submitText: Optional[str] = None  # "Submit" # Default submit button name, if it is set to empty, the default
     # button can be removed.
     className: str = None  # The class name of the outer Dom
-    body: List[Union[FormItem, SchemaNode]] = None  # Form item collection
-    actions: List["Action"] = None  # Form submit button, the member is Action
+    body: SerializeAsAny[List[Union[FormItem, SchemaNode]]] = None  # Form item collection
+    actions: SerializeAsAny[List["Action"]] = None  # Form submit button, the member is Action
     actionsClassName: str = None  # class name of actions
-    messages: Messages = None  # The message prompts to be overridden. The default message reads the message returned
+    messages: SerializeAsAny[
+        Messages
+    ] = None  # The message prompts to be overridden. The default message reads the message returned
     # by the API, but it can be overridden here.
     wrapWithPanel: bool = None  # whether to wrap the Form with panel, if set to false, actions will be invalid.
     panelClassName: str = None  # The class name of the outer panel
@@ -836,7 +852,7 @@ class InputArray(FormItem):
     """Array input box"""
 
     type: str = "input-array"
-    items: FormItem = None  # Configure single item form type
+    items: SerializeAsAny[FormItem] = None  # Configure single item form type
     addable: bool = None  # whether it can be added.
     removable: bool = None  # whether it can be removed
     draggable: bool = None  # False # whether drag sorting is possible, it should be noted that when drag sorting is
@@ -905,10 +921,10 @@ class Checkboxes(FormItem):
     defaultCheckAll: bool = None  # False # whether to check all by default
     creatable: bool = None  # False # New option
     createBtnLabel: str = None  # "Add option" # Add option
-    addControls: List[FormItem] = None  # Customize new form items
+    addControls: SerializeAsAny[List[FormItem]] = None  # Customize new form items
     addApi: API = None  # Configure the new option interface
     editable: bool = None  # False # edit options
-    editControls: List[FormItem] = None  # Customize edit form items
+    editControls: SerializeAsAny[List[FormItem]] = None  # Customize edit form items
     editApi: API = None  # Configure editing options interface
     removable: bool = None  # False # remove option
     deleteApi: API = None  # Configure delete option interface
@@ -947,7 +963,7 @@ class Combo(FormItem):
     type: str = "combo"
     formClassName: str = None  # The class name of a single group of form items
     addButtonClassName: str = None  # Add button CSS class name
-    items: List[FormItem] = None  # Form items displayed in combination
+    items: SerializeAsAny[List[FormItem]] = None  # Form items displayed in combination
     # items[x].columnClassName: str = None # The class name of the column, which can be used to configure the column
     # width. The default is evenly distributed. items[x].unique: bool = None # Set whether the current column value
     # is unique, that is, repeated selection is not allowed.
@@ -1045,7 +1061,7 @@ class ConditionBuilder(FormItem):
         # the interface will be called, and the update options will be returned according to the interface.
 
     type: str = "condition-builder"
-    fields: List[Field] = None  # It is an array type, each member represents an optional field, supports multiple
+    fields: SerializeAsAny[List[Field]] = None  # It is an array type, each member represents an optional field, supports multiple
     # layers, configuration example
     className: str = None  # Outer dom class name
     fieldClassName: str = None  # The class name of the input field
@@ -1103,7 +1119,7 @@ class DropDownButton(AmisNode):
     block: bool = None  # Default False, block style
     size: Literal["xs", "sm", "md", "lg"] = None  # size, support 'xs', 'sm', 'md','lg'
     align: Literal["left", "right"] = None  # location align
-    buttons: List[Button] = []  # List of buttons
+    buttons: SerializeAsAny[List[Button]] = []  # List of buttons
     iconOnly: bool = None  # default False, show only icon
     defaultIsOpened: bool = None  # default False, whether to open by default
     closeOnOutside: bool = None  # default True, Click whether to collapse the outer area
@@ -1137,7 +1153,7 @@ class GridNav(AmisNode):
         badge: Badge = None  # Bade Schema, list item badge
         link: str = None  # default '', Internal page path or external URL address, takes precedence over clickAction
         blank: bool = None  # default False, Whether a new page is opened, valid when link is url
-        clickAction: Action = None  # ActionSchema
+        clickAction: SerializeAsAny[Action] = None  # ActionSchema
 
     type: str = "grid-nav"
     className: str = None  # outer dom classname
@@ -1152,7 +1168,7 @@ class GridNav(AmisNode):
     iconRatio: int = None  # default 60, Icon width ratio, in %
     direction: Literal["horizontal", "vertical"] = "vertical"  # The direction in which the list items are arranged
     columnNum: int = None  # default 4,
-    options: List[OptionsItem] = None  # the option items
+    options: SerializeAsAny[List[OptionsItem]] = None  # the option items
 
 
 class CollapseGroup(AmisNode):
@@ -1168,16 +1184,16 @@ class CollapseGroup(AmisNode):
         disabled: bool = None  # default False
         collapsed: bool = None  # default True
         key: Union[int, str] = None  # default -, logo
-        header: Union[str, SchemaNode] = None  # default -, title
-        body: Union[str, SchemaNode] = None  # default -, content
+        header: SerializeAsAny[Union[str, SchemaNode]] = None  # default -, title
+        body: SerializeAsAny[Union[str, SchemaNode]] = None  # default -, content
 
     type: str = "collapse-group"
     activeKey: Union[str, int, List[Union[int, str]]] = None  # Initialize the key to activate the panel
     disabled: bool = None  # default False
     accordion: bool = None  # default False, accordion mode
-    expandIcon: SchemaNode = None  # Custom toggle icon
+    expandIcon: SerializeAsAny[SchemaNode] = None  # Custom toggle icon
     expandIconPosition: Literal["left", "right"] = "left"  # icon position
-    body: List[Union[CollapseItem, SchemaNode]] = None  # group content
+    body: SerializeAsAny[List[Union[CollapseItem, SchemaNode]]] = None  # group content
 
 
 class Markdown(AmisNode):
@@ -1293,7 +1309,7 @@ class InputGroup(FormItem):
 
     type: str = "input-group"
     className: str = None  # CSS class name
-    body: List[FormItem] = None  # Form item collection
+    body: SerializeAsAny[List[FormItem]] = None  # Form item collection
 
 
 class Group(InputGroup):
@@ -1355,7 +1371,7 @@ class InputImage(FormItem):
     autoFill: Dict[str, str] = None  # After the upload is successful, the value returned by the upload interface can
     # be filled into a form item by configuring autoFill (not supported under non-form)
     initAutoFill: bool = None  # False  # 表单反显时是否执行 autoFill
-    uploadBtnText: Union[str, SchemaNode] = None  # 上传按钮文案。支持tpl、schema形式配置。
+    uploadBtnText: SerializeAsAny[Union[str, SchemaNode]] = None  # 上传按钮文案。支持tpl、schema形式配置。
     dropCrop: bool = None  # True  # 图片上传后是否进入裁剪模式
     initCrop: bool = None  # False  # 图片选择器初始化后是否立即进入裁剪模式
 
@@ -1400,7 +1416,7 @@ class Picker(FormItem):
     extractValue: bool = None  # False # extract value
     autoFill: dict = None  # autofill
     modalMode: Literal["dialog", "drawer"] = None  # "dialog" # Set dialog or drawer to configure the popup mode.
-    pickerSchema: Union["CRUD", SchemaNode] = None  # "{mode: 'list', listItem: {title: '${label}'}}"
+    pickerSchema: SerializeAsAny[Union["CRUD", SchemaNode]] = None  # "{mode: 'list', listItem: {title: '${label}'}}"
     # That is to use the rendering of the List type to display the list information. More configuration reference CRUD
     embed: bool = None  # False # whether to use embedded mode
 
@@ -1447,7 +1463,7 @@ class InputText(FormItem):
     valueField: str = None  # option value field "value"
     joinValues: bool = None  # True # join values
     extractValue: bool = None  # extract value
-    addOn: SchemaNode = None  # Input box add-ons, such as with a prompt text, or with a submit button.
+    addOn: SerializeAsAny[SchemaNode] = None  # Input box add-ons, such as with a prompt text, or with a submit button.
     trimContents: bool = None  # whether to remove leading and trailing blank text.
     creatable: bool = None  # whether it can be created, the default is yes, unless it is set to false, only the
     # value in the option can be selected
@@ -1547,15 +1563,15 @@ class Steps(AmisNode):
     """Steps Bar"""
 
     class StepItem(AmisNode):
-        title: Union[str, SchemaNode] = None  # Title
-        subTitle: Union[str, SchemaNode] = None  # Sub Heading
-        description: Union[str, SchemaNode] = None  # Detail Description
+        title: SerializeAsAny[Union[str, SchemaNode]] = None  # Title
+        subTitle: SerializeAsAny[Union[str, SchemaNode]] = None  # Sub Heading
+        description: SerializeAsAny[Union[str, SchemaNode]] = None  # Detail Description
         value: str = None  # Step Value
         icon: str = None  # Icon name, support fontawesome v4 or use url (priority is higher than color)
         className: str = None  # Custom CSS class name
 
     type: str = "steps"
-    steps: List[StepItem] = None  # default [], List of Steps
+    steps: SerializeAsAny[List[StepItem]] = None  # default [], List of Steps
     source: API = None  # Data source, you can obtain current variables through data mapping, or configure API objects
     name: str = None  # Associated context variable
     value: Union[int, str, None] = None  # default -, Set the default value, expressions are not supported
@@ -1573,7 +1589,7 @@ class TooltipWrapper(AmisNode):
     tooltipClassName: str = None  # Text prompt floating layer class name
     style: Union[str, dict] = None  # Custom style (inline style), highest priority
     tooltipStyle: Union[str, dict] = None  # floating layer custom style
-    body: SchemaNode = None  # Content container
+    body: SerializeAsAny[SchemaNode] = None  # Content container
     wrapperComponent: str = None  # "div" | "span"
     inline: bool = None  # default False, whether the content area is displayed inline
     rootClose: bool = None  # default True, whether to click the non-content area to close the prompt
@@ -1638,10 +1654,10 @@ class Select(FormItem):
     multiple: bool = None  # False # Multiple choice
     searchable: bool = None  # False # search
     createBtnLabel: str = None  # "Add option" # Add option
-    addControls: List[FormItem] = None  # Customize new form items
+    addControls: SerializeAsAny[List[FormItem]] = None  # Customize new form items
     addApi: API = None  # Configure the new option interface
     editable: bool = None  # False # edit options
-    editControls: List[FormItem] = None  # Customize edit form items
+    editControls: SerializeAsAny[List[FormItem]] = None  # Customize edit form items
     editApi: API = None  # Configure editing options interface
     removable: bool = None  # False # remove option
     deleteApi: API = None  # Configure delete option interface
@@ -1715,7 +1731,7 @@ class Breadcrumb(AmisNode):
     labelMaxLength: int = None  # Default 16, max display length
     tooltipPosition: PlacementEnum = PlacementEnum.top  # tooltip position
     source: API = None  # dynamic data
-    items: List[BreadcrumbItem] = None  # list of breadcrumb icons
+    items: SerializeAsAny[List[BreadcrumbItem]] = None  # list of breadcrumb icons
 
 
 class Card(AmisNode):
@@ -1754,15 +1770,15 @@ class Card(AmisNode):
     type: str = "card"
     className: str = None  # The outer class name
     href: str = None  # external link link
-    header: Header = None  # Header object
+    header: SerializeAsAny[Header] = None  # Header object
     body: List = []  # Content container, mainly used to place non-form item components
     bodyClassName: str = None  # Content area class name
-    actions: List[Action] = None  # Configure button collection
+    actions: SerializeAsAny[List[Action]] = None  # Configure button collection
     actionsCount: int = None  # default 4, number of buttons in each row
-    itemAction: Action = None  # clicking on a card action
-    media: Media = None  # Media object
+    itemAction: SerializeAsAny[Action] = None  # clicking on a card action
+    media: SerializeAsAny[Media] = None  # Media object
     secondary: Template = None  # secondary note
-    toolbar: List[Action] = None  # toolbar buttons
+    toolbar: SerializeAsAny[List[Action]] = None  # toolbar buttons
     dragging: bool = None  # default False, Whether to show the drag icon
     selectable: bool = None  # default False, can be selected
     checkable: bool = None  # default True, selection button is disabled or not
@@ -1798,7 +1814,7 @@ class ListDisplay(AmisNode):
         avatarClassName: str = None  # default "thumb-sm avatar m-r", Image CSS class name
         desc: Template = None  # Description
         body: List = None  # Content container, mainly used to place non-form item components
-        actions: List[Action] = None  # action buttons area
+        actions: SerializeAsAny[List[Action]] = None  # action buttons area
         actionsPosition: Literal["left", "right"] = "right"  # button position
 
     type: str = "list"
@@ -1808,7 +1824,7 @@ class ListDisplay(AmisNode):
     className: str = None  # The outer CSS class name
     headerClassName: str = None  # default 'amis-grid-header', Top outer CSS class name
     footerClassName: str = None  # default 'amis-grid-footer', Bottom outer CSS class name
-    listItem: ListItem = None  # configured list object for repeat
+    listItem: SerializeAsAny[ListItem] = None  # configured list object for repeat
 
 
 class Textarea(FormItem):
@@ -1889,7 +1905,7 @@ class InputDate(FormItem):
     # can be taken from the context, className refers to the background color
     scheduleClassNames: List[str] = None  # "['bg-warning','bg-danger','bg-success','bg-info','bg-secondary']"
     # The color of the event displayed in the calendar, refer to the background color
-    scheduleAction: SchemaNode = None  # Custom schedule display
+    scheduleAction: SerializeAsAny[SchemaNode] = None  # Custom schedule display
     largeMode: bool = None  # False # zoom mode
 
 
@@ -1930,7 +1946,7 @@ class Calendar(FormItem):
     scheduleClassNames: List[str] = None  # default ['bg-warning', 'bg-danger', 'bg-success', 'bg-info', 'bg-secondary']
     # color of the event displayed in the calendar, refer to the background color
 
-    scheduleAction: SchemaNode = None  # custom schedule display
+    scheduleAction: SerializeAsAny[SchemaNode] = None  # custom schedule display
     largeMode: bool = None  # Default False, zoom mode full size
     todayActiveStyle: Union[str, dict] = None  # Custom styles when activated today
 
@@ -1944,8 +1960,8 @@ class InputKV(FormItem):
     valuePlaceholder: str = None  # value placeholder information
     draggable: bool = None  # Default True, Whether to drag and drop to sort is allowed
     defaultValue: Union[str, int, dict] = None  # default ''
-    keySchema: SchemaNode = None  # key field schema
-    valueSchema: SchemaNode = None  # value field schema
+    keySchema: SerializeAsAny[SchemaNode] = None  # key field schema
+    valueSchema: SerializeAsAny[SchemaNode] = None  # value field schema
 
 
 class InputKVS(FormItem):
@@ -1954,8 +1970,8 @@ class InputKVS(FormItem):
     type: str = "input-kvs"
     addButtonText: str = None  # default 'new field', butto text of the add button
     draggable: bool = None  # Default True, Whether to drag and drop to sort is allowed
-    keyItem: Union[str, SchemaNode] = None  # key field
-    valueItems: List[Union[str, SchemaNode]] = None  # items for the key
+    keyItem: SerializeAsAny[Union[str, SchemaNode]] = None  # key field
+    valueItems: SerializeAsAny[List[Union[str, SchemaNode]]] = None  # items for the key
 
 
 class InputTimeRange(FormItem):
@@ -2024,8 +2040,8 @@ class Transfer(FormItem):
     # support list or tree. Default is list.
     rightMode: str = None  # When the display form is associated, it is used to configure the right selection form,
     # optional: list, table, tree, chained.
-    menuTpl: SchemaNode = None  # Used to customize option display
-    valueTpl: SchemaNode = None  # Used to customize the display of the value
+    menuTpl: SerializeAsAny[SchemaNode] = None  # Used to customize option display
+    valueTpl: SerializeAsAny[SchemaNode] = None  # Used to customize the display of the value
 
 
 class TransferPicker(Transfer):
@@ -2061,10 +2077,10 @@ class InputTree(FormItem):
     joinValues: bool = None  # True # join values
     extractValue: bool = None  # False # extract value
     creatable: bool = None  # False # New option
-    addControls: List[FormItem] = None  # Customize new form items
+    addControls: SerializeAsAny[List[FormItem]] = None  # Customize new form items
     addApi: API = None  # Configure the new option interface
     editable: bool = None  # False # edit options
-    editControls: List[FormItem] = None  # Customize edit form items
+    editControls: SerializeAsAny[List[FormItem]] = None  # Customize edit form items
     editApi: API = None  # Configure editing options interface
     removable: bool = None  # False # remove option
     deleteApi: API = None  # Configure delete option interface
@@ -2165,7 +2181,7 @@ class Carousel(AmisNode):
 
     type: str = "carousel"  # Specify as the Carousel renderer
     className: str = None  # "panel-default" # The class name of the outer Dom
-    options: List[Item] = None  # "[]" # Carousel panel data
+    options: SerializeAsAny[List[Item]] = None  # "[]" # Carousel panel data
     itemSchema: dict = None  # custom schema to display data
     auto: bool = True  # whether to rotate automatically
     interval: str = None  # "5s" # Switch animation interval
@@ -2209,7 +2225,9 @@ class CRUD(AmisNode):
     source: str = None  # The data mapping interface returns the value of a field. If it is not set, the ${items} or
     # ${rows} returned by the interface will be used by default. It can also be set to the content of the upper data
     # source.
-    filter: Union[SchemaNode, Form] = None  # Set the filter, when the form is submitted, it will bring the data to
+    filter: SerializeAsAny[
+        Union[SchemaNode, Form]
+    ] = None  # Set the filter, when the form is submitted, it will bring the data to
     # the current mode refresh list.
     filterTogglable: bool = None  # False # whether the filter can be displayed or hidden
     filterDefaultVisible: bool = None  # True # Set whether the filter is visible by default.
@@ -2227,9 +2245,11 @@ class CRUD(AmisNode):
     saveOrderApi: API = None  # Save order api.
     quickSaveApi: API = None  # API for batch saving after quick editing.
     quickSaveItemApi: API = None  # API to use when quick edit is configured to save in time.
-    bulkActions: List[Action] = None  # Batch operation list, after configuration, the table can be selected.
+    bulkActions: SerializeAsAny[List[Action]] = None  # Batch operation list, after configuration, the table can be selected.
     defaultChecked: bool = None  # When batch operations are available, whether to check all by default.
-    messages: Messages = None  # Override the message prompt, if not specified, the message returned by the api will
+    messages: SerializeAsAny[
+        Messages
+    ] = None  # Override the message prompt, if not specified, the message returned by the api will
     # be used
     primaryField: str = None  # Set the ID field name. 'id'
     perPage: int = None  # Set how many pieces of data are displayed on one page. 10
@@ -2278,7 +2298,7 @@ class TableColumn(AmisNode):
     quickEdit: Union[bool, dict] = None  # quick edit
     copyable: Union[bool, dict] = None  # whether to copy boolean or {icon: string, content:string}
     sortable: bool = None  # False # whether it is sortable
-    searchable: Union[bool, SchemaNode] = None  # False # whether to quickly search boolean|Schema
+    searchable: SerializeAsAny[Union[bool, SchemaNode]] = None  # False # whether to quickly search boolean|Schema
     width: Union[int, str] = None  # column width
     remark: RemarkT = None  # prompt message
     breakpoint: str = None  # *,ls. When there are too many columns, the content cannot be displayed completely,
@@ -2293,7 +2313,7 @@ class ColumnOperation(TableColumn):
     """Action column"""
 
     type: str = "operation"
-    buttons: List[Union[Action, AmisNode, dict]] = None
+    buttons: SerializeAsAny[List[Union[Action, AmisNode, dict]]] = None
 
 
 class ColumnImage(Image, TableColumn):
@@ -2329,9 +2349,9 @@ class Table(AmisNode):
     headerClassName: str = None  # "Action.md-table-header" # Top outer CSS class name
     footerClassName: str = None  # "Action.md-table-footer" # Bottom outer CSS class name
     toolbarClassName: str = None  # "Action.md-table-toolbar" # Toolbar CSS class name
-    columns: List[Union[TableColumn, SchemaNode]] = None  # Used to set column information
+    columns: SerializeAsAny[List[Union[TableColumn, SchemaNode]]] = None  # Used to set column information
     combineNum: int = None  # Automatically combine cells
-    itemActions: List[Action] = None  # Floating row action button group
+    itemActions: SerializeAsAny[List[Action]] = None  # Floating row action button group
     itemCheckableOn: Expression = None  # Configure the condition for whether the current row can be checked, use an
     # expression
     itemDraggableOn: Expression = None  # To configure whether the current row can be dragged or not, use an expression
@@ -2340,7 +2360,7 @@ class Table(AmisNode):
     rowClassNameExpr: Template = None  # Add CSS class name to row via template
     prefixRow: list = None  # top summary row
     affixRow: list = None  # Bottom summary row
-    itemBadge: "Badge" = None  # Row badge configuration
+    itemBadge: SerializeAsAny["Badge"] = None  # Row badge configuration
     autoFillHeight: bool = None  # Content area adaptive height
     footable: Union[bool, dict] = None  # When there are too many columns, the content cannot be fully displayed.
     # Some information can be displayed at the bottom, allowing users to expand to view the details. The
@@ -2356,7 +2376,7 @@ class Chart(AmisNode):
 
     type: str = "chart"  # specify the chart renderer
     className: str = None  # The class name of the outer Dom
-    body: SchemaNode = None  # Content container
+    body: SerializeAsAny[SchemaNode] = None  # Content container
     api: API = None  # Configuration item interface address
     source: dict = None  # Get the variable value in the data chain as configuration through data mapping
     initFetch: bool = None  # whether to request the interface when the component is initialized
@@ -2444,7 +2464,7 @@ class Property(AmisNode):
     separator: str = None  # ',' # Separator between attribute name and value in 'simple' mode
     source: Template = None  # data source
     title: str = None  # title
-    items: List[Item] = None  # data items
+    items: SerializeAsAny[List[Item]] = None  # data items
 
 
 class QRCode(AmisNode):
@@ -2527,7 +2547,7 @@ class PaginationWrapper(AmisNode):
     perPage: int = None  # default 10, Display multiple pieces of data per page
     position: Literal["top", "none", "bottom"] = "top"  # Pagination display position, if it is configured as none,
     # you need to configure the pagination component in the content area, otherwise it will not be displayed
-    body: SchemaNode = None  # Display content
+    body: SerializeAsAny[SchemaNode] = None  # Display content
 
 
 class Pagination(AmisNode):
@@ -2557,8 +2577,8 @@ class MatrixCheckboxes(FormItem):
         label: str
 
     type: str = "matrix-checkboxes"
-    columns: List[ColumnItem] = None  # list of column items
-    rows: List[RowItem] = None  # list of row items
+    columns: SerializeAsAny[List[ColumnItem]] = None  # list of column items
+    rows: SerializeAsAny[List[RowItem]] = None  # list of row items
     rowLabel: str = None  # row header description
     source: API = None  # Api address, if the option group is not fixed.
     multiple: bool = None  # default False, multiple choice
@@ -2569,7 +2589,7 @@ class Wrapper(AmisNode):
     type: str = "wrapper"
     className: str = None  # The class name of the outer Dom
     style: Union[str, dict] = None  # Custom style (inline style), highest priority
-    body: SchemaNode = None  # Display content
+    body: SerializeAsAny[SchemaNode] = None  # Display content
     size: Union[str, SizeEnum] = None  # Specify the wrapper size, support: xs, sm, md, lg
 
 
@@ -2577,7 +2597,7 @@ class WebComponent(AmisNode):
     type: str = "web-component"
     tag: str = None  # The specific web-component tag used
     style: Union[str, dict] = None  # Custom style (inline style), highest priority
-    body: SchemaNode = None  # child node
+    body: SerializeAsAny[SchemaNode] = None  # child node
     props: dict = None  # attributes by their labels
 
 
@@ -2601,7 +2621,7 @@ class Sparkline(AmisNode):
     width: int = None  # width of the sparkline image
     height: int = None  # height of the sparkline image
     value: List[Union[int, float]] = None  #
-    clickAction: Action = None  # Action when clicked
+    clickAction: SerializeAsAny[Action] = None  # Action when clicked
 
 
 class Tag(AmisNode):
@@ -2637,7 +2657,7 @@ class Alert(AmisNode):
     type: str = "alert"  # Specify as the alert renderer
     className: str = None  # The class name of the outer Dom
     level: str = None  # "info" # Level, can be: info, success, warning or danger
-    body: SchemaNode = None  # Display content
+    body: SerializeAsAny[SchemaNode] = None  # Display content
     showCloseButton: bool = None  # False # whether to show the close button
     closeButtonClassName: str = None  # CSS class name of the close button
     showIcon: bool = None  # False # whether to show icon
@@ -2649,15 +2669,15 @@ class Dialog(AmisNode):
     """Dialog"""
 
     type: str = "dialog"  # Specify as Dialog renderer
-    title: SchemaNode = None  # Popup layer title
-    body: SchemaNode = None  # Add content to the Dialog content area
+    title: SerializeAsAny[SchemaNode] = None  # Popup layer title
+    body: SerializeAsAny[SchemaNode] = None  # Add content to the Dialog content area
     size: Union[str, SizeEnum] = None  # Specify the dialog size, support: xs, sm, md, lg, xl, full
     bodyClassName: str = None  # "modal-body" # The style class name of the Dialog body area
     closeOnEsc: bool = None  # False # whether to support pressing Esc to close Dialog
     showCloseButton: bool = None  # True # whether to show the close button in the upper right corner
     showErrorMsg: bool = None  # True # whether to display the error message in the lower left corner of the popup
     disabled: bool = None  # False # If this property is set, the Dialog is read-only and has no submit operation.
-    actions: List[Action] = None  # If you want to not display the bottom button, you can configure: [] "[Confirm]
+    actions: SerializeAsAny[List[Action]] = None  # If you want to not display the bottom button, you can configure: [] "[Confirm]
     # and [Cancel]"
     data: dict = None  # Support data mapping, if not set, it will inherit the data in the context of the trigger
     # button by default.
@@ -2668,8 +2688,8 @@ class Drawer(AmisNode):
     """drawer"""
 
     type: str = "drawer"  # "drawer" specifies the Drawer renderer
-    title: SchemaNode = None  # Popup layer title
-    body: SchemaNode = None  # Add content to the Drawer content area
+    title: SerializeAsAny[SchemaNode] = None  # Popup layer title
+    body: SerializeAsAny[SchemaNode] = None  # Add content to the Drawer content area
     size: Union[str, SizeEnum] = None  # Specify Drawer size, support: xs, sm, md, lg
     position: str = None  # 'left' # position
     bodyClassName: str = None  # "modal-body" # The style class name of the Drawer body area
@@ -2677,7 +2697,9 @@ class Drawer(AmisNode):
     closeOnOutside: bool = None  # False # whether to close the Drawer when clicking outside the content area
     overlay: bool = None  # True # whether to display the overlay
     resizable: bool = None  # False # whether the size of the Drawer can be changed by dragging and dropping
-    actions: List[Action] = None  # Can not be set, there are only two buttons by default. "[Confirm] and [Cancel]"
+    actions: SerializeAsAny[
+        List[Action]
+    ] = None  # Can not be set, there are only two buttons by default. "[Confirm] and [Cancel]"
     data: dict = None  # Support data mapping, if not set, it will inherit the data in the context of the trigger
     # button by default.
     className: str = None  # Drawer 最外层容器的样式类名
@@ -2778,7 +2800,7 @@ class Tasks(AmisNode):
     type: str = "tasks"  # Specify as Tasks renderer
     className: str = None  # The class name of the outer Dom
     tableClassName: str = None  # class name of table Dom
-    items: List[Item] = None  # task list
+    items: SerializeAsAny[List[Item]] = None  # task list
     checkApi: API = None  # Return the task list, please refer to items for the returned data.
     submitApi: API = None  # API used for submitting tasks
     reSubmitApi: API = None  # If the task fails and can be retried, this API will be used when submitting
@@ -2810,7 +2832,7 @@ class Wizard(AmisNode):
         initFetch: bool = None  # whether the current step data initialization interface is initially fetched.
         initFetchOn: Expression = None  # whether the current step data initialization interface is initially fetched
         # is determined by an expression.
-        body: List[FormItem] = None  # The form item collection of the current step, please refer to FormItem.
+        body: SerializeAsAny[List[FormItem]] = None  # The form item collection of the current step, please refer to FormItem.
 
     type: str = "wizard"  # Specify as Wizard component
     mode: str = None  # "horizontal" # Display mode, choose: horizontal or vertical
@@ -2842,7 +2864,7 @@ class AmisRender(AmisNode):
     """Amis render"""
 
     type: str = "amis"  # Specify as amis renderer
-    schema_: SchemaNode = Field(None, alias="schema")  # amis schema
+    schema_: SerializeAsAny[SchemaNode] = Field(None, alias="schema")  # amis schema
     props: dict = None  # amis props
 
 
