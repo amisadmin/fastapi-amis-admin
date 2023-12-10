@@ -45,6 +45,7 @@ def get_column_from_field(field: Any) -> Column:  # type: ignore
 
 
 class SQLModel(_SQLModel):
+    __table_args__ = {"extend_existing": True}
     # support cached_property,hybrid_method,hybrid_property
     if IS_PYDANTIC_V2:
         model_config = SQLModelConfig(
