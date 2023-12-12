@@ -16,7 +16,7 @@ from fastapi_amis_admin.amis.components import (
     Validation,
 )
 from fastapi_amis_admin.amis.constants import LabelEnum
-from fastapi_amis_admin.models.enums import Choices
+from fastapi_amis_admin.models import Choices
 from fastapi_amis_admin.utils.pydantic import (
     PYDANTIC_V2,
     ModelField,
