@@ -77,7 +77,7 @@ class ModelFieldProxy:
 
 
 class TableModelParser:
-    _name_format = "{model_name}_{field_name}"
+    _name_format = "{model_name}__{field_name}"
     _alias_format = "{table_name}__{field_key}"
 
     def __init__(self, table_model: Type[TableModelT]):
