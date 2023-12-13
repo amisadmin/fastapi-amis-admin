@@ -262,7 +262,7 @@ def _get_label_modelfield(label: Label) -> ModelField:
         try:
             type_ = label.expression.type.python_type
         except NotImplementedError:
-            type_ = str
+            type_ = Union[float, int, str, None]
         modelfield = create_response_field(
             name=label.key,
             type_=type_,
@@ -271,7 +271,7 @@ def _get_label_modelfield(label: Label) -> ModelField:
     return modelfield
 
 
-def LabelField(label: Label, field: FieldInfo, type_: type = str) -> Label:
+def LabelField(label: Label, field: FieldInfo, type_: type = Union[float, int, str, None]) -> Label:
     """Use for adding FieldInfo to sqlalchemy Label type"""
     modelfield = _get_label_modelfield(label)
     field.alias = label.key
