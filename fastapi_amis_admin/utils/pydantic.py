@@ -18,7 +18,7 @@ if PYDANTIC_V2:
     from pydantic._internal._utils import ValueItems  # noqa: F401
     from pydantic.v1.datetime_parse import parse_date, parse_datetime  # noqa: F401
     from pydantic.v1.utils import deep_update, lenient_issubclass, smart_deepcopy  # noqa: F401
-    from pydantic_settings import BaseSettings  # noqa: F401
+    from pydantic_settings import BaseSettings as _BaseSettings  # noqa: F401
 
     GenericModel = BaseModel
     from pydantic import model_validator
@@ -29,6 +29,9 @@ if PYDANTIC_V2:
 
     class ORMModelMixin(BaseModel):
         model_config = ConfigDict(from_attributes=True)
+
+    class BaseSettings(_BaseSettings):
+        model_config = ConfigDict(extra="ignore")
 
     def create_model_by_fields(
         name: str,
