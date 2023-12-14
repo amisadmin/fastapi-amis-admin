@@ -472,10 +472,10 @@ class App(Page):
     brandName: Optional[Template] = None  # app name
     logo: Optional[str] = None  # Support image address, or svg.
     className: Optional[str] = None  # css class name
-    header: Optional[Template] = None  # header
-    asideBefore: Optional[Template] = None  # The front area on the page menu.
-    asideAfter: Optional[Template] = None  # The front area under the page menu.
-    footer: Optional[Template] = None  # The page.
+    header: SerializeAsAny[Optional[Template]] = None  # header
+    asideBefore: SerializeAsAny[Optional[Template]] = None  # The front area on the page menu.
+    asideAfter: SerializeAsAny[Optional[Template]] = None  # The front area under the page menu.
+    footer: SerializeAsAny[Optional[Template]] = None  # The page.
     pages: SerializeAsAny[
         Optional[List[Union[PageSchema, dict]]]
     ] = None  # Array<page configuration> specific page configuration.
@@ -1325,7 +1325,7 @@ class InputGroup(FormItem):
 
     type: str = "input-group"
     className: Optional[str] = None  # CSS class name
-    body: SerializeAsAny[Optional[List[FormItem]]] = None  # Form item collection
+    body: SerializeAsAny[Optional[List[Union[FormItem, AmisNode]]]] = None  # Form item collection
 
 
 class Group(InputGroup):
