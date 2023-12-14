@@ -63,6 +63,7 @@ test = [
     "jinja2 >=2.11.2,<4.0.0",
     "ujson>=4.0.1",
     "requests>=2.28.1",
+    "pydantic-settings>=2.0.0",
 ]
 dev = [
     "pre-commit>=2.20.0",
