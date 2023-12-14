@@ -141,7 +141,7 @@ class SqlalchemySelector(Generic[TableModelT]):
         }
 
     async def get_select(self, request: Request) -> Select:
-        return select(*self._select_entities.values())
+        return select(*self._select_entities.values()).select_from(self.model)
 
     def _calc_ordering(self, orderBy, orderDir):
         sqlfield = self._select_entities.get(orderBy, self._filter_entities.get(orderBy))
