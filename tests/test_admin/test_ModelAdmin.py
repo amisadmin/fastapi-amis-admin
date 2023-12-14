@@ -73,13 +73,13 @@ async def test_list_display_join(site: AdminSite, async_client: AsyncClient, mod
     ins = site.get_admin_or_create(ArticleAdmin)
     # test schemas
     assert "id" in model_fields(ins.schema_list)
-    assert "user_username" in model_fields(ins.schema_list)
+    assert "user__username" in model_fields(ins.schema_list)
     assert "description" in model_fields(ins.schema_list)
     assert "nickname" in model_fields(ins.schema_list)
     assert "pwd" in model_fields(ins.schema_list)
     assert model_fields(ins.schema_list)["pwd"].field_info.title == "pwd_title"
 
-    assert "user_username" in model_fields(ins.schema_filter)
+    assert "user__username" in model_fields(ins.schema_filter)
     assert "nickname" in model_fields(ins.schema_filter)
     assert "pwd" in model_fields(ins.schema_filter)
 

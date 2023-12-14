@@ -164,7 +164,7 @@ async def test_list_filter_relationship(app: FastAPI, async_client: AsyncClient,
     app.include_router(ins.router)
     # test schemas
     assert "title" in model_fields(ins.schema_filter)
-    assert "user_username" in model_fields(ins.schema_filter)
+    assert "user__username" in model_fields(ins.schema_filter)
     assert "pwd" in model_fields(ins.schema_filter)
     assert "pwd2" in model_fields(ins.schema_filter)
     assert model_fields(ins.schema_filter)["pwd2"].field_info.title == "pwd_title"
@@ -224,13 +224,13 @@ async def test_fields(app: FastAPI, async_client: AsyncClient, fake_articles, mo
     # test schemas
     assert "id" in model_fields(ins.schema_list)
     assert "title" in model_fields(ins.schema_list)
-    assert "user_username" in model_fields(ins.schema_list)
+    assert "user__username" in model_fields(ins.schema_list)
     assert "pwd" in model_fields(ins.schema_list)
     assert "pwd2" in model_fields(ins.schema_list)
     assert "description" not in model_fields(ins.schema_list)
     # test schema_filter
     assert "title" in model_fields(ins.schema_filter)
-    assert "user_username" in model_fields(ins.schema_filter)
+    assert "user__username" in model_fields(ins.schema_filter)
     assert "pwd" in model_fields(ins.schema_filter)
     assert "pwd2" in model_fields(ins.schema_filter)
     assert model_fields(ins.schema_filter)["pwd2"].field_info.title == "pwd_title"
