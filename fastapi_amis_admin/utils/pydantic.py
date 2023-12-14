@@ -1,4 +1,5 @@
 from enum import Enum
+from functools import lru_cache
 from typing import Any, Dict, Optional, Sequence, Set, Type, Union
 
 from fastapi._compat import (  # noqa: F401
@@ -71,6 +72,7 @@ if PYDANTIC_V2:
                     return True
         return False
 
+    @lru_cache(maxsize=512)
     def model_fields(model: Type[BaseModel]) -> Dict[str, ModelField]:
         fields = {}
         for field_name, field in model.model_fields.items():
