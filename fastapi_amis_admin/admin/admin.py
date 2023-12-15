@@ -759,7 +759,7 @@ class ModelAdmin(SqlalchemyCrud, BaseActionAdmin):
             "filter-toggler",
             "reload",
             "bulkActions",
-            {"type": "columns-toggler", "align": "right", "draggable": True},
+            {"type": "columns-toggler", "align": "right"},
             {"type": "drag-toggler", "align": "right"},
             {"type": "pagination", "align": "right"},
             {
