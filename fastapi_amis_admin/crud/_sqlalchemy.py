@@ -105,6 +105,7 @@ class SqlalchemySelector(Generic[TableModelT]):
         `?link_model=auth_user&link_item_id={user_id}`.
     """
     pk_name: str = "id"  # Primary key name
+    parser: TableModelParser = None  # Table model parser
 
     def __init__(self, model: Type[TableModelT] = None, fields: List[SqlaField] = None) -> None:
         self.model = model or self.model
@@ -112,7 +113,7 @@ class SqlalchemySelector(Generic[TableModelT]):
         assert hasattr(self.model, "__table__"), "model must be has __table__ attribute."
         self.pk_name: str = self.pk_name or self.model.__table__.primary_key.columns.keys()[0]
         self.pk: InstrumentedAttribute = self.model.__dict__[self.pk_name]
-        self.parser = TableModelParser(self.model)
+        self.parser = self.parser or TableModelParser(self.model)
         fields = fields or self.fields or self.model_insfields
         exclude = self.parser.filter_insfield(self.exclude)
         self.fields = [

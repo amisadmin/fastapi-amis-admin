@@ -384,7 +384,7 @@ class PageAdmin(PageSchemaAdmin, RouterAdmin):
     def __init__(self, app: "AdminApp"):
         RouterAdmin.__init__(self, app)
         if self.page_path is None:
-            self.page_path = f"/{self.__class__.__module__}/{self.__class__.__name__}"
+            self.page_path = f"/{self.__class__.__name__}"
         PageSchemaAdmin.__init__(self, app)
 
     async def page_permission_depend(self, request: Request) -> bool:
@@ -636,10 +636,14 @@ class ModelAdmin(SqlalchemyCrud, BaseActionAdmin):
         self.schema_model = self.parser.get_table_model_schema(self.model)
         assert self.schema_model, "schema_model is None"
         list_display_insfield = self.parser.filter_insfield(self.list_display, save_class=(Label,))
-        self.list_filter = self.list_filter and self.list_filter.copy() or list_display_insfield or []
+        list_display_insfield = list_display_insfield or list(self.parser.get_table_model_insfields(self.model).values())
+        # Initialize the filterable fields
+        self.list_filter = self.list_filter and self.list_filter.copy() or list_display_insfield
         self.list_filter.extend([field for field in self.search_fields if field not in self.list_filter])
+        # Initialize the selected fields
+        self.fields = self.fields and self.fields.copy() or []
+        self.fields.extend([field for field in list_display_insfield if field not in self.fields])
         SqlalchemyCrud.__init__(self, self.model, self.engine)
-        self.fields.extend(list_display_insfield)
         BaseActionAdmin.__init__(self, app)
 
     @property
