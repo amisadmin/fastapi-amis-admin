@@ -8,7 +8,7 @@
 ```python
 # 先创建一个SQLModel模型,详细请参考: https://sqlmodel.tiangolo.com/
 class Category(SQLModel, table=True):
-    id: int = Field(default=None, primary_key=True, nullable=False)
+    id: Optional[int] = Field(default=None, primary_key=True, nullable=False)
     name: str = Field(title='CategoryName')
     description: str = Field(default='', title='Description')
 
@@ -38,10 +38,10 @@ class CategoryAdmin(admin.ModelAdmin):
 ```python
 # 创建一个SQLModel模型,详细请参考: https://sqlmodel.tiangolo.com/
 class Article(SQLModel, table=True):
-    id: int = Field(default=None, primary_key=True, nullable=False)
+    id: Optional[int] = Field(default=None, primary_key=True, nullable=False)
     title: str = Field(title='ArticleTitle', max_length=200)
     description: Optional[str] = Field(default='', title='ArticleDescription', max_length=400)
-    status: bool = Field(None, title='status')
+    status: bool = Field(False, title='status')
     content: str = Field(title='ArticleContent')
     # 关联Category模型,模型定义参考[示例-1]
     category_id: Optional[int] = Field(default=None, foreign_key="category.id", title='CategoryId')

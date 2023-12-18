@@ -129,7 +129,7 @@ class Base(SQLModel):
 
 # 创建SQLModel模型,详细请参考: https://sqlmodel.tiangolo.com/
 class Category(SQLModel, table=True):
-    id: int = Field(default=None, primary_key=True, nullable=False)
+    id: Optional[int] = Field(default=None, primary_key=True, nullable=False)
     name: str = Field(title='CategoryName', max_length=100, unique=True, index=True, nullable=False)
     description: str = Field(default='', title='Description', max_length=255)
 
@@ -182,7 +182,7 @@ from pydantic import BaseModel, Field
 
 
 class CategorySchema(BaseModel):
-    id: int = Field(default=None, primary_key=True, nullable=False)
+    id: Optional[int] = Field(default=None, primary_key=True, nullable=False)
     name: str = Field(title="CategoryName")
     description: str = Field(default="", title="CategoryDescription")
 
@@ -194,7 +194,6 @@ class CategorySchema(BaseModel):
 
 ```python
 from fastapi import FastAPI
-from sqlmodel import SQLModel
 from fastapi_amis_admin.admin.settings import Settings
 from fastapi_amis_admin.admin.site import AdminSite
 from fastapi_amis_admin.admin import admin

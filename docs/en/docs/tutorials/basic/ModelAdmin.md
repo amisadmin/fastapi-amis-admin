@@ -7,7 +7,7 @@ Model management is the most commonly used management class in background manage
 ```python
 # First create a SQLModel model, please refer to: https://sqlmodel.tiangolo.com/
 class Category(SQLModel, table=True):
-    id: int = Field(default=None, primary_key=True, nullable=False)
+    id: Optional[int] = Field(default=None, primary_key=True, nullable=False)
     name: str = Field(title='CategoryName')
     description: str = Field(default='', title='Description')
 
@@ -37,7 +37,7 @@ Let's take a look at this simple example-1. It completes the following steps:
 ```python
 # Create a SQLModel model, please refer to: https://sqlmodel.tiangolo.com/
 class Article(SQLModel, table=True):
-    id: int = Field(default=None, primary_key=True, nullable=False)
+    id: Optional[int] = Field(default=None, primary_key=True, nullable=False)
     title: str = Field(title='ArticleTitle', max_length=200)
     description: Optional[str] = Field(default='', title='ArticleDescription', max_length=400)
     status: bool = Field(None, title='status')

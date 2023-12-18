@@ -65,7 +65,7 @@ engine = create_engine("sqlite+pysqlite:///amisadmin.db", echo=True, future=True
 #### session_maker
 
 ```python
-self.session_maker: sessionmaker = sessionmaker(self.async_engine, autoflush=False)
+self.session_maker: sessionmaker = sessionmaker(self.engine, autoflush=False)
 ```
 
 ### 方法:

@@ -59,12 +59,12 @@ class ElementTemplateAdmin(MyJinja2Admin):
 
 ```python linenums="1" hl_lines="32"
 from fastapi_amis_admin import admin
-from fastapi_amis_admin.models.fields import Field
+from fastapi_amis_admin.models import Field
 
 
 # 创建一个SQLModel模型,详细请参考: https://sqlmodel.tiangolo.com/
 class Article(SQLModel, table=True):
-    id: int = Field(default=None, primary_key=True, nullable=False)
+    id: Optional[int] = Field(default=None, primary_key=True, nullable=False)
     title: str = Field(title='ArticleTitle', max_length=200)
     description: Optional[str] = Field(default='', title='ArticleDescription', max_length=400)
     status: bool = Field(None, title='status')
