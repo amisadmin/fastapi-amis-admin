@@ -2,9 +2,9 @@ from datetime import datetime
 from typing import List, Optional
 
 from sqlalchemy import JSON, Column, String, Text
-from sqlmodel import Field, Relationship
+from sqlmodel import Field, Relationship, SQLModel
 
-from fastapi_amis_admin.models import SQLModel
+from fastapi_amis_admin.models import ChoiceType
 from tests.models.schemas import ArticleStatusChoices
 
 Base = SQLModel
@@ -63,7 +63,7 @@ class ArticleContent(PkModelMixin, table=True):
 class Article(PkModelMixin, CreateTimeModelMixin, table=True):
     title: str = Field(title="ArticleTitle", max_length=200)
     description: str = Field(default="", title="ArticleDescription", sa_column=Column(Text))
-    status: ArticleStatusChoices = Field(ArticleStatusChoices.PENDING, title="status")
+    status: ArticleStatusChoices = Field(ArticleStatusChoices.PENDING, title="status", sa_type=ChoiceType(ArticleStatusChoices))
 
     category_id: Optional[int] = Field(default=None, foreign_key="category.id", title="CategoryId")
     category: Optional[Category] = Relationship(back_populates="articles")
