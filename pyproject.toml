@@ -51,11 +51,11 @@ Source = "https://github.com/amisadmin/fastapi_amis_admin"
 [project.optional-dependencies]
 standard = [
     "uvicorn[standard] >=0.19.0,<1.0",
-    "fastapi-amis-admin-cli>=0.2.0,<0.3.0",
+    "fastapi-amis-admin-cli>=0.2.1,<0.3.0",
 ]
 test = [
     "uvicorn[standard] >=0.19.0,<1.0",
-    "fastapi-amis-admin-cli>=0.2.0,<0.3.0",
+    "fastapi-amis-admin-cli>=0.2.1,<0.3.0",
     "pytest >=6.2.4",
     "aiosqlite>=0.15.0",
     "pytest-asyncio>=0.17",
@@ -70,7 +70,7 @@ dev = [
     "ruff>=0.0.261",
 ]
 cli = [
-    "fastapi-amis-admin-cli>=0.2.0,<0.3.0",
+    "fastapi-amis-admin-cli>=0.2.1,<0.3.0",
 ]
 
 # pytest
@@ -88,16 +88,16 @@ include = '\.pyi?$'
 
 [tool.ruff]
 select = [
-    "E",  # pycodestyle errors
-    "W",  # pycodestyle warnings
-    "F",  # pyflakes
-    "I",  # isort
-    "C",  # flake8-comprehensions
-    "B",  # flake8-bugbear
+    "E", # pycodestyle errors
+    "W", # pycodestyle warnings
+    "F", # pyflakes
+    "I", # isort
+    "C", # flake8-comprehensions
+    "B", # flake8-bugbear
 ]
 ignore = [
-    "B008",  # do not perform function calls in argument defaults
-    "C901",  # too complex
+    "B008", # do not perform function calls in argument defaults
+    "C901", # too complex
 ]
 # Same as Black.
 line-length = 130
@@ -109,4 +109,4 @@ line-length = 130
 [tool.pdm.dev-dependencies]
 [tool.pdm.scripts]
 lint = "pre-commit run --all-files"
-test= "pytest"
+test = "pytest"
