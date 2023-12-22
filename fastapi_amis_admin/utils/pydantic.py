@@ -66,10 +66,18 @@ if PYDANTIC_V2:
         return field.field_info.annotation
 
     def field_allow_none(field: ModelField) -> bool:
-        if is_union(field.field_info.annotation):
-            for t in get_args(field.field_info.annotation):
-                if is_none_type(t):
-                    return True
+        ann = field.field_info.annotation
+        if not is_union(ann):
+            origin = get_origin(ann)
+            if origin is None:
+                return False
+            elif origin is Annotated:
+                return field_allow_none(get_args(ann)[0])
+            elif not is_union(origin):
+                return False
+        for t in get_args(ann):
+            if is_none_type(t):
+                return True
         return False
 
     @lru_cache(maxsize=512)
