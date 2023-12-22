@@ -12,7 +12,6 @@ from fastapi_amis_admin.models.fields import Field
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    print("Starting", app)
     # 创建初始化数据库表
     await site.db.async_run_sync(SQLModel.metadata.create_all, is_session=False)
     yield
