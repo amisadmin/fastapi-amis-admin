@@ -131,12 +131,10 @@ msgid "List display"
 msgstr "Show"
 
 #: admin/extensions/admin.py:128
-#, fuzzy
 msgid "List filter"
 msgstr "Filter"
 
 #: admin/extensions/admin.py:130
-#, fuzzy
 msgid "Read"
 msgstr "Erstellen"
 

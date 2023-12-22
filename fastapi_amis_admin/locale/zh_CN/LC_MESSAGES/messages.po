@@ -130,12 +130,10 @@ msgid "List display"
 msgstr "列表展示"
 
 #: admin/extensions/admin.py:128
-#, fuzzy
 msgid "List filter"
 msgstr "数据筛选"
 
 #: admin/extensions/admin.py:130
-#, fuzzy
 msgid "Read"
 msgstr "新增"
 
