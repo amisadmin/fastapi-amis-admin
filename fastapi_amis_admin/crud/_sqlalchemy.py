@@ -513,9 +513,9 @@ class SqlalchemyCrud(
                 if data.filters:
                     sel = sel.filter(*self.calc_filter_clause(data.filters))
             if paginator.show_total:
-                data.total = await self.db.async_scalar(
-                    select(func.count("*")).select_from(sel.with_only_columns(self.pk).subquery())
-                )
+                data.total = await self.db.async_scalar(sel.with_only_columns(func.count("*")))
+                if data.total == 0:
+                    return BaseApiOut(data=data)
             orderBy = self._calc_ordering(paginator.orderBy, paginator.orderDir)
             if orderBy:
                 sel = sel.order_by(*orderBy)
