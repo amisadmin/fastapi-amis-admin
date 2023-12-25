@@ -512,14 +512,14 @@ class SqlalchemyCrud(
                 data.filters = await self.on_filter_pre(request, filters)
                 if data.filters:
                     sel = sel.filter(*self.calc_filter_clause(data.filters))
-            if paginator.show_total:
+            if paginator.showTotal:
                 data.total = await self.db.async_scalar(sel.with_only_columns(func.count("*")))
                 if data.total == 0:
                     return BaseApiOut(data=data)
             orderBy = self._calc_ordering(paginator.orderBy, paginator.orderDir)
             if orderBy:
                 sel = sel.order_by(*orderBy)
-            sel = sel.limit(paginator.perPage).offset((paginator.page - 1) * paginator.perPage)
+            sel = sel.limit(paginator.perPage).offset(paginator.offset)
             result = await self.db.async_execute(sel)
             return BaseApiOut(data=await self.on_list_after(request, result, data))
 

@@ -1,5 +1,6 @@
 from enum import Enum
 from typing import Any, Dict, Generic, List, Optional, TypeVar, Union
+from warnings import warn
 
 from fastapi_amis_admin.utils.pydantic import AllowExtraModelMixin, GenericModel
 
@@ -46,7 +47,7 @@ class Paginator:
         self,
         page: Union[int, str] = 1,
         perPage: Union[int, str] = None,
-        show_total: int = 1,
+        showTotal: bool = True,
         orderBy: str = None,
         orderDir: str = "asc",
     ):
@@ -56,7 +57,20 @@ class Paginator:
         self.perPage = perPage if perPage > 0 else self.perPageDefault
         if self.perPageMax:
             self.perPage = min(self.perPage, self.perPageMax)
-        self.show_total = show_total
+        self.showTotal = showTotal
         self.orderBy = orderBy
         self.orderDir = orderDir
         return self
+
+    @property
+    def offset(self):
+        return (self.page - 1) * self.perPage
+
+    @property
+    def limit(self):
+        return self.perPage
+
+    @property
+    def show_total(self):
+        warn("show_total is deprecated, use showTotal instead", DeprecationWarning, stacklevel=1)
+        return self.showTotal
