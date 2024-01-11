@@ -2,6 +2,7 @@ import typing
 
 from fastapi import FastAPI
 from fastapi.exceptions import RequestValidationError, ValidationException
+from fastapi.responses import JSONResponse
 from fastapi.utils import is_body_allowed_for_status_code
 from pydantic import ValidationError
 from starlette.background import BackgroundTask
@@ -17,13 +18,6 @@ from starlette.types import Receive, Scope, Send
 
 from fastapi_amis_admin.crud import BaseApiOut
 from fastapi_amis_admin.utils.translation import i18n as _
-
-try:
-    import ujson
-    from fastapi.responses import UJSONResponse as JSONResponse
-except ImportError:
-    ujson = None
-    from fastapi.responses import JSONResponse
 
 
 def register_exception_handlers(app: FastAPI, **kwargs):
