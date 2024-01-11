@@ -6,7 +6,7 @@ from ._enums import Choices
 
 
 class BaseChoicesType(types.TypeDecorator):
-    def __init__(self, choices: Type[Choices], impl=None, *args, **kwargs):
+    def __init__(self, choices: Type[Choices] = None, impl=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.choices = choices
 
@@ -24,7 +24,7 @@ class BaseChoicesType(types.TypeDecorator):
 
 
 class TextChoicesType(BaseChoicesType):
-    impl = types.CHAR
+    impl = types.CHAR(40)
     cache_ok = True
 
 
