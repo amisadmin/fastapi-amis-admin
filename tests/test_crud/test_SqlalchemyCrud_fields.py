@@ -364,6 +364,7 @@ async def test_update_fields_relationship(app: FastAPI, async_client: AsyncClien
 async def test_read_fields_and_schema_read_is_none(app: FastAPI, models):
     class ArticleCrud(SqlalchemyCrud):
         router_prefix = "/article"
+        read_fields = None
 
     ins = ArticleCrud(models.Article, db.engine).register_crud()
 

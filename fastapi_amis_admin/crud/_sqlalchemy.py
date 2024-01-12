@@ -316,8 +316,10 @@ class SqlalchemyCrud(
         )
 
     def _create_schema_read(self) -> Optional[Type[SchemaReadT]]:
-        if not self.read_fields:
+        if self.read_fields is None:
             return None
+        # Set the read fields to the schema update if not provided
+        self.read_fields = self.read_fields or model_fields(self.schema_update)
         # Filter out any non-model fields from the read fields
         modelfields = self.parser.filter_modelfield(self.read_fields)
         # Create the schema using the model fields
