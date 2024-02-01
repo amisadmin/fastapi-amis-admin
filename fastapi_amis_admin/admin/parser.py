@@ -70,7 +70,7 @@ class AmisParser:
                     formitem,
                     formitem.copy(
                         exclude={"maxLength", "receiver"},
-                        update={"type": "input-text"},
+                        update={"type": "textarea"},
                     ),
                 ],
             )
