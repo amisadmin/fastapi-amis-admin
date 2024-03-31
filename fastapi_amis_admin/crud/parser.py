@@ -5,7 +5,7 @@ from typing import Any, Callable, Dict, Iterable, List, Optional, Tuple, Type, T
 import sqlalchemy
 from fastapi.utils import create_cloned_field, create_response_field
 from pydantic import BaseConfig, BaseModel
-from pydantic.fields import Field, FieldInfo
+from pydantic.fields import FieldInfo
 from sqlalchemy import Column, String, Table
 from sqlalchemy.engine import Row
 from sqlalchemy.orm import ColumnProperty, DeclarativeMeta, InstrumentedAttribute, RelationshipProperty, object_session
@@ -350,16 +350,14 @@ def insfield_to_modelfield(insfield: InstrumentedAttribute) -> Optional[ModelFie
             required = False
     if isinstance(expression.type, String) and expression.type.length:
         field_info_kwargs["max_length"] = expression.type.length
-    if "default_factory" not in field_info_kwargs and default:
+    if "default_factory" not in field_info_kwargs and default is not Ellipsis:
         field_info_kwargs["default"] = default
     type_ = expression.type.python_type
     if PYDANTIC_V2:
         field_info_kwargs["annotation"] = type_
     if expression.comment:
         field_info_kwargs["title"] = expression.comment
-    return create_response_field(
-        name=insfield.key, type_=type_, required=required, field_info=FieldInfo(**field_info_kwargs)
-    )
+    return create_response_field(name=insfield.key, type_=type_, required=required, field_info=FieldInfo(**field_info_kwargs))
 
 
 def register_model(schema: Type[SchemaT]):
