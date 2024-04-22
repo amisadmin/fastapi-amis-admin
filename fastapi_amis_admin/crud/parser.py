@@ -1,6 +1,7 @@
 import datetime
 from functools import lru_cache
 from typing import Any, Callable, Dict, Iterable, List, Optional, Tuple, Type, TypeVar, Union
+from uuid import UUID
 
 import sqlalchemy
 from fastapi.utils import create_cloned_field, create_response_field
@@ -247,6 +248,8 @@ SQLModelFieldParser = TableModelParser
 def get_python_type_parse(field: Union[InstrumentedAttribute, Column, Label]) -> Callable:
     try:
         python_type = field.expression.type.python_type
+        if issubclass(python_type, UUID):
+            return str
         if issubclass(python_type, datetime.date):
             if issubclass(python_type, datetime.datetime):
                 return parse_datetime
