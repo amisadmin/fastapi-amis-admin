@@ -682,7 +682,7 @@ class ModelAdmin(SqlalchemyCrud, BaseActionAdmin):
             item.update({"mode": "inline"})
         return item
 
-    async def get_list_column(self, request: Request, modelfield: ModelField, quick_fields: dict) -> TableColumn:
+    async def get_list_column(self, request: Request, modelfield: ModelField, quick_fields: dict={}) -> TableColumn:
         column = self.amis_parser.as_table_column(modelfield)
         if await self.has_update_permission(request, None, None) and modelfield.name in model_fields(  # type: ignore
             self.schema_update
