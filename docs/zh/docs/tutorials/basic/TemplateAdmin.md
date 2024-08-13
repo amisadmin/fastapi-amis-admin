@@ -5,7 +5,27 @@
 
 ## 示例
 
+在根目录下创建模板目录`templates`，并在模板目录创建`simple.html`文件，内容如下：
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Current Time</title>
+</head>
+<body>
+    <h1>Current Time</h1>
+    <p>The current time is: {{ current_time }}</p>
+</body>
+</html>
+```
+
 ```python
+from fastapi_amis_admin.admin.admin import Jinja2Templates
+import datetime
+from typing import Dict
+
 @site.register_admin
 class SimpleTemplateAdmin(admin.TemplateAdmin):
     page_schema = PageSchema(label='SimpleTemplate', icon='fa fa-link')
