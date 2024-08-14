@@ -8,13 +8,14 @@
 ## 自定义工具条动作
 
 ### 示例-1
+1、增加引用
+```python
+from fastapi_amis_admin.admin.admin import AdminAction
+from fastapi_amis_admin.amis import ActionType
+```
+2、修改上一节中`ArticleAdmin`类，`page_schema`改为`page_schema = PageSchema(label='文章管理', icon='fa fa-file')`以增加图标，同时类中增加如下代码，来添加工具条
 
 ```python
-@site.register_admin
-class ArticleAdmin(admin.ModelAdmin):
-    page_schema = PageSchema(label='文章管理', icon='fa fa-file')
-    model = Article
-
     # 添加自定义工具条动作
     admin_action_maker = [
         lambda admin: AdminAction(
@@ -47,13 +48,19 @@ class ArticleAdmin(admin.ModelAdmin):
 !!! note annotate "关于`ActionType`"
 
     ActionType事实上是[amis Action 行为按钮](https://baidu.gitee.io/amis/zh-CN/components/action?page=1)组件的一个python模型映射,它支持多种常见的行为类型.例如:ajax请求/下载请求/跳转链接/发送邮件/弹窗/抽屉/复制文本等等.
-    
+
     fastapi_amis_admin的灵活性强体现之一,是因为它是基于amis的组件式开发,你可以在很多地方自由的替换或添加内置的amis组件.在此之前希望你能阅读[amis文档](https://baidu.gitee.io/amis/zh-CN/components/page),对amis核心组件有一定的了解.
 
 ## 自定义单项操作动作
 
+我们将在上一步的基础上新增一个自定义普通处理动作
 ### 示例-2
-
+新增引入
+```python
+from typing import List
+from fastapi_amis_admin.amis import Dialog
+```
+增加一个普通动作定义：
 ```python
 # 创建普通ajax动作
 class TestAction(admin.ModelAction):
@@ -68,15 +75,31 @@ class TestAction(admin.ModelAction):
         ...
         # 返回动作处理结果
         return BaseApiOut(data=dict(item_id=item_id, data=data, items=list(items)))
+```
+修改`ArticleAdmin`，在`admin_action_maker`的list中追加一行`lambda admin: TestAction(admin, name='test_action', flags=['item', 'bulk'])`变为：
 
-
-@site.register_admin
-class ArticleAdmin(admin.ModelAdmin):
-    page_schema = PageSchema(label='文章管理', icon='fa fa-file')
-    model = Article
-    # 添加自定义单项和批量操作动作
+```python
+    # 添加自定义工具条动作
     admin_action_maker = [
-        lambda admin: TestAction(admin, name='test_action',flags=['item','bulk'])
+        lambda admin: AdminAction(
+            admin=admin,
+            name='test_ajax_action',
+            action=ActionType.Ajax(
+                label='工具条ajax动作',
+                api='https://3xsw4ap8wah59.cfc-execute.bj.baidubce.com/api/amis-mock/mock2/form/saveForm'
+            ),
+            flags=['toolbar']
+        ),
+        lambda admin: AdminAction(
+            admin=admin,
+            name='test_link_action',
+            action=ActionType.Link(
+                label='工具条link动作',
+                link='https://github.com/amisadmin/fastapi_amis_admin'
+            ),
+            flags=['toolbar']
+        ),
+        lambda admin: TestAction(admin, name='test_action', flags=['item', 'bulk'])
     ]
 ```
 
@@ -90,6 +113,7 @@ class ArticleAdmin(admin.ModelAdmin):
 
 ## 自定义批量操作动作
 
+本部分修改方式同上一步。
 ### 示例-3
 
 ```python
@@ -116,19 +140,9 @@ class TestFormAction(admin.ModelAction):
         ...
         # 返回动作处理结果
         return BaseApiOut(data=dict(item_id=item_id, data=data, items=list(items)))
-
-
-@site.register_admin
-class ArticleAdmin(admin.ModelAdmin):
-    page_schema = PageSchema(label='文章管理', icon='fa fa-file')
-    model = Article
-
-    # 添加自定义单项和批量操作动作
-    admin_action_maker = [
-        lambda admin: TestAction(admin, name='test_action',flags=['item','bulk'])
-    ]
-
 ```
+在`admin_action_maker`的list中追加一行`lambda admin: TestFormAction(admin, name='test_form_action', flags=['item', 'bulk'])`
+
 
 示例-3与示例-2非常相似, 但是它允许用户添加一个自定义表单,这个在很多情况下,非常有用.
 

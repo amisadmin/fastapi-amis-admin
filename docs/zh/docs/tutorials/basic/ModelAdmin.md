@@ -3,9 +3,48 @@
 模型管理在后台管理中是最为常用的一个管理类,其使用功能也是最为丰富的. fastapi-amis-admin目前已经实现针对数据模型常用的各种基本操作,
 并且你仍然可以在此基础上做出更多个性化的拓展.
 
-## 示例-1
+## 示例1（基于SQLAlchemy 2.0）
+```python
+from sqlalchemy import String
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+from typing import Optional
+
+
+class Base(DeclarativeBase):
+    pass
+
+
+class CategorySchema(BaseModel):
+    id: Optional[int] = Field(default=None, primary_key=True, nullable=False)
+    name: str = Field(title="CategoryName")
+    description: str = Field(default="", title="CategoryDescription")
+
+    class Config:
+        # orm_mode = True
+        from_attributes = True
+
+
+# 创建SQLAlchemy 2.0模型,详细请参考: https://docs.sqlalchemy.org/en/20/orm/quickstart.html
+class Category(Base):
+    __tablename__ = "category"
+    __pydantic_model__ = CategorySchema  # 指定模型对应的Schema类.省略可自动生成,但是建议指定.
+
+    id: Mapped[int] = mapped_column(primary_key=True, nullable=False)
+    name: Mapped[str] = mapped_column(String(100), unique=True, index=True, nullable=False)
+    description: Mapped[str] = mapped_column(String(255), default="")
+```
+在`app = FastAPI()`下方添加以下内容来创建数据表：
+```python
+@app.on_event("startup")
+async def startup():
+    await site.db.async_run_sync(Category.metadata.create_all, is_session=False)
+    pass
+```
+
+## ~~示例-1(基于SQLModel)~~
 
 ```python
+
 # 先创建一个SQLModel模型,详细请参考: https://sqlmodel.tiangolo.com/
 class Category(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True, nullable=False)
@@ -30,10 +69,42 @@ class CategoryAdmin(admin.ModelAdmin):
 !!! note annotate "关于SQLModel模型"
 
     事实上这部分代码并不属于`amis-admin`的代码,因为它可以用重用在任何需要ORM映射的地方, 在项目中你应该单独定义一个`models.py`文件编写这部分代码.
-    
+
     SQLModel是一个非常优秀的Python ORM库,由FastAPI同一位作者编写,完美的结合了SQLAlchemy和Pydantic.请阅读它的官方文档: https://sqlmodel.tiangolo.com/
 
-## 示例-2
+## 示例-2（基于SQLAlchemy 2.0）
+```python
+from sqlalchemy import String, Integer, Boolean, ForeignKey, Select
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+from typing import Optional
+
+class Article(Base):
+    __tablename__ = 'article'
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    title: Mapped[str] = mapped_column(String(200), nullable=False)
+    description: Mapped[str] = mapped_column(String(400), default='')
+    status: Mapped[bool] = mapped_column(Boolean, default=False)
+    content: Mapped[str] = mapped_column(String, nullable=False)
+    category_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey('category.id'))
+
+
+@site.register_admin
+class ArticleAdmin(admin.ModelAdmin):
+    page_schema = '文章管理'
+    model = Article
+    # 设置需要展示的字段
+    list_display = [Article.id, Article.title, Article.description, Article.status, Category.name]
+    # 设置模糊搜索字段
+    search_fields = [Article.title, Category.name]
+
+    # 自定义基础选择器
+    async def get_select(self, request: Request) -> Select:
+        stmt = await super().get_select(request)
+        return stmt.outerjoin(Category, Article.category_id == Category.id)
+```
+同时，将前文定义的`def startup()`函数追加一行`await site.db.async_run_sync(Article.metadata.create_all, is_session=False)`用于生成对应数据表。
+## ~~~示例-2(基于SQLModel)~~~
 
 ```python
 # 创建一个SQLModel模型,详细请参考: https://sqlmodel.tiangolo.com/
@@ -140,6 +211,6 @@ class ArticleAdmin(admin.ModelAdmin):
 !!! note annotate "关于fastapi_amis_admin与django-admin"
 
     [django-admin](https://docs.djangoproject.com/zh-hans/4.0/ref/contrib/admin/)是一个非常成熟强大的web管理后台工具,使用django的用户应该经常使用到它,但他是并不适用于非django项目,这也是fastapi_amis_admin诞生的主要原因之一.
-    
+
     fastapi_amis_admin相比django-admin拥有更多的拓展与功能,但是fastapi_amis_admin目前仍然处于成长阶段,很多功能并不成熟,需要漫长的不断完善与升级.非常期待你参与到[fastapi_amis_admin](https://github.com/amisadmin/fastapi_amis_admin)的项目开发之中,为项目贡献代码,或为项目[提供建议](https://github.com/amisadmin/fastapi_amis_admin/issues).
 
