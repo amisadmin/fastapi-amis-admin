@@ -31,7 +31,7 @@ class MyHomeAdmin(admin.HomeAdmin):
         return page
 ```
 
-## 示例-2(自定义模板管理基类)
+## 示例-2.1(自定义模板管理基类)
 
 根目录`templates`文件夹中新建`element.html`，html内容如下：
 ```html
@@ -81,6 +81,30 @@ class ElementTemplateAdmin(MyJinja2Admin):
         return {'current_time': datetime.datetime.now(), 'title': 'Element Content'}
 
 ```
+## 示例-2.2(将多个page以tab形式展示)
+我们基于示例2.1进行修改,
+1、首先将`SimpleTemplateAdmin`、`ElementTemplateAdmin`的页面注册装饰函数(`@site.register_admin`)注释或删除。
+2、我们创建一个Page管理页，然后将上述2个页面注册到`TemplatePageApp`下。
+```python
+from fastapi_amis_admin import admin, amis
+from fastapi_amis_admin.admin import AdminApp
+from fastapi_amis_admin.amis import TabsModeEnum
+
+
+@site.register_admin
+class TemplatePageApp(admin.AdminApp):
+    page_schema = PageSchema(label="TemplatePage", icon="fa fa-link", tabsMode=TabsModeEnum.chrome)
+
+    def __init__(self, app: "AdminApp"):
+        super().__init__(app)
+        self.register_admin(
+            SimpleTemplateAdmin,
+            ElementTemplateAdmin,
+        )
+```
+此时，左侧菜单栏将会显示TemplatePageApp的类目，同时TemplatePageApp页面下则显示`SimpleTemplateAdmin`、`ElementTemplateAdmin`相关tab。
+
+
 ## 示例-3(重用模型管理类)
 我们在*模型管理*-示例2的基础上进行改造，将`Article`类新增一行属性`is_active: bool = False  # add`,如下：
 ```python linenums="1" hl_lines="32"
