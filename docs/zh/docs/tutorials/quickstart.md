@@ -8,6 +8,8 @@ pip install fastapi_amis_admin
 
 ## 简单示例
 
+后续的*基础教程*部分将围绕一下这两个文件来展开。
+
 1.创建文件**`adminsite.py`**:
 
 ```python
