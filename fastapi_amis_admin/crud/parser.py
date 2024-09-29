@@ -4,7 +4,7 @@ from typing import Any, Callable, Dict, Iterable, List, Optional, Tuple, Type, T
 from uuid import UUID
 
 import sqlalchemy
-from fastapi.utils import create_cloned_field, create_response_field
+from fastapi.utils import create_cloned_field, create_model_field
 from pydantic import BaseConfig, BaseModel
 from pydantic.fields import FieldInfo
 from sqlalchemy import Column, String, Table
