@@ -1,10 +1,14 @@
 import datetime
 from functools import lru_cache
+from importlib.metadata import version
 from typing import Any, Callable, Dict, Iterable, List, Optional, Tuple, Type, TypeVar, Union
 from uuid import UUID
 
 import sqlalchemy
-from fastapi.utils import create_cloned_field, create_response_field
+if version("fastapi") > "0.112.2":
+    from fastapi.utils import create_model_field as create_response_field
+else:
+    from fastapi.utils import create_response_field
 from pydantic import BaseConfig, BaseModel
 from pydantic.fields import FieldInfo
 from sqlalchemy import Column, String, Table
