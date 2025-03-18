@@ -1,11 +1,16 @@
 import datetime
 from functools import lru_cache
+from importlib.metadata import version
 from typing import Any, Callable, Dict, Iterable, List, Optional, Tuple, Type, TypeVar, Union
+from uuid import UUID
 
 import sqlalchemy
-from fastapi.utils import create_cloned_field, create_response_field
+if version("fastapi") > "0.112.2":
+    from fastapi.utils import create_model_field as create_response_field
+else:
+    from fastapi.utils import create_response_field
 from pydantic import BaseConfig, BaseModel
-from pydantic.fields import Field, FieldInfo
+from pydantic.fields import FieldInfo
 from sqlalchemy import Column, String, Table
 from sqlalchemy.engine import Row
 from sqlalchemy.orm import ColumnProperty, DeclarativeMeta, InstrumentedAttribute, RelationshipProperty, object_session
@@ -247,6 +252,8 @@ SQLModelFieldParser = TableModelParser
 def get_python_type_parse(field: Union[InstrumentedAttribute, Column, Label]) -> Callable:
     try:
         python_type = field.expression.type.python_type
+        if issubclass(python_type, UUID):
+            return str
         if issubclass(python_type, datetime.date):
             if issubclass(python_type, datetime.datetime):
                 return parse_datetime
@@ -348,16 +355,16 @@ def insfield_to_modelfield(insfield: InstrumentedAttribute) -> Optional[ModelFie
         elif expression.default.is_callable:
             field_info_kwargs["default_factory"] = expression.default.arg
             required = False
-    if isinstance(expression.type, String):
+    if isinstance(expression.type, String) and expression.type.length:
         field_info_kwargs["max_length"] = expression.type.length
-    if "default_factory" not in field_info_kwargs:
+    if "default_factory" not in field_info_kwargs and default is not Ellipsis:
         field_info_kwargs["default"] = default
     type_ = expression.type.python_type
     if PYDANTIC_V2:
         field_info_kwargs["annotation"] = type_
-    return create_response_field(
-        name=insfield.key, type_=type_, required=required, field_info=Field(title=expression.comment, **field_info_kwargs)
-    )
+    if expression.comment:
+        field_info_kwargs["title"] = expression.comment
+    return create_response_field(name=insfield.key, type_=type_, required=required, field_info=FieldInfo(**field_info_kwargs))
 
 
 def register_model(schema: Type[SchemaT]):

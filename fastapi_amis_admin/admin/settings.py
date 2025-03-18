@@ -15,14 +15,14 @@ class Settings(BaseSettings):
     debug: bool = False
     version: str = "0.0.0"
     site_title: str = "FastAPI Amis Admin"
-    site_icon: str = "https://baidu.gitee.io/amis/static/favicon_b3b0647.png"
+    site_icon: str = "https://baidu.github.io/amis/static/logo_408c434.png"
     site_url: str = ""
     site_path: str = "/admin"
     database_url_async: str = ""
     database_url: str = ""
     language: Union[Literal["zh_CN", "en_US", "de_DE"], str] = ""
     amis_cdn: str = "https://unpkg.com"
-    amis_pkg: str = "amis@6.1.0"
+    amis_pkg: str = "amis@6.3.0"
     amis_theme: Literal["cxd", "antd", "dark", "ang"] = "cxd"
     amis_image_receiver: API = None  # Image upload interface
     amis_file_receiver: API = None  # File upload interface

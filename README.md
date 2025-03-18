@@ -62,7 +62,7 @@ everyone's sponsorship and support.
 - [SQLModel](https://sqlmodel.tiangolo.com/): Finish `ORM` model mapping. Perfectly
   combine  [SQLAlchemy](https://www.sqlalchemy.org/) with [Pydantic](https://pydantic-docs.helpmanual.io/), and have all
   their features .
-- [Amis](https://baidu.gitee.io/amis): Finish admin page presentation.
+- [Amis](https://baidu.github.io/amis/): Finish admin page presentation.
 
 ## Composition
 
@@ -83,8 +83,6 @@ pip install fastapi_amis_admin
 
 ### Note
 
-- `sqlmodel` currently does not support `sqlalchemy 2.0+`. If you use `sqlalchemy 2.0+` to create a model, you cannot
-  use `sqlmodel` at the same time.
 - After version `fastapi-amis-admin>=0.6.0`, `sqlmodel` is no longer a required dependency library. If you use `sqlmodel`
   to create a model, you can install it with the following command.
 

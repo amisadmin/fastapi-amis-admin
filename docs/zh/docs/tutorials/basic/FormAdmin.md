@@ -10,7 +10,8 @@ from fastapi_amis_admin.crud import BaseApiOut
 from fastapi_amis_admin.models.fields import Field
 from pydantic import BaseModel
 from starlette.requests import Request
-
+from fastapi_amis_admin.amis import Form
+from typing import Any
 
 @site.register_admin
 class UserLoginFormAdmin(admin.FormAdmin):

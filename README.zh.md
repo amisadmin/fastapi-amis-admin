@@ -64,7 +64,7 @@
 - [SQLModel](https://sqlmodel.tiangolo.com/) 负责ORM模型映射(
   完美结合[SQLAlchemy](https://www.sqlalchemy.org/)+[Pydantic](https://pydantic-docs.helpmanual.io/), 拥有`SQLAlchemy`
   和`Pydantic`的所有功能)
-- [Amis](https://baidu.gitee.io/amis) 负责Admin后台页面展示
+- [Amis](https://aisuda.bce.baidu.com/amis/) 负责Admin后台页面展示
 
 ## 项目组成
 

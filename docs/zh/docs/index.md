@@ -87,7 +87,7 @@ pip install fastapi_amis_admin
 
 ```bash
 pip install fastapi_amis_admin[sqlmodel]
-``` 
+```
 
 ## 简单示例
 
@@ -110,6 +110,11 @@ if __name__ == '__main__':
 
     uvicorn.run(app)
 ```
+### 运行程序
+```bash
+uvicorn main:app <--port 端口号> <--reload>
+```
+--port为指定启动端口(默认8000)，--reload为开发过程中允许运行时重载。
 
 ## 模型管理示例
 

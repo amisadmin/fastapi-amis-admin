@@ -8,10 +8,14 @@
 ## 页面管理
 
 `PageAdmin`实现在菜单列表显示一个菜单.点击菜单后将展现一个`amis`页面.
-你可以通过阅读[`baidu-amis`官方文档](https://baidu.gitee.io/amis/zh-CN/components/page)
+你可以通过阅读[`baidu-amis`官方文档（国内）](https://aisuda.bce.baidu.com/amis/zh-CN/components/page)
 ,实现各种复杂的页面展示.先看一个Hello World页面示例吧.
 
+在main.py中的`site.mount_app(app)`上方添加：
 ```python
+from fastapi_amis_admin.admin import admin
+from fastapi_amis_admin.amis.components import Page
+
 @site.register_admin
 class HelloWorldPageAdmin(admin.PageAdmin):
     page_schema = 'Hello World Page'
@@ -21,7 +25,11 @@ class HelloWorldPageAdmin(admin.PageAdmin):
 
 非常简单吧,接下来再实现一个获取当前时间的页面.
 
+在main.py中的`site.mount_app(app)`上方添加：
 ```python
+import time
+from fastapi import Request
+
 @site.register_admin
 class CurrentTimePageAdmin(admin.PageAdmin):
     page_schema = 'Current Time Page'
@@ -43,7 +51,7 @@ class CurrentTimePageAdmin(admin.PageAdmin):
 @site.register_admin
 class AmisPageAdmin(admin.PageAdmin):
     page_schema = 'Amis Json Page'
-    page = Page.parse_obj(
+    page = Page.model_validate(
         {
             "type": "page",
             "title": "表单页面",
@@ -67,7 +75,7 @@ class AmisPageAdmin(admin.PageAdmin):
         }
     )
 ```
-
+!!! note annotate 注意，所有装饰器`@site.register_admin`涉及的类都应在`site.mount_app(app)`之前注册。
 ## 链接管理
 
 `LinkAdmin`实现在菜单列表显示一个链接跳转菜单.点击菜单后将通过打开一个新的浏览器标签,访问设置的链接:

@@ -1062,7 +1062,7 @@ class ConditionBuilder(FormItem):
     class Time(Date):
         """time"""
 
-        type: str = "datetime"
+        type: str = "time"
 
     class Select(Field):
         """Drop down to select"""
