@@ -5,10 +5,12 @@ from typing import Any, Callable, Dict, Iterable, List, Optional, Tuple, Type, T
 from uuid import UUID
 
 import sqlalchemy
+
 if version("fastapi") > "0.112.2":
     from fastapi.utils import create_model_field as create_response_field
 else:
     from fastapi.utils import create_response_field
+from fastapi.utils import create_cloned_field
 from pydantic import BaseConfig, BaseModel
 from pydantic.fields import FieldInfo
 from sqlalchemy import Column, String, Table
