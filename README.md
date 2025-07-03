@@ -330,3 +330,4 @@ faa run
 - According to the `Apache2.0` protocol, `fastapi-amis-admin` is free and open source. It can be used for commercial for
   free, but please clearly display copyright information about `FastAPI-Amis-Admin` on the display interface.
 
+[![Powered by DartNode](https://dartnode.com/branding/DN-Open-Source-sm.png)](https://dartnode.com "Powered by DartNode - Free VPS for Open Source")
