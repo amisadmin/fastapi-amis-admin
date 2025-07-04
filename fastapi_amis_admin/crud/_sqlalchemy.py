@@ -460,7 +460,11 @@ class SqlalchemyCrud(
         **kwargs,
     ) -> Dict[str, Any]:
         data = obj.dict(exclude=self.update_exclude, exclude_unset=True, by_alias=True)
-        data = {key: val for key, val in data.items() if val is not None or field_allow_none(model_fields(self.model)[key])}
+        data = {
+            key: val
+            for key, val in data.items()
+            if val is not None or field_allow_none(self.parser.get_table_model_fields(self.model)[key])
+        }
         return data
 
     async def on_filter_pre(self, request: Request, obj: Optional[SchemaFilterT], **kwargs) -> Dict[str, Any]:
