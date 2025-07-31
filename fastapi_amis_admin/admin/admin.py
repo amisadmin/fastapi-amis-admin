@@ -612,6 +612,7 @@ class FormAdmin(BaseActionAdmin, Generic[SchemaUpdateT]):
 
 
 class ModelAdmin(SqlalchemyCrud, BaseActionAdmin):
+    list_quick: List[Union[SqlaField, TableColumn]] = []  # Fields to be quick edit mode
     list_display: List[Union[SqlaField, TableColumn]] = []  # Fields to be displayed
     list_filter: List[Union[SqlaField, FormItem]] = []  # Query filterable fields
     list_per_page: int = 10  # Amount of data per page
@@ -660,6 +661,9 @@ class ModelAdmin(SqlalchemyCrud, BaseActionAdmin):
             )
         )
         return self.link_model_forms
+    
+    async def get_list_quick(self, request: Request) -> List[Union[SqlaField, TableColumn]]:
+        return self.list_quick
 
     async def get_list_display(self, request: Request) -> List[Union[SqlaField, TableColumn]]:
         return self.list_display or list(model_fields(self.schema_list).values())
@@ -678,18 +682,26 @@ class ModelAdmin(SqlalchemyCrud, BaseActionAdmin):
             item.update({"mode": "inline"})
         return item
 
-    async def get_list_column(self, request: Request, modelfield: ModelField) -> TableColumn:
+    async def get_list_column(self, request: Request, modelfield: ModelField, quick_fields: dict={}) -> TableColumn:
         column = self.amis_parser.as_table_column(modelfield)
         if await self.has_update_permission(request, None, None) and modelfield.name in model_fields(  # type: ignore
             self.schema_update
         ):
             if column.type == "switch":
                 column.disabled = False
-            column.quickEdit = await self.get_column_quick_edit(request, modelfield)
+                
+            if column.name in quick_fields.keys():
+                column.quickEdit = await self.get_column_quick_edit(request, modelfield)
         return column
 
     async def get_list_columns(self, request: Request) -> List[TableColumn]:
         columns = []
+        quick_fields = await self.get_list_quick(request)
+        
+        quick_maps = {}
+        for f in quick_fields:
+            quick_maps[f.name] = 1
+        
         for field in await self.get_list_display(request):
             column = None
             if isinstance(field, BaseAmisModel):
@@ -697,7 +709,7 @@ class ModelAdmin(SqlalchemyCrud, BaseActionAdmin):
             else:
                 modelfield = self.parser.get_modelfield(field)
                 if modelfield:
-                    column = await self.get_list_column(request, modelfield)
+                    column = await self.get_list_column(request, modelfield, quick_maps)
             if column:
                 columns.append(column)
         return columns
